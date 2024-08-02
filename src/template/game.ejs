@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Dungeon Mania</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/style/gameStyle.css">
+  </head>
+  <body>
+    <div class="flex-container">
+      <!-- player status panel -->
+      <div id="player-status-panel" class="panel">
+        <h2 id="username"><%= username %></h2>
+        <h2 id="score">0</h2>
+        <button id="roll-dice-button" class="button">Roll</button>
+        <h3 id="dice-number"></h3>
+      </div>
+
+      <!-- grid panel -->
+      <div id="grid-panel" class="grid-container panel">
+        <% for(let i=0;i<grid.length;i++) { %>
+            <% for(let j=0;j<grid[i].length;j++){ %>
+              <img class="cell-image" data-x=<%= i %> data-y=<%= j %> src=<%= grid[i][j] %>>
+            <% }; %>
+        <% }; %>
+      </div>
+    </div>
+
+    <script src="/static/script/gameScript.js" defer></script>
+  </body>
+</html>

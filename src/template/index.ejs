@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Dungeon Mania</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  </head>
+  <body>
+
+    <!-- panel to display player info -->
+    <div id="player-panel" class="panel">
+      <p id="username"> <%= username %> </p>
+      <p id="highScore"> <%= highScore %> </p>
+    </div>
+
+    <!-- panel to display menu -->
+     <div id="menu-panel" class="panel">
+        <button id="simple-button" class="button">simple mode</button>
+        <button id="survival-button" class="button">survival mode</button>
+        <button id="stat-button" class="button">stats</button>
+        <button id="guide-button" class="button">guide</button>
+     </div>
+
+     <script src="/static/script/indexScript.js" defer></script>
+  </body>
+</html>
