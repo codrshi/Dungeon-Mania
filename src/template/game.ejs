@@ -22,7 +22,10 @@
       <div id="grid-panel" class="grid-container panel">
         <% for(let i=0;i<grid.length;i++) { %>
             <% for(let j=0;j<grid[i].length;j++){ %>
-              <img class="cell-image" data-x=<%= i %> data-y=<%= j %> src=<%= grid[i][j] %>>
+              <div class="cell" data-x=<%= i %> data-y=<%= j %>>
+                <img class="cell-image" data-x=<%= i %> data-y=<%= j %> src=<%= grid[i][j].getImageSource() %>>
+                <span class="cell-attribute"><%= grid[i][j].getAttribute() %></span>
+              </div>
             <% }; %>
         <% }; %>
       </div>

@@ -37,9 +37,11 @@ export function rollDiceExecute(){
 }
 
 export function processMove(newKnightCoordinate,diceNumber){
-    const processMoveResData={
-        prevPosCardId: updateCell(newKnightCoordinate)
-    }
+    let [prevPosCardId,prevPosNewAttribute] = updateCell(newKnightCoordinate);
 
+    const processMoveResData={
+        prevPosCardId: prevPosCardId,
+        prevPosNewAttribute: prevPosNewAttribute
+    }
     return processMoveResData;
 }

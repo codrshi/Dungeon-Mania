@@ -1,19 +1,20 @@
 rollDiceButton = $("#roll-dice-button");
 score = $("#score");
-cell = $(".cell-image");
+cellImage = $(".cell-image");
 knightCell = null;
 
 diceNumber = -1;
 
 rollDiceButton.click(function () {
-  cell.addClass("disabled-cell-image");
+  cellImage.addClass("disabled-cell-image");
 
   $.get("/game/roll-dice", {}, function (resData) {
     diceNumber = resData.diceNumber;
     $("#dice-number").text("you got " + String(resData.diceNumber));
 
-    cell.each(function () {
-      if ($(this).attr("src").endsWith("knight.png")) knightCell = $(this);
+    cellImage.each(function () {
+      if ($(this).attr("src").endsWith("knight.png")) 
+        knightCell = $(this).parent();
 
       resData.validNextPositions.forEach((validNextPosition) => {
         if (
@@ -27,10 +28,10 @@ rollDiceButton.click(function () {
   });
 });
 
-cell.on("click", function () {
+cellImage.on("click", function () {
   if (!$(this).hasClass("disabled-cell-image")) {
-    cell.removeClass("disabled-cell-image");
-    let newKnightCell = $(this);
+    cellImage.removeClass("disabled-cell-image");
+    let newKnightCell = $(this).parent();
     const newKnightCoordinate = [
       Number($(this).data("x")),
       Number($(this).data("y")),
@@ -45,13 +46,15 @@ cell.on("click", function () {
         newKnightCoordinate: newKnightCoordinate,
         diceNumber: diceNumber,
       }),
-
+      
       success: function (res) {
-        knightCell.attr(
+        knightCell.children('.cell-image').attr(
           "src",
           "/static/asset/image/" + res.prevPosCardId + ".png"
         );
-        newKnightCell.attr("src", "/static/asset/image/knight.png");
+        knightCell.children('.cell-attribute').text(res.prevPosNewAttribute);
+        newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
+        newKnightCell.children('.cell-attribute').text("");
       },
     });
   }

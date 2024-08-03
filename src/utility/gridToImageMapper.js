@@ -1,9 +1,20 @@
-export function mapGrid(grid){
-    const imageGrid=[...grid];
+import {ImageIconDao} from "../dao/imageIconDao.js";
+import {ArtifactDao} from "../dao/artifactDao.js";
+import {MonsterDao} from "../dao/monsterDao.js"
+import {WeaponDao} from "../dao/weaponDao.js";
 
-    imageGrid.forEach((row, i) => {
+export function mapGrid(grid){
+    let imageGrid=[];
+
+    grid.forEach((row, i) => {
+        imageGrid[i]=[]
         row.forEach((value, j) => {
-          imageGrid[i][j] = "/static/asset/image/"+value.getId()+".png";
+          let attribute="";
+          if(value instanceof MonsterDao)
+            attribute=value.getHealth();
+          else if(value instanceof WeaponDao)
+            attribute=value.getDamage();
+          imageGrid[i][j] = new ImageIconDao("/static/asset/image/"+value.getId()+".png",attribute);
         });
       });
 
