@@ -5,6 +5,7 @@ const config = {
   game: {
     MAX_HEALTH: 100,
     COUNTER_WEAPON_DAMAGE_MULTIPLIER: 1.5,
+    COMMON_MONSTER_DAMAGE_MULTIPLIER: 2,
     grid:{
       ROWS: 7,
       COLUMNS: 7

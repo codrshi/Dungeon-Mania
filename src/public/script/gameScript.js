@@ -1,6 +1,7 @@
 rollDiceButton = $("#roll-dice-button");
 score = $("#score");
 cellImage = $(".cell-image");
+weaponSubPanel = $("#weapon-sub-panel");
 knightCell = null;
 
 diceNumber = -1;
@@ -29,7 +30,7 @@ rollDiceButton.click(function () {
 });
 
 cellImage.on("click", function () {
-  if (!$(this).hasClass("disabled-cell-image")) {
+  if (!$(this).hasClass("disabled-cell-image") && diceNumber!=-1) {
     cellImage.removeClass("disabled-cell-image");
     let newKnightCell = $(this).parent();
     const newKnightCoordinate = [
@@ -54,8 +55,21 @@ cellImage.on("click", function () {
         );
         knightCell.children('.cell-attribute').text(res.prevPosNewAttribute);
         newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
-        newKnightCell.children('.cell-attribute').text("");
+        newKnightCell.children('.cell-attribute').text(res.eph_config.knightHealth);
+        
+        if(res.eph_config.knightWeapon!=null){
+          weaponSubPanel.children(".weapon-sub-panel-image").attr("src", "/static/asset/image/"+res.eph_config.knightWeapon.weapon.id+".png");
+          weaponSubPanel.children(".weapon-sub-panel-attribute").text(res.eph_config.knightWeapon.weapon.damage);
+        }
+        else{
+          weaponSubPanel.children(".weapon-sub-panel-image").attr("src", "");
+          weaponSubPanel.children(".weapon-sub-panel-attribute").text("");
+        }
+
+        score.text(res.eph_config.score);
+        console.log(res.eph_config);
       },
     });
   }
+  diceNumber=-1
 });
