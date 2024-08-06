@@ -1,38 +1,40 @@
 rollDiceButton = $("#roll-dice-button");
 score = $("#score");
-cellImage = $(".cell-image");
+cell = $(".cell");
 weaponSubPanel = $("#weapon-sub-panel");
 knightCell = null;
 
 diceNumber = -1;
 
 rollDiceButton.click(function () {
-  cellImage.addClass("disabled-cell-image");
+  cell.children('.cell-image').addClass("disabled-cell-image");
 
-  $.get("/game/roll-dice", {}, function (resData) {
-    diceNumber = resData.diceNumber;
-    $("#dice-number").text("you got " + String(resData.diceNumber));
+  $.get("/game/roll-dice", {}, function (res) {
+    diceNumber = res.diceNumber;
+    const validNextPositions=res.validNextPositions;
 
-    cellImage.each(function () {
-      if ($(this).attr("src").endsWith("knight.png")) 
-        knightCell = $(this).parent();
+    $("#dice-number").text("you got " + String(diceNumber));
 
-      resData.validNextPositions.forEach((validNextPosition) => {
+    cell.each(function () {
+      if ($(this).children('.cell-image').attr("src").endsWith("knight.png")) 
+        knightCell = $(this);
+
+      validNextPositions.forEach((validNextPosition) => {
         if (
-          validNextPosition[0] === $(this).data("x") &&
-          validNextPosition[1] === $(this).data("y")
+          validNextPosition.coordinate.x === $(this).data("x") &&
+          validNextPosition.coordinate.y === $(this).data("y")
         ) {
-          $(this).removeClass("disabled-cell-image");
+          $(this).children('.cell-image').removeClass("disabled-cell-image");
         }
       });
     });
   });
 });
 
-cellImage.on("click", function () {
-  if (!$(this).hasClass("disabled-cell-image") && diceNumber!=-1) {
-    cellImage.removeClass("disabled-cell-image");
-    let newKnightCell = $(this).parent();
+cell.on("click", function () {
+  if (!$(this).children('.cell-image').hasClass("disabled-cell-image") && diceNumber!=-1) {
+    cell.children('.cell-image').removeClass("disabled-cell-image");
+    let newKnightCell = $(this);
     const newKnightCoordinate = [
       Number($(this).data("x")),
       Number($(this).data("y")),
@@ -49,27 +51,42 @@ cellImage.on("click", function () {
       }),
       
       success: function (res) {
+        const prevPosCardId=res.prevPosCardId;
+        const prevPosNewAttribute=res.prevPosNewAttribute;
+        const eph_config=res.eph_config;
+
         knightCell.children('.cell-image').attr(
           "src",
-          "/static/asset/image/" + res.prevPosCardId + ".png"
+          "/static/asset/image/" + prevPosCardId + ".png"
         );
-        knightCell.children('.cell-attribute').text(res.prevPosNewAttribute);
+        knightCell.children('.cell-attribute').text(prevPosNewAttribute);
         newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
-        newKnightCell.children('.cell-attribute').text(res.eph_config.knightHealth);
+        newKnightCell.children('.cell-attribute').text(eph_config.knightHealth);
         
-        if(res.eph_config.knightWeapon!=null){
-          weaponSubPanel.children(".weapon-sub-panel-image").attr("src", "/static/asset/image/"+res.eph_config.knightWeapon.weapon.id+".png");
-          weaponSubPanel.children(".weapon-sub-panel-attribute").text(res.eph_config.knightWeapon.weapon.damage);
+        if(eph_config.knightWeapon!=null){
+          weaponSubPanel.children(".weapon-sub-panel-image").attr("src", "/static/asset/image/"+eph_config.knightWeapon.weapon.id+".png");
+          weaponSubPanel.children(".weapon-sub-panel-attribute").text(eph_config.knightWeapon.weapon.damage);
         }
         else{
           weaponSubPanel.children(".weapon-sub-panel-image").attr("src", "");
           weaponSubPanel.children(".weapon-sub-panel-attribute").text("");
         }
 
-        score.text(res.eph_config.score);
-        console.log(res.eph_config);
+        if(eph_config.shuffledGrid!=0)
+          renderGrid(eph_config.shuffledGrid);
+
+        score.text(eph_config.score);
       },
     });
   }
   diceNumber=-1
 });
+
+function renderGrid(grid){
+    cell.each(function () {
+      const x=Number($(this).data("x")),y=Number($(this).data("y"));
+      let currentCell=$(this);
+      currentCell.children('.cell-image').attr("src",grid[x][y].imageIcon.imageSource);
+      currentCell.children('.cell-attribute').text(grid[x][y].imageIcon.attribute);
+    });
+  }

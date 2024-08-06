@@ -1,5 +1,6 @@
 import { getRandom } from "./RNG.js";
 import config from "../../configuration/config.js";
+import { KnightDao } from "../dao/knightDao.js";
 
 const ROWS = config.game.grid.ROWS;
 const COLUMNS = config.game.grid.COLUMNS;
@@ -9,7 +10,9 @@ export function shuffleGrid(grid) {
 
   for (let i = 0; i < ROWS * COLUMNS; i++) {
     const j = getRandom(0,ROWS * COLUMNS-1);
-    [flatArray[i], flatArray[j]] = [flatArray[j], flatArray[i]];
+
+    if(!(flatArray[i] instanceof KnightDao || flatArray[j] instanceof KnightDao))
+      [flatArray[i], flatArray[j]] = [flatArray[j], flatArray[i]];
   }
 
   grid = [];

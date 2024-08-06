@@ -8,7 +8,8 @@ const eph_config = {
     },
     score:0,
     knightHealth:0,
-    knightWeapon:null
+    knightWeapon:null,
+    shuffledGrid:[]
   };
   
 export default eph_config;

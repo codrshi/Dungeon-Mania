@@ -13,7 +13,7 @@ const COLUMNS=config.game.grid.COLUMNS;
 let monsterSpawnCounter=config.game.spawn_rate.MONSTER;
 let weaponSpawnCounter=config.game.spawn_rate.WEAPON;
 
-const grid=initializeGrid();
+let grid=initializeGrid();
 
 export function initializeGrid(){
     let grid=[];
@@ -44,33 +44,33 @@ export function getGrid(){
     return grid;
 }
 
-export function updateCell(newKnightCoordinate){
-    
-    grid[newKnightCoordinate[0]][newKnightCoordinate[1]]=new KnightDao();
+export function setGrid(newGrid){
+    grid=newGrid;
+}
+
+export function createNewCard(x,y){
     
     const randNum=getRandom(1,48);
     let cardId="",attribute="";
 
     if(randNum <= config.game.spawn_rate.MONSTER){
         const [health,elementType,monsterId]=getRandomMonster();
-        grid[eph_config.coordinate.x][eph_config.coordinate.y] = new MonsterDao(health,elementType,monsterId);
+        grid[x][y] = new MonsterDao(health,elementType,monsterId);
         cardId=monsterId;
         attribute=health;
     }
     else if(randNum <= config.game.spawn_rate.MONSTER+config.game.spawn_rate.WEAPON){
         const [damage,elementType,weaponId]=getRandomWeapon();
-        grid[eph_config.coordinate.x][eph_config.coordinate.y] =new WeaponDao(damage,elementType,weaponId);
+        grid[x][y] =new WeaponDao(damage,elementType,weaponId);
         cardId=weaponId;
         attribute=damage;
     }
     else{
         const artifactId=getRandomArtifact();
-        grid[eph_config.coordinate.x][eph_config.coordinate.y] =new ArtifactDao(artifactId);
+        grid[x][y] =new ArtifactDao(artifactId);
         cardId=artifactId;
     }
 
-    eph_config.coordinate.x=newKnightCoordinate[0];
-    eph_config.coordinate.y=newKnightCoordinate[1];
     return [cardId,attribute];
 }
 
