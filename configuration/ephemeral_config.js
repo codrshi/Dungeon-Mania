@@ -9,7 +9,10 @@ const eph_config = {
     score:0,
     knightHealth:0,
     knightWeapon:null,
-    shuffledGrid:[]
+    shuffledGrid:[],
+    manaStoneRes:[],
+    activePoisons:[],
+    activeEnema:null
   };
   
 export default eph_config;

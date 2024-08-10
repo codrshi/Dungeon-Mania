@@ -2,6 +2,7 @@ rollDiceButton = $("#roll-dice-button");
 score = $("#score");
 cell = $(".cell");
 weaponSubPanel = $("#weapon-sub-panel");
+activePanelMicroPanel = $(".active-poison-micro-panel");
 knightCell = null;
 
 diceNumber = -1;
@@ -72,8 +73,13 @@ cell.on("click", function () {
           weaponSubPanel.children(".weapon-sub-panel-attribute").text("");
         }
 
-        if(eph_config.shuffledGrid!=0)
+        if(eph_config.shuffledGrid.length!=0)
           renderGrid(eph_config.shuffledGrid);
+
+        if(eph_config.manaStoneRes.length!=0)
+          renderManaStoneEffect(eph_config.manaStoneRes);
+
+        renderActivePoisons(eph_config.activePoisons);
 
         score.text(eph_config.score);
       },
@@ -85,8 +91,39 @@ cell.on("click", function () {
 function renderGrid(grid){
     cell.each(function () {
       const x=Number($(this).data("x")),y=Number($(this).data("y"));
-      let currentCell=$(this);
-      currentCell.children('.cell-image').attr("src",grid[x][y].imageIcon.imageSource);
-      currentCell.children('.cell-attribute').text(grid[x][y].imageIcon.attribute);
+      $(this).children('.cell-image').attr("src",grid[x][y].imageIcon.imageSource);
+      $(this).children('.cell-attribute').text(grid[x][y].imageIcon.attribute);
     });
   }
+
+function renderManaStoneEffect(manaStoneEffectiveLocations){
+
+  const manaStoneMap=new Map();
+  manaStoneEffectiveLocations.forEach(manaStoneEffectiveLocation => {
+    manaStoneMap.set(manaStoneEffectiveLocation[0],manaStoneEffectiveLocation.slice(1));
+  });
+
+  cell.each(function () {
+    const key=$(this).data("x")+" "+$(this).data("y");
+    if(manaStoneMap.has(key)){
+      $(this).children('.cell-image').attr("src","/static/asset/image/"+manaStoneMap.get(key)[0]+".png");
+      $(this).children('.cell-attribute').text(manaStoneMap.get(key)[1]);
+    }
+  });
+}
+
+function renderActivePoisons(activePoisons){
+
+  activePanelMicroPanel.each(function() {
+    const position=Number($(this).data("position"));
+
+    if(position<activePoisons.length){
+      $(this).children('.active-poison-micro-panel-image').attr("src","/static/asset/image/artifact_poison_potion.png");
+      $(this).children('.active-poison-micro-panel-attribute').text(activePoisons[position].activePoison.damage);
+    }
+    else{
+      $(this).children('.active-poison-micro-panel-image').attr("src","");
+      $(this).children('.active-poison-micro-panel-attribute').text("");
+    }
+  });
+}

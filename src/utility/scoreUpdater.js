@@ -1,8 +1,8 @@
 import eph_config from "../../configuration/ephemeral_config.js";
-import ActionType from "../model/actionType.js";
 
-export function updateScore(actionType,value){
-    if(actionType===ActionType.MONSTER){
-        eph_config.score+=value;
+export function updateScore(value){
+    if(eph_config.activeEnema!=null){
+        value+=Math.ceil(value*eph_config.activeEnema.getBuff()/100);
     }
+    eph_config.score+=value;
 }

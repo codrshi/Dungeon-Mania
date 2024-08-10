@@ -74,10 +74,10 @@ export function createNewCard(x,y){
     return [cardId,attribute];
 }
 
-function getRandomArtifact(){
+export function getRandomArtifact(){
     let id="",stackedNum=0;
     const randNum=getRandom(1,100);
-
+    
     if(randNum <= stackedNum+config.game.spawn_rate.artifacts_spawn_rate.CHAOS_ORB){
         id=config.game.id.artifact.CHAOS_ORB;
         return id;

@@ -43,6 +43,33 @@ html, body{
     flex: 3
 }
 
+#active-poison-sub-panel{
+    height: 30%;
+    overflow: hidden;
+    border: 0.05em solid black;
+}
+
+.active-poison-panel-heading{
+    border: 0.05em solid red;
+}
+
+#active-poison-sub-panel-images-section{
+    width: 100%;
+    height: auto;
+    border: 0.05em solid red;
+    display: flex;
+}
+
+.active-poison-micro-panel{
+    flex: 1;
+    height: 100%;
+    position: relative;
+}
+
+.active-poison-micro-panel-image{
+    width: 100%;
+}
+
 .grid-container {
     display: grid;
     grid-template-columns: repeat(7,1fr);
@@ -67,7 +94,8 @@ html, body{
 }
 
 .cell-attribute,
-.weapon-sub-panel-attribute{
+.weapon-sub-panel-attribute,
+.active-poison-micro-panel-attribute{
     position: absolute;
     bottom: 5%;
     right: 5%;

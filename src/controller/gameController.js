@@ -1,5 +1,5 @@
 import eph_config from "../../configuration/ephemeral_config.js";
-import {getGrid,setGrid,createNewCard} from "../utility/gridAccessor.js";
+import {getGrid,setGrid,createNewCard,getRandomArtifact} from "../utility/gridAccessor.js";
 import {mapGrid} from "../utility/gridToImageMapper.js";
 import {getRandom} from "../utility/RNG.js";
 import config from "../../configuration/config.js";
@@ -8,14 +8,25 @@ import { MonsterDao } from "../dao/monsterDao.js";
 import { KnightDao } from "../dao/knightDao.js";
 import Element from "../model/element.js"
 import { updateScore } from "../utility/scoreUpdater.js";
-import ActionType from "../model/actionType.js";
 import { ArtifactDao } from "../dao/artifactDao.js";
 import { shuffleGrid } from "../utility/gridShuffler.js";
 import { CoordinateDao } from "../dao/coordinateDao.js";
+import { ActivePoisonDao } from "../dao/activePoisonDao.js";
+import {ActiveEnemaDao} from "../dao/activeEnemaDao.js";
+import { updateHealth } from "../utility/healthUpdater.js";
+
+const movements=[[config.game.coordinate.UP_X,config.game.coordinate.UP_Y],
+                    [config.game.coordinate.DOWN_X,config.game.coordinate.DOWN_Y],
+                    [config.game.coordinate.LEFT_X,config.game.coordinate.LEFT_Y],
+                    [config.game.coordinate.RIGHT_X,config.game.coordinate.RIGHT_Y],
+                    [config.game.coordinate.UP_X+config.game.coordinate.LEFT_X,config.game.coordinate.UP_Y+config.game.coordinate.LEFT_Y],
+                    [config.game.coordinate.UP_X+config.game.coordinate.RIGHT_X,config.game.coordinate.UP_Y+config.game.coordinate.RIGHT_Y],
+                    [config.game.coordinate.DOWN_X+config.game.coordinate.LEFT_X,config.game.coordinate.DOWN_Y+config.game.coordinate.LEFT_Y],
+                    [config.game.coordinate.DOWN_X+config.game.coordinate.RIGHT_X,config.game.coordinate.DOWN_Y+config.game.coordinate.RIGHT_Y]];
 
 export function setInit(){
 
-    eph_config.knightHealth=config.game.MAX_HEALTH;
+    eph_config.knightHealth=config.game.health.MAX_HEALTH;
     eph_config.knightWeapon=null;
 
     const initResData={
@@ -28,14 +39,6 @@ export function setInit(){
 export function rollDiceExecute(){
     const diceNumber=getRandom(1,6);
     let validNextPositions=[];
-    const movements=[[config.game.coordinate.UP_X,config.game.coordinate.UP_Y],
-                    [config.game.coordinate.DOWN_X,config.game.coordinate.DOWN_Y],
-                    [config.game.coordinate.LEFT_X,config.game.coordinate.LEFT_Y],
-                    [config.game.coordinate.RIGHT_X,config.game.coordinate.RIGHT_Y],
-                    [config.game.coordinate.UP_X+config.game.coordinate.LEFT_X,config.game.coordinate.UP_Y+config.game.coordinate.LEFT_Y],
-                    [config.game.coordinate.UP_X+config.game.coordinate.RIGHT_X,config.game.coordinate.UP_Y+config.game.coordinate.RIGHT_Y],
-                    [config.game.coordinate.DOWN_X+config.game.coordinate.LEFT_X,config.game.coordinate.DOWN_Y+config.game.coordinate.LEFT_Y],
-                    [config.game.coordinate.DOWN_X+config.game.coordinate.RIGHT_X,config.game.coordinate.DOWN_Y+config.game.coordinate.RIGHT_Y]];
 
     for(const movement of movements) {
         validNextPositions.push(new CoordinateDao((eph_config.coordinate.x + movement[0] * diceNumber + config.game.grid.ROWS)%config.game.grid.ROWS,
@@ -54,9 +57,10 @@ export function rollDiceExecute(){
 
 export function processMove(newKnightCoordinate,diceNumber){
 
-    newKnightCoordinate=new CoordinateDao(newKnightCoordinate[0],newKnightCoordinate[1]);
-    eph_config.shuffledGrid=[];
+    preProcessMove();
+
     const grid=getGrid();
+    newKnightCoordinate=new CoordinateDao(newKnightCoordinate[0],newKnightCoordinate[1]);
     const newCard=grid[newKnightCoordinate.getX()][newKnightCoordinate.getY()];
 
     let [prevPosCardId,prevPosNewAttribute] = createNewCard(eph_config.coordinate.x,eph_config.coordinate.y);
@@ -80,6 +84,30 @@ export function processMove(newKnightCoordinate,diceNumber){
         eph_config: eph_config
     }
     return processMoveResData;
+}
+
+function preProcessMove(){
+    eph_config.shuffledGrid=[];
+    eph_config.manaStoneRes=[];
+
+    eph_config.activePoisons.forEach((activePoison,i) => {
+        updateHealth(config.game.health.DECREASE,activePoison.getDamage());
+        eph_config.activePoisons[i].setDuration(activePoison.getDuration()-1);
+    });
+
+    if(eph_config.knightHealth===0){
+        gameOver();
+    }
+
+    if( eph_config.activePoisons.length!=0 && eph_config.activePoisons[0].getDuration()===0){
+        eph_config.activePoisons.splice(0,1);
+    }
+
+    if(eph_config.activeEnema!=null){
+        eph_config.activeEnema.setDuration(eph_config.activeEnema.getDuration()-1);
+        if(eph_config.activeEnema.getDuration()===0)
+            eph_config.activeEnema=null;
+    }
 }
 
 function dealWeapon(weaponCard){
@@ -111,67 +139,106 @@ function dealMonster(monsterCard){
     let scoreSpan=Math.min(monsterHealth,knightWeaponDamage+eph_config.knightHealth);
     knightWeaponDamage-=monsterHealth;
 
-    if(knightWeaponDamage<0){
-        eph_config.knightHealth -= Math.abs(knightWeaponDamage);
-    }
-
-    if(knightWeaponDamage <=0){
+    if(knightWeaponDamage<=0){
+        updateHealth(config.game.health.DECREASE,Math.abs(knightWeaponDamage));
         eph_config.knightWeapon=null;
     }
+
     if(eph_config.knightWeapon!=null){
         eph_config.knightWeapon.setDamage(knightWeaponDamage);
     }
+
     if(eph_config.knightHealth <= 0){
         gameOver();
     }
     else{
-        updateScore(ActionType.MONSTER,scoreSpan);
+        updateScore(scoreSpan);
     }
 }
 
 function dealArtifact(artifactCard,diceNumber){
-    let artifactSpan=0;
 
     switch(artifactCard.getId()){
         case config.game.id.artifact.BOMB:
-            artifactSpan=Math.ceil(10*(Math.log(Math.pow(2,diceNumber))+Math.log(Math.pow(1.5,diceNumber)))/Math.pow(Math.E,1/diceNumber)  + 10/diceNumber);
-            eph_config.knightHealth=Math.max(eph_config.knightHealth-artifactSpan,0);
+            const damage=Math.ceil(10*(Math.log(Math.pow(2,diceNumber))+Math.log(Math.pow(1.5,diceNumber)))/Math.pow(Math.E,1/diceNumber)  + 10/diceNumber);
+            updateHealth(config.game.health.DECREASE,damage);
 
             if(eph_config.knightHealth==0){
                 gameOver();
             }
 
             break;
+
         case config.game.id.artifact.CHAOS_ORB:
             setGrid(shuffleGrid(getGrid()));
             eph_config.shuffledGrid=mapGrid(getGrid());
+
             break;
+
         case config.game.id.artifact.ENEMA_ELIXIR:
-            break;
-        case config.game.id.artifact.HEALTH_POTION:
-            artifactSpan=Math.ceil(10*Math.log(Math.pow(2,diceNumber))/Math.pow(Math.E,1/diceNumber));
-            eph_config.knightHealth=Math.min(eph_config.knightHealth+artifactSpan,config.game.MAX_HEALTH);
-
-            break;
-        case config.game.id.artifact.MANA_STONE:
-            dealManaStone();
-            break;
-        case config.game.id.artifact.POISON_POTION:
-            artifactSpan=Math.ceil(10*(Math.log(Math.pow(1.5,diceNumber)))/Math.pow(Math.E,1/diceNumber)+5/diceNumber);
-
-            break;
-        case config.game.id.artifact.WEAPON_FORGER:
-            artifactSpan=Math.ceil(10*Math.log(Math.pow(2,diceNumber))/Math.pow(Math.E,1/diceNumber) + 10/diceNumber);
-
-            if(eph_config.knightWeapon!=null){
-                eph_config.knightWeapon.setDamage(eph_config.knightWeapon.getDamage()+artifactSpan);
+            if(eph_config.activeEnema==null){
+                const enemaBuff=Math.ceil(10*(Math.log(Math.pow(2,diceNumber)))/Math.pow(Math.E,1/diceNumber)+5/diceNumber);
+                eph_config.activeEnema=new ActiveEnemaDao(enemaBuff);
             }
 
             break;
-        case config.game.id.artifact.MYSTERY_CHEST:
+
+        case config.game.id.artifact.HEALTH_POTION:
+            const healAmount=Math.ceil(10*Math.log(Math.pow(2,diceNumber))/Math.pow(Math.E,1/diceNumber));
+            updateHealth(config.game.health.INCREASE,healAmount);
+
             break;
+
+        case config.game.id.artifact.MANA_STONE:
+            dealManaStone(getGrid());
+
+            break;
+
+        case config.game.id.artifact.POISON_POTION:
+            const poisonDamage=Math.ceil(10*(Math.log(Math.pow(1.5,diceNumber)))/Math.pow(Math.E,1/diceNumber)+5/diceNumber);
+            
+            if(eph_config.activePoisons.length > config.game.activePoison.MAX_COUNT_OF_ACTIVE_POISON){
+                console.log("print error");
+            }
+
+            eph_config.activePoisons.push(new ActivePoisonDao(poisonDamage));
+
+            break;
+
+        case config.game.id.artifact.WEAPON_FORGER:
+            const forgedAmount=Math.ceil(10*Math.log(Math.pow(2,diceNumber))/Math.pow(Math.E,1/diceNumber) + 10/diceNumber);
+
+            if(eph_config.knightWeapon!=null){
+                eph_config.knightWeapon.setDamage(eph_config.knightWeapon.getDamage()+forgedAmount);
+            }
+
+            break;
+
+        case config.game.id.artifact.MYSTERY_CHEST:
+            dealArtifact(new ArtifactDao(getRandomArtifact()),diceNumber);
+            break;
+
         default:
             break;
+    }
+}
+
+function dealManaStone(grid){
+    for(const movement of movements){
+        const pos=new CoordinateDao(movement[0]+eph_config.coordinate.x,movement[1]+eph_config.coordinate.y);
+
+        if(pos.getX() <0 || pos.getX()>=config.game.grid.ROWS || pos.getY()<0 || pos.getY()>=config.game.grid.COLUMNS){
+            continue;
+        }
+
+        const monsterCard = grid[pos.getX()][pos.getY()]
+        if(!(monsterCard instanceof MonsterDao))
+            continue;
+
+        updateScore(monsterCard.getHealth());
+
+        let [newCardId,newAttribute]=createNewCard(pos.getX(),pos.getY());
+        eph_config.manaStoneRes.push([pos.getX()+" "+pos.getY(),newCardId,newAttribute]);
     }
 }
 

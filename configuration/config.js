@@ -3,7 +3,6 @@ const config = {
     PORT: 8080,
   },
   game: {
-    MAX_HEALTH: 100,
     COUNTER_WEAPON_DAMAGE_MULTIPLIER: 1.5,
     COMMON_MONSTER_DAMAGE_MULTIPLIER: 2,
     grid:{
@@ -112,6 +111,16 @@ const config = {
 
       RIGHT_X:1,
       RIGHT_Y:0
+    },
+    activePoison:{
+      POISON_DURATION: 3,
+      MAX_COUNT_OF_ACTIVE_POISON: 3
+    },
+    ACTIVE_ENEMA_DURATION: 5,
+    health:{
+      INCREASE: "increase health",
+      DECREASE: "decrease health",
+      MAX_HEALTH: 100
     }
   },
 };

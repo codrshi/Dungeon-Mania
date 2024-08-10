@@ -14,25 +14,50 @@
       <div id="player-status-panel" class="panel">
         <h2 id="username"><%= username %></h2>
         <h2 id="score">0</h2>
+
         <div id="weapon-sub-panel" class="sub-panel">
           <h2 class="weapon-sub-panel-heading">WEAPON</h2>
           <img class="weapon-sub-panel-image">
           <span class="weapon-sub-panel-attribute"></span>
         </div>
+
+        <div id="active-poison-sub-panel" class="sub-panel">
+          <h2 class="active-poison-panel-heading">ACTIVE POISONS</h2>
+
+          <div id="active-poison-sub-panel-images-section">
+            <div class="active-poison-micro-panel" data-position="0">
+              <img class="active-poison-micro-panel-image">
+              <span class="active-poison-micro-panel-attribute"></span>
+            </div>
+            <div class="active-poison-micro-panel" data-position="1">
+              <img class="active-poison-micro-panel-image">
+              <span class="active-poison-micro-panel-attribute"></span>
+            </div>
+            <div class="active-poison-micro-panel" data-position="2">
+              <img class="active-poison-micro-panel-image">
+              <span class="active-poison-micro-panel-attribute"></span>
+            </div>
+          </div>
+        </div>
+
         <button id="roll-dice-button" class="button">Roll</button>
         <h3 id="dice-number"></h3>
       </div>
 
       <!-- grid panel -->
       <div id="grid-panel" class="grid-container panel">
+
         <% for(let i=0;i<grid.length;i++) { %>
             <% for(let j=0;j<grid[i].length;j++){ %>
+
               <div class="cell" data-x=<%= i %> data-y=<%= j %>>
                 <img class="cell-image" src=<%= grid[i][j].getImageSource() %>>
                 <span class="cell-attribute"><%= grid[i][j].getAttribute() %></span>
               </div>
+
             <% }; %>
         <% }; %>
+
       </div>
     </div>
 
