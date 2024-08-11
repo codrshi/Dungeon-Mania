@@ -1,13 +1,17 @@
 rollDiceButton = $("#roll-dice-button");
 score = $("#score");
 cell = $(".cell");
-weaponSubPanel = $("#weapon-sub-panel");
+weaponMicroPanel = $("#weapon-micro-panel");
 activePanelMicroPanel = $(".active-poison-micro-panel");
 knightCell = null;
 
 diceNumber = -1;
 
 rollDiceButton.click(function () {
+
+  if(diceNumber!=-1)
+    return;
+
   cell.children('.cell-image').addClass("disabled-cell-image");
 
   $.get("/game/roll-dice", {}, function (res) {
@@ -17,7 +21,7 @@ rollDiceButton.click(function () {
     $("#dice-number").text("you got " + String(diceNumber));
 
     cell.each(function () {
-      if ($(this).children('.cell-image').attr("src").endsWith("knight.png")) 
+      if ($(this).children('.cell-image').attr("src").includes("knight")) 
         knightCell = $(this);
 
       validNextPositions.forEach((validNextPosition) => {
@@ -61,16 +65,20 @@ cell.on("click", function () {
           "/static/asset/image/" + prevPosCardId + ".png"
         );
         knightCell.children('.cell-attribute').text(prevPosNewAttribute);
-        newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
+
+        if(eph_config.activeEnema!=null)
+          newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight_enema.png");
+        else
+          newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
         newKnightCell.children('.cell-attribute').text(eph_config.knightHealth);
         
         if(eph_config.knightWeapon!=null){
-          weaponSubPanel.children(".weapon-sub-panel-image").attr("src", "/static/asset/image/"+eph_config.knightWeapon.weapon.id+".png");
-          weaponSubPanel.children(".weapon-sub-panel-attribute").text(eph_config.knightWeapon.weapon.damage);
+          weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/"+eph_config.knightWeapon.weapon.id+".png");
+          weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.weapon.damage);
         }
         else{
-          weaponSubPanel.children(".weapon-sub-panel-image").attr("src", "");
-          weaponSubPanel.children(".weapon-sub-panel-attribute").text("");
+          weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/placeholder.png");
+          weaponMicroPanel.children(".weapon-micro-panel-attribute").text("");
         }
 
         if(eph_config.shuffledGrid.length!=0)
@@ -122,7 +130,7 @@ function renderActivePoisons(activePoisons){
       $(this).children('.active-poison-micro-panel-attribute').text(activePoisons[position].activePoison.damage);
     }
     else{
-      $(this).children('.active-poison-micro-panel-image').attr("src","");
+      $(this).children('.active-poison-micro-panel-image').attr("src","/static/asset/image/placeholder.png");
       $(this).children('.active-poison-micro-panel-attribute').text("");
     }
   });

@@ -16,8 +16,11 @@ export function mapGrid(grid){
             attribute=value.getHealth();
           else if(value instanceof WeaponDao)
             attribute=value.getDamage();
-          else if(value instanceof KnightDao)
+          else if(value instanceof KnightDao){
             attribute=eph_config.knightHealth;
+            if(eph_config.activeEnema!=null)
+                grid[i][j].setId("knight_enema");
+          }
           imageGrid[i][j] = new ImageIconDao("/static/asset/image/"+value.getId()+".png",attribute);
         });
       });
