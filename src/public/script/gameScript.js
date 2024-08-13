@@ -2,10 +2,17 @@ rollDiceButton = $("#roll-dice-button");
 score = $("#score");
 cell = $(".cell");
 weaponMicroPanel = $("#weapon-micro-panel");
-activePanelMicroPanel = $(".active-poison-micro-panel");
+activePanelMicroPanel = $("#active-poison-micro-panel");
+auraMicroPanel = $("#aura-micro-panel");
 knightCell = null;
 
 diceNumber = -1;
+
+$(function() {
+  const auraMicroPanelHeadingHeight = auraMicroPanel.children('.aura-micro-panel-heading').css('height');
+  auraMicroPanel.children('.aura-overlay').css('top', auraMicroPanelHeadingHeight );
+
+});
 
 rollDiceButton.click(function () {
 
@@ -82,21 +89,22 @@ cell.on("click", function () {
         }
 
         if(eph_config.shuffledGrid.length!=0)
-          renderGrid(eph_config.shuffledGrid);
+          renderShuffledGrid(eph_config.shuffledGrid);
 
-        if(eph_config.manaStoneRes.length!=0)
-          renderManaStoneEffect(eph_config.manaStoneRes);
+        if(eph_config.newCardLocations.length!=0)
+          renderNewCards(eph_config.newCardLocations);
 
         renderActivePoisons(eph_config.activePoisons);
 
         score.text(eph_config.score);
+        updateAura(eph_config.aura);
       },
     });
   }
   diceNumber=-1
 });
 
-function renderGrid(grid){
+function renderShuffledGrid(grid){
     cell.each(function () {
       const x=Number($(this).data("x")),y=Number($(this).data("y"));
       $(this).children('.cell-image').attr("src",grid[x][y].imageIcon.imageSource);
@@ -104,34 +112,39 @@ function renderGrid(grid){
     });
   }
 
-function renderManaStoneEffect(manaStoneEffectiveLocations){
+function renderNewCards(newCardLocations){
 
-  const manaStoneMap=new Map();
-  manaStoneEffectiveLocations.forEach(manaStoneEffectiveLocation => {
-    manaStoneMap.set(manaStoneEffectiveLocation[0],manaStoneEffectiveLocation.slice(1));
+  const newCardLocationsMap=new Map();
+  newCardLocations.forEach(newCardLocation => {
+    newCardLocationsMap.set(newCardLocation[0],newCardLocation.slice(1));
   });
 
   cell.each(function () {
     const key=$(this).data("x")+" "+$(this).data("y");
-    if(manaStoneMap.has(key)){
-      $(this).children('.cell-image').attr("src","/static/asset/image/"+manaStoneMap.get(key)[0]+".png");
-      $(this).children('.cell-attribute').text(manaStoneMap.get(key)[1]);
+    if(newCardLocationsMap.has(key)){
+      $(this).children('.cell-image').attr("src","/static/asset/image/"+newCardLocationsMap.get(key)[0]+".png");
+      $(this).children('.cell-attribute').text(newCardLocationsMap.get(key)[1]);
     }
   });
 }
 
 function renderActivePoisons(activePoisons){
 
-  activePanelMicroPanel.each(function() {
-    const position=Number($(this).data("position"));
+  if(activePoisons.length===0){
+    activePanelMicroPanel.children('.active-poison-micro-panel-image').addClass("disabled-cell-image");
+    activePanelMicroPanel.children('.active-poison-micro-panel-attribute').text("");
+    return;
+  }
 
-    if(position<activePoisons.length){
-      $(this).children('.active-poison-micro-panel-image').attr("src","/static/asset/image/artifact_poison_potion.png");
-      $(this).children('.active-poison-micro-panel-attribute').text(activePoisons[position].activePoison.damage);
-    }
-    else{
-      $(this).children('.active-poison-micro-panel-image').attr("src","/static/asset/image/placeholder.png");
-      $(this).children('.active-poison-micro-panel-attribute').text("");
-    }
-  });
+  const activePoisonDamage = activePoisons.reduce((totalDamage,activePoisonDao) =>{
+                              return totalDamage+activePoisonDao.activePoison.damage;
+                            },0);
+
+  activePanelMicroPanel.children('.active-poison-micro-panel-image').removeClass("disabled-cell-image");
+  activePanelMicroPanel.children('.active-poison-micro-panel-attribute').text(activePoisonDamage);                        
+}
+
+function updateAura(auraAmount){
+  const auraPercentage = auraAmount/10;
+  auraMicroPanel.children('.aura-overlay').css('height',(100-auraPercentage) + '%');
 }

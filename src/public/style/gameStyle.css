@@ -13,11 +13,12 @@ html, body{
     width: 100%;
     height: 100%;
     display: flex;
-    justify-content: space-around;
+    align-items: center;
 }
 
-#player-status-panel{
+#player-status-panel {
     flex: 3;
+    max-height: 90vh;
     display: flex;
     justify-content: center;
     text-align: center;
@@ -36,39 +37,20 @@ html, body{
     padding: 5% 5% 5% 0%;
 }
 
-#weapon-and-aura-sub-panel{
+#player-attribute-sub-panel,
+#button-sub-panel,
+#screen-log-sub-panel{
     flex:1;
     display: flex;
+    justify-content: center;
+    align-items: center;
     border: 0.05em solid black;
 }
 
-#weapon-micro-panel{
-    max-width: 45%;
+.player-attribute-micro-panel{
     margin-left: 5%;
     flex: 1;
     position: relative;
-    border: 0.05em solid black;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.weapon-micro-panel-heading{
-    display: block;
-    border: 0.05em solid red;
-}
-
-.weapon-micro-panel-image{
-    width: 100%;
-    height: 100%;
-    border: 0.05em solid red;
-}
-
-#aura-micro-panel{
-    min-width: 45%;
-    margin-left: 5%;
-    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -76,60 +58,25 @@ html, body{
     border: 0.05em solid black;
 }
 
-.aura-micro-panel-heading{
+.player-attribute-micro-panel > :nth-child(1) {
     display: block;
+    font-size: 3vh;
     border: 0.05em solid red;
 }
 
-.aura-micro-panel-image{
+.player-attribute-micro-panel> :nth-child(2){
     width: 100%;
     height: 100%;
     border: 0.05em solid red;
 }
 
-#active-poison-sub-panel{
-    flex: 1;
-    position: relative; 
-    border: 0.05em solid black;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.active-poison-panel-heading{
-    display: block;
-    border: 0.05em solid red;
-}
-
-#active-poison-sub-panel-images-section{
+.aura-overlay {
+    position: absolute;
+    left: 0;
     width: 100%;
     height: 100%;
-    border: 0.05em solid red;
-    display: flex;
-}
-
-.active-poison-micro-panel{
-    margin-left: 5%;
-    flex: 1;
-    height: auto;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.active-poison-micro-panel-image{
-    width: 100%;
-    height: 100%;
-}
-
-#button-sub-panel{
-    flex: 1;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border: 0.05em solid black;
+    background: rgba(252, 247, 252, 0.7);
+    transition: height 0.3s ease; 
 }
 
 .button{
@@ -140,8 +87,6 @@ html, body{
     display: grid;
     grid-template-columns: repeat(7,1fr);
     grid-template-rows: repeat(7,1fr);
-    width: 40%;
-    height: 40%;
     padding:1%;
 }
 
@@ -162,8 +107,8 @@ html, body{
 }
 
 .cell-attribute,
-.weapon-micro-panel-attribute,
-.active-poison-micro-panel-attribute{
+.active-poison-micro-panel-attribute,
+.weapon-micro-panel-attribute{
     position: absolute;
     bottom: 5%;
     right: 5%;

@@ -5,7 +5,7 @@ eph_config.username=sillyname();
 
 export const resData={
     username: eph_config.username,
-    highScore: eph_config.high_score
+    highScore: eph_config.highScore
 }
 
 

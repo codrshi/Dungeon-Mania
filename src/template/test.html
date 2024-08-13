@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Image Loading</title>
+    <style>
+        .aura-container {
+            position: relative;
+            width: 100px; /* Adjust as needed */
+            height: 100px; /* Adjust as needed */
+            overflow: hidden;
+            margin: 20px auto;
+            border: 2px solid #000000;
+            background-color: #ffffff; /* Light background for contrast */
+        }
+
+        .aura-image {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; /* Initial low visibility */
+        }
+
+        .aura-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.7); /* Overlay to dim the image */
+            transition: height 0.3s ease; /* Smooth transition effect */
+        }
+    </style>
+</head>
+<body>
+    <div class="aura-container">
+        <img src="../public/asset/image/aura.png" class="aura-image" alt="Aura">
+        <div class="aura-overlay"></div>
+    </div>
+
+    <button onclick="updateAura(800)">Update Aura to 350</button>
+
+    <script>
+        function updateAura(aura) {
+            const maxAura = 1000;
+            const auraOverlay = document.querySelector('.aura-overlay');
+            
+            // Calculate the percentage of the image that should be visible
+            const visiblePercentage = (aura / maxAura) * 100;
+            
+            // Adjust the height of the overlay to reflect the visible percentage
+            auraOverlay.style.height = (100-visiblePercentage) + '%';
+        }
+    </script>
+</body>
+</html>

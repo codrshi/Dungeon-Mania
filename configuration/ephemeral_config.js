@@ -1,7 +1,6 @@
 const eph_config = {
     username:"",
     highScore:0,
-    isDiagonalMovement:false,
     coordinate: {
       x:0,
       y:0
@@ -10,9 +9,10 @@ const eph_config = {
     knightHealth:0,
     knightWeapon:null,
     shuffledGrid:[],
-    manaStoneRes:[],
+    newCardLocations:[],
     activePoisons:[],
-    activeEnema:null
+    activeEnema:null,
+    aura:599
   };
   
 export default eph_config;

@@ -14,9 +14,15 @@ const config = {
       COUNTER_WEAPON_KEY_DROP_CHANCE: 50,
     },
     aura: {
-      AURA_THRESHOLD_1: 300,
+      AURA_THRESHOLD_1: 400,
       AURA_THRESHOLD_2: 600,
       AURA_THERSHOLD_3: 1000,
+      INCREASE: "increase_aura",
+      DECREASE: "decrease_aura",
+      wraith_absorption_rate:{
+        MIN_VALUE:10,
+        MAX_VALUE:50
+      }
     },
     attribute: {
       common_monster: {
@@ -47,6 +53,7 @@ const config = {
     spawn_rate: {
       MONSTER: 22,
       monsters_spawn_rate: {
+        WRAITH_MONSTER: 50,
         COMMON_MONSTER: 60,
         ELEMENTAL_MONSTER: 40,
       },
@@ -78,6 +85,7 @@ const config = {
         SWORD:"weapon_sword"
       },
       monster:{
+        WRAITH: "monster_wraith",
         DRAGON:"monster_dragon",
         GOBLIN:"monster_goblin",
         GOLEM:"monster_golem",

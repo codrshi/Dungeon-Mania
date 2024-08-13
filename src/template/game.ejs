@@ -15,39 +15,26 @@
         <span id="username"><%= username %></span>
         <span id="score">0</span>
 
-        <div id="weapon-and-aura-sub-panel" class="sub-panel">
+        <div id="player-attribute-sub-panel" class="sub-panel">
 
-          <div id="weapon-micro-panel" class="micro-panel">
-            <span class="weapon-micro-panel-heading">WEAPON</span>
-            <img class="weapon-micro-panel-image" src="/static/asset/image/placeholder.png">
-            <span class="weapon-micro-panel-attribute"></span>
-          </div>
+            <div id="weapon-micro-panel" class="player-attribute-micro-panel">
+              <span class="weapon-micro-panel-heading">WEAPON</span>
+              <img class="weapon-micro-panel-image" src="/static/asset/image/placeholder.png">
+              <span class="weapon-micro-panel-attribute"></span>
+            </div>
 
-          <div id="aura-micro-panel" class="micro-panel">
-            <span class="aura-micro-panel-heading">AURA</span>
-            <img class="aura-micro-panel-image" src="/static/asset/image/aura.png">
-            <span class="aura-micro-panel-attribute"></span>
-          </div>
-
-        </div>
-
-        <div id="active-poison-sub-panel" class="sub-panel">
-          <span class="active-poison-panel-heading">ACTIVE POISONS</span>
-
-          <div id="active-poison-sub-panel-images-section">
-            <div class="active-poison-micro-panel" data-position="0">
-              <img class="active-poison-micro-panel-image" src="/static/asset/image/placeholder.png">
+            <div id="active-poison-micro-panel" class="player-attribute-micro-panel">
+              <span class="active-poison-panel-heading">POISON</span>
+              <img class="active-poison-micro-panel-image disabled-cell-image" src="/static/asset/image/artifact_poison_potion.png">
               <span class="active-poison-micro-panel-attribute"></span>
             </div>
-            <div class="active-poison-micro-panel" data-position="1">
-              <img class="active-poison-micro-panel-image" src="/static/asset/image/placeholder.png">
-              <span class="active-poison-micro-panel-attribute"></span>
+
+            <div id="aura-micro-panel" class="player-attribute-micro-panel">
+              <span class="aura-micro-panel-heading">AURA</span>
+              <img class="aura-micro-panel-image" src="/static/asset/image/aura.png">
+              <div class="aura-overlay"></div>
             </div>
-            <div class="active-poison-micro-panel" data-position="2">
-              <img class="active-poison-micro-panel-image" src="/static/asset/image/placeholder.png">
-              <span class="active-poison-micro-panel-attribute"></span>
-            </div>
-          </div>
+
         </div>
 
         <div id="button-sub-panel" class="sub-panel">
@@ -55,7 +42,9 @@
           <button id="pause-button" class="button">Pause</button>
         </div>
 
-        <span id="dice-number"></span>
+        <div id="screen-log-sub-panel" class="sub-panel">
+          <span id="dice-number"></span>
+        </div>
       </div>
 
       <!-- grid panel -->

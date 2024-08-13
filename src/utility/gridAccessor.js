@@ -77,7 +77,7 @@ export function createNewCard(x,y){
 export function getRandomArtifact(){
     let id="",stackedNum=0;
     const randNum=getRandom(1,100);
-    return config.game.id.artifact.POISON_POTION;
+
     if(randNum <= stackedNum+config.game.spawn_rate.artifacts_spawn_rate.CHAOS_ORB){
         id=config.game.id.artifact.CHAOS_ORB;
         return id;
@@ -126,6 +126,13 @@ function getRandomMonster(){
 
     let health=0,elementType=null,id="";
 
+    if(getRandom(1,100) <= config.game.spawn_rate.monsters_spawn_rate.WRAITH_MONSTER){
+        id=config.game.id.monster.WRAITH;
+        health=getRandom(config.game.aura.AURA_THRESHOLD_1,config.game.aura.AURA_THRESHOLD_2);
+        
+        return [health,elementType,id];
+    }
+
     if(getRandom(1,100) <= config.game.spawn_rate.monsters_spawn_rate.COMMON_MONSTER){
 
         health=getRandom(config.game.attribute.common_monster.MIN_VALUE,config.game.attribute.common_monster.MAX_VALUE);
@@ -149,23 +156,23 @@ function getRandomMonster(){
 
     health=getRandom(config.game.attribute.elemental_monster.MIN_VALUE,config.game.attribute.elemental_monster.MAX_VALUE);
         
-        switch(getRandom(1,config.game.count.ELEMENTAL_MONSTER)){
-            case 1: id=config.game.id.monster.DRAGON;
-                    elementType=Element.AERO;
-                    break;
-            case 2: id=config.game.id.monster.IMP;
-                    elementType=Element.PYRO
-                    break;
-            case 3: id=config.game.id.monster.ORC;
-                    elementType=Element.ELECTRO;
-                    break;
-            case 4: id=config.game.id.monster.SERPENT;
-                    elementType=Element.HYDRO;
-                    break;
-            default: console.log("ERROR: error occurred while fetching id of elemental monster.");
-        }
+    switch(getRandom(1,config.game.count.ELEMENTAL_MONSTER)){
+        case 1: id=config.game.id.monster.DRAGON;
+                elementType=Element.AERO;
+                break;
+        case 2: id=config.game.id.monster.IMP;
+                elementType=Element.PYRO
+                break;
+        case 3: id=config.game.id.monster.ORC;
+                elementType=Element.ELECTRO;
+                break;
+        case 4: id=config.game.id.monster.SERPENT;
+                elementType=Element.HYDRO;
+                break;
+        default: console.log("ERROR: error occurred while fetching id of elemental monster.");
+    }
 
-        return [health,elementType,id];
+    return [health,elementType,id];
 }
 
 function getRandomWeapon(){

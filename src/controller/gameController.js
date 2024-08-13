@@ -14,6 +14,7 @@ import { CoordinateDao } from "../dao/coordinateDao.js";
 import { ActivePoisonDao } from "../dao/activePoisonDao.js";
 import {ActiveEnemaDao} from "../dao/activeEnemaDao.js";
 import { updateHealth } from "../utility/healthUpdater.js";
+import { appreciateAura } from "../utility/auraAppreciator.js";
 
 const movements=[[config.game.coordinate.UP_X,config.game.coordinate.UP_Y],
                     [config.game.coordinate.DOWN_X,config.game.coordinate.DOWN_Y],
@@ -44,7 +45,7 @@ export function rollDiceExecute(){
         validNextPositions.push(new CoordinateDao((eph_config.coordinate.x + movement[0] * diceNumber + config.game.grid.ROWS)%config.game.grid.ROWS,
                                 (eph_config.coordinate.y + movement[1] * diceNumber + config.game.grid.ROWS)%config.game.grid.ROWS));
         
-        if(validNextPositions.length==4 && !eph_config.isDiagonalMovement)
+        if(validNextPositions.length==4 && eph_config.aura < config.game.aura.AURA_THRESHOLD_2)
             break;
     };
 
@@ -78,6 +79,8 @@ export function processMove(newKnightCoordinate,diceNumber){
         dealArtifact(newCard,diceNumber);
     }
 
+    postProcessMove(diceNumber);
+
     const processMoveResData={
         prevPosCardId: prevPosCardId,
         prevPosNewAttribute: prevPosNewAttribute,
@@ -88,7 +91,7 @@ export function processMove(newKnightCoordinate,diceNumber){
 
 function preProcessMove(){
     eph_config.shuffledGrid=[];
-    eph_config.manaStoneRes=[];
+    eph_config.newCardLocations=[];
 
     eph_config.activePoisons.forEach((activePoison,i) => {
         updateHealth(config.game.health.DECREASE,activePoison.getDamage());
@@ -110,8 +113,33 @@ function preProcessMove(){
     }
 }
 
+function postProcessMove(diceNumber){
+
+    let grid=getGrid();
+    let bombDamage=0;
+
+    for(const movement of movements){
+        const pos= new CoordinateDao(eph_config.coordinate.x + movement[0],eph_config.coordinate.y + movement[1]);
+
+        if(0 <= pos.getX() && pos.getX() < config.game.grid.ROWS && 0 <= pos.getY() && pos.getY() < config.game.grid.COLUMNS && grid[pos.getX()][pos.getY()].getId() === config.game.id.artifact.BOMB){
+            bombDamage+= Math.ceil(10*(Math.log(Math.pow(2,diceNumber))+Math.log(Math.pow(1.5,diceNumber)))/Math.pow(Math.E,1/diceNumber)  + 10/diceNumber);
+            
+            while(true){
+                let [newCardId,newCardAttribute] = createNewCard(pos.getX(),pos.getY()); 
+                if(newCardId != config.game.id.artifact.BOMB){
+                    eph_config.newCardLocations.push([pos.getX()+" "+pos.getY(),newCardId,newCardAttribute]);
+                    break;
+                }
+            }
+        }
+    }
+
+    updateHealth(config.game.health.DECREASE,bombDamage);
+}
+
 function dealWeapon(weaponCard){
     eph_config.knightWeapon = new WeaponDao(weaponCard.getDamage(),weaponCard.getElement(),weaponCard.getId());
+    appreciateAura(config.game.aura.INCREASE,weaponCard.getDamage());
 }
 
 function dealMonster(monsterCard){
@@ -119,6 +147,20 @@ function dealMonster(monsterCard){
     let knightWeaponElement=null;
     let monsterHealth=monsterCard.getHealth();
     let knightWeaponDamage=0;
+
+    if(monsterCard.getId() === config.game.id.monster.WRAITH){
+        eph_config.knightWeapon=null;
+        eph_config.activeEnema=null;
+        eph_config.activePoisons=[];
+
+        if(eph_config.aura >= monsterHealth){
+            appreciateAura(config.game.aura.DECREASE, config.game.aura.wraith_absorption_rate.MIN_VALUE);
+            eph_config.score+=monsterHealth;
+        }
+        else
+            appreciateAura(config.game.aura.DECREASE, config.game.aura.wraith_absorption_rate.MAX_VALUE);
+        return;
+    }
 
     if(eph_config.knightWeapon!=null){
 
@@ -153,6 +195,7 @@ function dealMonster(monsterCard){
     }
     else{
         updateScore(scoreSpan);
+        appreciateAura(config.game.aura.INCREASE,monsterCard.getHealth());
     }
 }
 
@@ -167,18 +210,21 @@ function dealArtifact(artifactCard,diceNumber){
                 gameOver();
             }
 
+            appreciateAura(config.game.aura.INCREASE,damage);
             break;
 
         case config.game.id.artifact.CHAOS_ORB:
             setGrid(shuffleGrid(getGrid()));
             eph_config.shuffledGrid=mapGrid(getGrid());
 
+            appreciateAura(config.game.aura.INCREASE,config.game.grid.ROWS * config.game.grid.COLUMNS);
             break;
 
         case config.game.id.artifact.ENEMA_ELIXIR:
             if(eph_config.activeEnema==null){
                 const enemaBuff=Math.ceil(10*(Math.log(Math.pow(2,diceNumber)))/Math.pow(Math.E,1/diceNumber)+5/diceNumber);
                 eph_config.activeEnema=new ActiveEnemaDao(enemaBuff);
+                appreciateAura(config.game.aura.INCREASE,enemaBuff);
             }
 
             break;
@@ -186,7 +232,8 @@ function dealArtifact(artifactCard,diceNumber){
         case config.game.id.artifact.HEALTH_POTION:
             const healAmount=Math.ceil(10*Math.log(Math.pow(2,diceNumber))/Math.pow(Math.E,1/diceNumber));
             updateHealth(config.game.health.INCREASE,healAmount);
-
+            appreciateAura(config.game.aura.INCREASE,healAmount);
+            
             break;
 
         case config.game.id.artifact.MANA_STONE:
@@ -202,6 +249,7 @@ function dealArtifact(artifactCard,diceNumber){
             }
 
             eph_config.activePoisons.push(new ActivePoisonDao(poisonDamage));
+            appreciateAura(config.game.aura.INCREASE,poisonDamage);
 
             break;
 
@@ -210,12 +258,14 @@ function dealArtifact(artifactCard,diceNumber){
 
             if(eph_config.knightWeapon!=null){
                 eph_config.knightWeapon.setDamage(eph_config.knightWeapon.getDamage()+forgedAmount);
+                appreciateAura(config.game.aura.INCREASE,forgedAmount);
             }
 
             break;
 
         case config.game.id.artifact.MYSTERY_CHEST:
             dealArtifact(new ArtifactDao(getRandomArtifact()),diceNumber);
+            
             break;
 
         default:
@@ -236,9 +286,10 @@ function dealManaStone(grid){
             continue;
 
         updateScore(monsterCard.getHealth());
+        appreciateAura(config.game.aura.INCREASE,monsterCard.getHealth());
 
         let [newCardId,newAttribute]=createNewCard(pos.getX(),pos.getY());
-        eph_config.manaStoneRes.push([pos.getX()+" "+pos.getY(),newCardId,newAttribute]);
+        eph_config.newCardLocations.push([pos.getX()+" "+pos.getY(),newCardId,newAttribute]);
     }
 }
 
