@@ -4,6 +4,7 @@ import {MonsterDao} from "../dao/monsterDao.js"
 import {WeaponDao} from "../dao/weaponDao.js";
 import { KnightDao } from "../dao/knightDao.js";
 import eph_config from "../../configuration/ephemeral_config.js";
+import config from "../../configuration/config.js";
 
 export function mapGrid(grid){
     let imageGrid=[];
@@ -11,7 +12,7 @@ export function mapGrid(grid){
     grid.forEach((row, i) => {
         imageGrid[i]=[];
         row.forEach((value, j) => {
-          let attribute="";
+          let attribute=config.game.attribute.EMPTY;
           if(value instanceof MonsterDao)
             attribute=value.getHealth();
           else if(value instanceof WeaponDao)

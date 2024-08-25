@@ -5,14 +5,22 @@ const eph_config = {
       x:0,
       y:0
     },
+    mageCoordinate:{
+      x:2,
+      y:2
+    },
     score:0,
     knightHealth:0,
     knightWeapon:null,
-    shuffledGrid:[],
+    newGrid:[],
     newCardLocations:[],
     activePoisons:[],
     activeEnema:null,
-    aura:599
+    aura:0,
+    isAuraThresholdThreeCrossed:false,
+    isSurvivalMode:false,
+    escapeDoorCountdown:0,
+    currentGameStatus:null
   };
   
 export default eph_config;

@@ -10,7 +10,10 @@ diceNumber = -1;
 
 $(function() {
   const auraMicroPanelHeadingHeight = auraMicroPanel.children('.aura-micro-panel-heading').css('height');
-  auraMicroPanel.children('.aura-overlay').css('top', auraMicroPanelHeadingHeight );
+  const auraMicroPanelImageHeight = auraMicroPanel.children('.aura-micro-panel-image').css('height');
+  
+  auraMicroPanel.children('.aura-overlay').css('top', parseFloat(auraMicroPanelHeadingHeight ));
+  auraMicroPanel.children('.aura-overlay').css('height', parseFloat(auraMicroPanelImageHeight));
 
 });
 
@@ -26,6 +29,11 @@ rollDiceButton.click(function () {
     const validNextPositions=res.validNextPositions;
 
     $("#dice-number").text("you got " + String(diceNumber));
+
+    if(validNextPositions.length==0){
+      cell.children('.cell-image').removeClass("disabled-cell-image");
+      diceNumber=-1;
+    }
 
     cell.each(function () {
       if ($(this).children('.cell-image').attr("src").includes("knight")) 
@@ -67,11 +75,8 @@ cell.on("click", function () {
         const prevPosNewAttribute=res.prevPosNewAttribute;
         const eph_config=res.eph_config;
 
-        knightCell.children('.cell-image').attr(
-          "src",
-          "/static/asset/image/" + prevPosCardId + ".png"
-        );
-        knightCell.children('.cell-attribute').text(prevPosNewAttribute);
+        knightCell.children('.cell-image').attr("src","/static/asset/image/" + prevPosCardId + ".png");
+        knightCell.children('.cell-attribute').text(prevPosNewAttribute);        
 
         if(eph_config.activeEnema!=null)
           newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight_enema.png");
@@ -88,8 +93,8 @@ cell.on("click", function () {
           weaponMicroPanel.children(".weapon-micro-panel-attribute").text("");
         }
 
-        if(eph_config.shuffledGrid.length!=0)
-          renderShuffledGrid(eph_config.shuffledGrid);
+        if(eph_config.newGrid.length!=0)
+          renderNewGrid(eph_config.newGrid);
 
         if(eph_config.newCardLocations.length!=0)
           renderNewCards(eph_config.newCardLocations);
@@ -104,7 +109,7 @@ cell.on("click", function () {
   diceNumber=-1
 });
 
-function renderShuffledGrid(grid){
+function renderNewGrid(grid){
     cell.each(function () {
       const x=Number($(this).data("x")),y=Number($(this).data("y"));
       $(this).children('.cell-image').attr("src",grid[x][y].imageIcon.imageSource);
@@ -145,6 +150,9 @@ function renderActivePoisons(activePoisons){
 }
 
 function updateAura(auraAmount){
-  const auraPercentage = auraAmount/10;
-  auraMicroPanel.children('.aura-overlay').css('height',(100-auraPercentage) + '%');
+  const auraMicroPanelImageHeight = auraMicroPanel.children('.aura-micro-panel-image').css('height'); 
+  const updatedAuraHeight = parseFloat(auraMicroPanelImageHeight) * (1-(auraAmount/1000));
+
+  auraMicroPanel.children('.aura-overlay').css('height',updatedAuraHeight);
+  auraMicroPanel.children('.aura-micro-panel-attribute').text(auraAmount);
 }

@@ -1,17 +1,19 @@
 import express from "express";
 import { setInit,rollDiceExecute,processMove } from "../controller/gameController.js";
+import config from "../../configuration/config.js";
 
 const router = express.Router();
 
-router.get('/game',(req,res) => {
-    res.render('game',setInit());
+router.get(config.app.url.ONGOING_GAME,(req,res) => {
+    console.log(req.query.survivalMode)
+    res.render('game',setInit(req.query.survivalMode === 'true'));
 });
 
-router.get('/game/roll-dice',(req,res) => {
+router.get(config.app.url.ONGOING_GAME_ROLL_DICE,(req,res) => {
     res.json(rollDiceExecute());
 });
 
-router.post('/game/process-move',(req,res) => {
+router.post(config.app.url.ONGOING_GAME_PROCESS_MOVE,(req,res) => {
     res.json(processMove(req.body.newKnightCoordinate,req.body.diceNumber));
 });
 

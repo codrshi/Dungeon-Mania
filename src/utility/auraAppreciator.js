@@ -1,9 +1,13 @@
-import config from "../../configuration/config.js";
 import eph_config from "../../configuration/ephemeral_config.js";
-
-let auraThresholdOne=false,auraThresholdTwo=false,auraThresholdThree=false;
+import config from "../../configuration/config.js";
+import { getGrid, setGrid } from "./gridAccessor.js";
+import { initializeMageGrid } from "./mageGridAccessor.js";
+import { mapGrid } from "./gridToImageMapper.js";
 
 export function appreciateAura(auraStatus,amount){
+
+    if(eph_config.isAuraThresholdThreeCrossed)
+        return;
 
     if(auraStatus===config.game.aura.DECREASE){
         eph_config.aura-= Math.ceil(eph_config.aura*amount/100);
@@ -12,20 +16,14 @@ export function appreciateAura(auraStatus,amount){
     }
 
     eph_config.aura+=Math.ceil(Math.pow(Math.PI,Math.log10(amount))+Math.sqrt(amount));
-    eph_config.aura = Math.min(config.game.aura.AURA_THERSHOLD_3,eph_config.aura);
-    console.log("aura "+Math.ceil(Math.pow(Math.PI,Math.log10(amount))+Math.sqrt(amount))+" "+eph_config.aura);
+    eph_config.aura = Math.min(config.game.aura.AURA_THRESHOLD_3,eph_config.aura);
 
-    if(amount >= config.game.aura.AURA_THRESHOLD_1 && auraThresholdOne==false){
-        console.log("threshold 1 crossed");
-        auraThresholdOne=true;
-    }
-    if(amount >= config.game.aura.AURA_THRESHOLD_2 && auraThresholdTwo==false){
-        console.log("threshold 2 crossed");
-        auraThresholdTwo=true;
-    }
-    if(amount == config.game.aura.AURA_THRESHOLD_1 && auraThresholdThree==false){
-        console.log("threshold 2 crossed")
-        auraThresholdThree=true;
+    if(eph_config.aura == config.game.aura.AURA_THRESHOLD_3 && eph_config.isSurvivalMode === false && eph_config.isAuraThresholdThreeCrossed === false){
+        console.log("threshold 3 crossed");
+        eph_config.newCardLocations=[];
+        initializeMageGrid();
+        eph_config.newGrid=mapGrid(getGrid());
+        eph_config.isAuraThresholdThreeCrossed=true;
     }
 
 }

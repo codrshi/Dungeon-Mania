@@ -2,10 +2,11 @@
 button=$(".button");
 
 button.click(function(){
-    switch(button.attr("id")){
-        case "simple-button":   window.location='/game';
+    switch($(this).attr("id")){
+        case "simple-button":   window.location='/game?survivalMode=false';
                                 break;
-        case "survival-button": break;
+        case "survival-button": window.location='/game?survivalMode=true';
+                                break;
         case "stats-button": break;
         case "guide-button": break;
     }

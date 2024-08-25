@@ -1,22 +1,42 @@
 const config = {
   app: {
     PORT: 8080,
+    url: {
+      HOME_PAGE: '/',
+      ONGOING_GAME: '/game',
+      ONGOING_GAME_ROLL_DICE: '/game/roll-dice',
+      ONGOING_GAME_PROCESS_MOVE: '/game/process-move'
+    }
   },
   game: {
     COUNTER_WEAPON_DAMAGE_MULTIPLIER: 1.5,
     COMMON_MONSTER_DAMAGE_MULTIPLIER: 2,
+    gameStatus:{
+      WON: 'won',
+      LOST: 'lost',
+      CANCELLED: 'cancelled',
+      ONGOING: 'ongoing'
+    },
     grid:{
       ROWS: 7,
       COLUMNS: 7
     },
+    mageGrid:{
+      WEAPON_COORDINATES: ['00','06','60','66'],
+      HEALTH_POTION_COORDINATES: ['22','23','24','32','33','34','42','43','44'],
+      WALL_COORDINATES: ['11','12','14','15','21','25','41','45','51','52','54','55'],
+      DOOR_COORDINATES: ['13','31','35','53'],
+      POISON_POTION_COORDINATES: ['01','02','03','04','05','10','20','30','40','50','16','26','36','46','56','61','62','63','64','65'],
+    },
     mage: {
       KEY_DROP_CHANCE: 30,
       COUNTER_WEAPON_KEY_DROP_CHANCE: 50,
+      DOOR_CLOSE_COUNTDOWN: 5
     },
     aura: {
       AURA_THRESHOLD_1: 400,
       AURA_THRESHOLD_2: 600,
-      AURA_THERSHOLD_3: 1000,
+      AURA_THRESHOLD_3: 1000,
       INCREASE: "increase_aura",
       DECREASE: "decrease_aura",
       wraith_absorption_rate:{
@@ -49,11 +69,13 @@ const config = {
         MIN_VALUE: 15,
         MAX_VALUE: 25,
       },
+      INFINTE: '∞',
+      EMPTY: ''
     },
     spawn_rate: {
       MONSTER: 22,
       monsters_spawn_rate: {
-        WRAITH_MONSTER: 50,
+        WRAITH_MONSTER: 1,
         COMMON_MONSTER: 60,
         ELEMENTAL_MONSTER: 40,
       },
@@ -94,7 +116,8 @@ const config = {
         SERPENT:"monster_serpent",
         SKELETON:"monster_skeleton",
         SLIME:"monster_slime",
-        VAMPIRE:"monster_vampire"
+        VAMPIRE:"monster_vampire",
+        MAGE:"monster_mage"
       },
       artifact:{
         BOMB:"artifact_bomb",
@@ -104,7 +127,11 @@ const config = {
         MANA_STONE:"artifact_mana_stone",
         POISON_POTION:"artifact_poison_potion",
         WEAPON_FORGER:"artifact_weapon_forger",
-        MYSTERY_CHEST:"artifact_mystery_chest"
+        MYSTERY_CHEST:"artifact_mystery_chest",
+        MIXED_POTION:"artifact_mixed_potion",
+        WALL:"artifact_wall",
+        CLOSE_DOOR:"artifact_close_door",
+        OPEN_DOOR:"artifact_open_door"
       }
     },
     coordinate:{

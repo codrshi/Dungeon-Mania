@@ -7,6 +7,7 @@ import {MonsterDao} from "../dao/monsterDao.js";
 import Element from "../model/element.js";
 import { getRandom } from "./RNG.js";
 import eph_config from "../../configuration/ephemeral_config.js";
+import {} from "./mageGridAccessor.js";
 
 const ROWS=config.game.grid.ROWS;
 const COLUMNS=config.game.grid.COLUMNS;
@@ -16,6 +17,7 @@ let weaponSpawnCounter=config.game.spawn_rate.WEAPON;
 let grid=initializeGrid();
 
 export function initializeGrid(){
+
     let grid=[];
     for (let i = 0; i < ROWS; i++) {
         grid[i]=[];
@@ -48,10 +50,18 @@ export function setGrid(newGrid){
     grid=newGrid;
 }
 
+export function getCardFromGrid(coordinate){
+    return grid[coordinate.getX()][coordinate.getY()];
+}
+
+export function setCardInGrid(coordinate,card){
+    grid[coordinate.getX()][coordinate.getY()]=card;
+}
+
 export function createNewCard(x,y){
     
     const randNum=getRandom(1,48);
-    let cardId="",attribute="";
+    let cardId=config.game.attribute.EMPTY,attribute=config.game.attribute.EMPTY;
 
     if(randNum <= config.game.spawn_rate.MONSTER){
         const [health,elementType,monsterId]=getRandomMonster();
@@ -75,7 +85,7 @@ export function createNewCard(x,y){
 }
 
 export function getRandomArtifact(){
-    let id="",stackedNum=0;
+    let id=config.game.attribute.EMPTY,stackedNum=0;
     const randNum=getRandom(1,100);
 
     if(randNum <= stackedNum+config.game.spawn_rate.artifacts_spawn_rate.CHAOS_ORB){
@@ -103,7 +113,7 @@ export function getRandomArtifact(){
 
     stackedNum+=config.game.spawn_rate.artifacts_spawn_rate.ENIGMA_ELIXIR;
     if(randNum <= stackedNum+config.game.spawn_rate.artifacts_spawn_rate.POISON_POTION){
-        id=config.game.id.artifact.POISON_POTION;
+        id=config.game.id.artifact.MIXED_POTION;
     }
 
     stackedNum+=config.game.spawn_rate.artifacts_spawn_rate.POISON_POTION;
@@ -118,13 +128,13 @@ export function getRandomArtifact(){
         return id;
     }
 
-    id=config.game.id.artifact.HEALTH_POTION;
+    id=config.game.id.artifact.MIXED_POTION;
     return id;   
 }
 
 function getRandomMonster(){
 
-    let health=0,elementType=null,id="";
+    let health=0,elementType=null,id=config.game.attribute.EMPTY;
 
     if(getRandom(1,100) <= config.game.spawn_rate.monsters_spawn_rate.WRAITH_MONSTER){
         id=config.game.id.monster.WRAITH;
