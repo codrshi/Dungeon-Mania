@@ -10,17 +10,17 @@ const eph_config = {
       y:2
     },
     score:0,
-    knightHealth:0,
+    knightHealth:100,
     knightWeapon:null,
     newGrid:[],
     newCardLocations:[],
     activePoisons:[],
     activeEnema:null,
-    aura:0,
+    aura:999,
     isAuraThresholdThreeCrossed:false,
     isSurvivalMode:false,
     escapeDoorCountdown:0,
-    currentGameStatus:null
+    currentGameStatus:'ongoing'
   };
   
 export default eph_config;

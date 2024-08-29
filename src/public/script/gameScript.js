@@ -1,4 +1,9 @@
 rollDiceButton = $("#roll-dice-button");
+pauseButton = $("#pause-button");
+modalDialog = $("#modal-dialog");
+modalDialogOverlay = $("#modal-dialog-overlay");
+username = $('#username')
+modalButtons = $("#modal-buttons");
 score = $("#score");
 cell = $(".cell");
 weaponMicroPanel = $("#weapon-micro-panel");
@@ -15,6 +20,21 @@ $(function() {
   auraMicroPanel.children('.aura-overlay').css('top', parseFloat(auraMicroPanelHeadingHeight ));
   auraMicroPanel.children('.aura-overlay').css('height', parseFloat(auraMicroPanelImageHeight));
 
+  $.get("/game/eph-config", {}, function (res) {
+    const eph_config=res.eph_config;
+
+    username.text(eph_config.username);
+    score.text(eph_config.score);
+
+    if(eph_config.knightWeapon!=null){
+      weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/"+eph_config.knightWeapon.weapon.id+".png");
+      weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.weapon.damage);
+    }
+
+    renderActivePoisons(eph_config.activePoisons);
+    updateAura(eph_config.aura);
+    checkIfStatusChanged(eph_config.currentGameStatus);
+  });
 });
 
 rollDiceButton.click(function () {
@@ -84,6 +104,8 @@ cell.on("click", function () {
           newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
         newKnightCell.children('.cell-attribute').text(eph_config.knightHealth);
         
+        checkIfStatusChanged(eph_config.currentGameStatus);
+
         if(eph_config.knightWeapon!=null){
           weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/"+eph_config.knightWeapon.weapon.id+".png");
           weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.weapon.damage);
@@ -107,6 +129,40 @@ cell.on("click", function () {
     });
   }
   diceNumber=-1
+});
+
+pauseButton.click(function(){
+  modalDialog.show();
+  modalDialogOverlay.show();
+});
+
+modalDialogOverlay.click(function(){
+  $.get("/game/eph-config", {}, function (res) {
+    if(res.eph_config.currentGameStatus==='ongoing'){
+      modalDialog.hide();
+      modalDialogOverlay.hide();
+    }
+  });
+});
+
+modalButtons.children('#replay-button').click(function(){
+  $.post({
+    url: "/game/exit",
+    contentType: "application/json",
+    dataType: "json",
+  });
+
+  window.location=window.location;
+});
+
+modalButtons.children('#exit-button').click(function(){
+  $.post({
+    url: "/game/exit",
+    contentType: "application/json",
+    dataType: "json",
+  });
+
+  window.location = '/';
 });
 
 function renderNewGrid(grid){
@@ -155,4 +211,26 @@ function updateAura(auraAmount){
 
   auraMicroPanel.children('.aura-overlay').css('height',updatedAuraHeight);
   auraMicroPanel.children('.aura-micro-panel-attribute').text(auraAmount);
+}
+
+function checkIfStatusChanged(gameStatus){
+  if(gameStatus==='ongoing')
+    return;
+  
+  let modalHeading='',modalBody='';
+
+  if(gameStatus==='won'){
+    modalHeading="GAME WON!";
+    modalBody="you won with a score of "+score.text();
+  }
+  else{
+    modalHeading="GAME OVER!";
+    modalBody="you lost with a score of "+score.text();
+  }
+
+  modalDialog.children('#modal-content').children('#modal-heading').text(modalHeading);
+  modalDialog.children('#modal-content').children('#modal-body').text(modalBody);
+
+  modalDialog.show();
+  modalDialogOverlay.show();
 }

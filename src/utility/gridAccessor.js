@@ -11,14 +11,15 @@ import {} from "./mageGridAccessor.js";
 
 const ROWS=config.game.grid.ROWS;
 const COLUMNS=config.game.grid.COLUMNS;
-let monsterSpawnCounter=config.game.spawn_rate.MONSTER;
-let weaponSpawnCounter=config.game.spawn_rate.WEAPON;
 
-let grid=initializeGrid();
+let grid=[];
 
 export function initializeGrid(){
 
     let grid=[];
+    let monsterSpawnCounter=config.game.spawn_rate.MONSTER;
+    let weaponSpawnCounter=config.game.spawn_rate.WEAPON;
+
     for (let i = 0; i < ROWS; i++) {
         grid[i]=[];
         for (let j = 0; j < COLUMNS; j++) {
@@ -39,7 +40,7 @@ export function initializeGrid(){
 
     grid=shuffleGrid(grid);
     grid[0][0]=new KnightDao();
-    return grid;
+    setGrid(grid);
 }
 
 export function getGrid(){

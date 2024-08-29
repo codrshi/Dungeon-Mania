@@ -1,5 +1,5 @@
 import eph_config from "../../configuration/ephemeral_config.js";
-import {getGrid,setGrid,createNewCard,getRandomArtifact, setCardInGrid, getCardFromGrid} from "../utility/gridAccessor.js";
+import {getGrid,setGrid,createNewCard,getRandomArtifact, setCardInGrid, getCardFromGrid, initializeGrid} from "../utility/gridAccessor.js";
 import {mapGrid} from "../utility/gridToImageMapper.js";
 import {getRandom} from "../utility/RNG.js";
 import config from "../../configuration/config.js";
@@ -15,7 +15,7 @@ import { ActivePoisonDao } from "../dao/activePoisonDao.js";
 import {ActiveEnemaDao} from "../dao/activeEnemaDao.js";
 import { updateHealth } from "../utility/healthUpdater.js";
 import { appreciateAura } from "../utility/auraAppreciator.js";
-import { gameOver } from "../utility/terminateGameUtility.js"
+import { terminateGame } from "../utility/terminateGameUtility.js"
 import {getCardFromMageGridPrototype,getRandomEscapeDoorCoordinate,getEscapeDoorCoordinate,updateMageLocation} from "../utility/mageGridAccessor.js";
 
 const movements=[[config.game.coordinate.UP_X,config.game.coordinate.UP_Y],
@@ -25,22 +25,6 @@ const movements=[[config.game.coordinate.UP_X,config.game.coordinate.UP_Y],
                  [config.game.coordinate.UP_X+config.game.coordinate.LEFT_X,config.game.coordinate.UP_Y+config.game.coordinate.LEFT_Y],
                  [config.game.coordinate.UP_X+config.game.coordinate.RIGHT_X,config.game.coordinate.UP_Y+config.game.coordinate.RIGHT_Y],
                  [config.game.coordinate.DOWN_X+config.game.coordinate.LEFT_X,config.game.coordinate.DOWN_Y+config.game.coordinate.LEFT_Y],                   [config.game.coordinate.DOWN_X+config.game.coordinate.RIGHT_X,config.game.coordinate.DOWN_Y+config.game.coordinate.RIGHT_Y]];
-
-export function setInit(isSurvivalMode){
-
-    eph_config.knightHealth=config.game.health.MAX_HEALTH;
-    eph_config.knightWeapon=null;
-
-    if(isSurvivalMode){
-        eph_config.isSurvivalMode=true;
-    }
-
-    const initResData={
-        username: eph_config.username,
-        grid: mapGrid(getGrid())
-    }
-    return initResData;
-}
 
 export function rollDiceExecute(){
     const diceNumber=getRandom(1,6);
@@ -79,7 +63,7 @@ export function processMove(newKnightCoordinate,diceNumber){
         [prevPosCardId,prevPosNewAttribute] = createNewCard(eph_config.coordinate.x,eph_config.coordinate.y);
     else{
         const newCardFromMageGridPrototype = getCardFromMageGridPrototype(new CoordinateDao(eph_config.coordinate.x,eph_config.coordinate.y));
-        prevPosCardId=card.getId();
+        prevPosCardId=newCardFromMageGridPrototype.getId();
 
         if(newCardFromMageGridPrototype instanceof WeaponDao)
             prevPosNewAttribute=newCardFromMageGridPrototype.getDamage();
@@ -123,7 +107,7 @@ function preProcessMove(){
     });
 
     if(eph_config.knightHealth===0){
-        gameOver();
+        terminateGame(config.game.gameStatus.LOST);
     }
 
     if( eph_config.activePoisons.length!=0 && eph_config.activePoisons[0].getDuration()===0){
@@ -234,7 +218,7 @@ function dealMonster(monsterCard){
     }
 
     if(eph_config.knightHealth <= 0){
-        gameOver();
+        terminateGame(config.game.gameStatus.LOST);
     }
     else{
         updateScore(scoreSpan);
@@ -268,8 +252,8 @@ function dealArtifact(artifactCard,diceNumber){
             const damage=Math.ceil(10*(Math.log(Math.pow(2,diceNumber))+Math.log(Math.pow(1.5,diceNumber)))/Math.pow(Math.E,1/diceNumber)  + 10/diceNumber);
             updateHealth(config.game.health.DECREASE,damage);
 
-            if(eph_config.knightHealth==0){
-                gameOver();
+            if(eph_config.knightHealth<=0){
+                terminateGame(config.game.gameStatus.LOST);
             }
 
             appreciateAura(config.game.aura.INCREASE,damage);
@@ -321,7 +305,7 @@ function dealArtifact(artifactCard,diceNumber){
             
             break;
         case config.game.id.artifact.OPEN_DOOR:
-            playerWon();
+            terminateGame(config.game.gameStatus.WON);
         default:
             break;
     }
@@ -362,8 +346,4 @@ function dealManaStone(){
         let [newCardId,newAttribute]=createNewCard(pos.getX(),pos.getY());
         eph_config.newCardLocations.push([pos.getX()+" "+pos.getY(),newCardId,newAttribute]);
     }
-}
-
-function playerWon(){
-    console.log("YOU WON!!!");
 }

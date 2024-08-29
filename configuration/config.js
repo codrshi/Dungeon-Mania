@@ -3,9 +3,12 @@ const config = {
     PORT: 8080,
     url: {
       HOME_PAGE: '/',
+      HOME_PAGE_EPH_CONFIG: '/index/eph-config',
       ONGOING_GAME: '/game',
+      ONGOING_GAME_EPH_CONFIG: '/game/eph-config',
       ONGOING_GAME_ROLL_DICE: '/game/roll-dice',
-      ONGOING_GAME_PROCESS_MOVE: '/game/process-move'
+      ONGOING_GAME_PROCESS_MOVE: '/game/process-move',
+      ONGOING_GAME_EXIT: '/game/exit'
     }
   },
   game: {

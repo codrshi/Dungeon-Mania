@@ -1,12 +1,19 @@
 import express from "express";
-import { setInit,rollDiceExecute,processMove } from "../controller/gameController.js";
+import { clearEphConfig, setInit } from "../controller/e2eGamePhaseController.js";
+import { rollDiceExecute,processMove } from "../controller/midGamePhaseController.js";
 import config from "../../configuration/config.js";
+import eph_config from "../../configuration/ephemeral_config.js";
 
 const router = express.Router();
 
 router.get(config.app.url.ONGOING_GAME,(req,res) => {
-    console.log(req.query.survivalMode)
-    res.render('game',setInit(req.query.survivalMode === 'true'));
+    res.render('game',setInit(req.query.survivalMode));
+});
+
+router.get(config.app.url.ONGOING_GAME_EPH_CONFIG,(req,res) => {
+    res.json({
+        eph_config: eph_config
+    });
 });
 
 router.get(config.app.url.ONGOING_GAME_ROLL_DICE,(req,res) => {
@@ -15,6 +22,11 @@ router.get(config.app.url.ONGOING_GAME_ROLL_DICE,(req,res) => {
 
 router.post(config.app.url.ONGOING_GAME_PROCESS_MOVE,(req,res) => {
     res.json(processMove(req.body.newKnightCoordinate,req.body.diceNumber));
+});
+
+router.post(config.app.url.ONGOING_GAME_EXIT,(req,res) => {
+    clearEphConfig();
+    res.sendStatus(200);
 });
 
 export default router;

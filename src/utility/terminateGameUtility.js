@@ -2,6 +2,7 @@ import config from "../../configuration/config.js";
 import eph_config from "../../configuration/ephemeral_config.js";
 
 export function terminateGame(gameStatus){
+    eph_config.currentGameStatus = gameStatus;
 
     switch(gameStatus){
         case config.game.gameStatus.WON :   updateHighScore();

@@ -12,8 +12,8 @@
     <div class="flex-container">
       <!-- player status panel -->
       <div id="player-status-panel" class="panel">
-        <span id="username"><%= username %></span>
-        <span id="score">0</span>
+        <span id="username"></span>
+        <span id="score"></span>
 
         <div id="player-attribute-sub-panel" class="sub-panel">
 
@@ -64,6 +64,19 @@
 
       </div>
     </div>
+
+    <div id="modal-dialog">
+      <div id="modal-content">
+        <span id="modal-heading">game paused</span>
+        <span id="modal-body">press anywhere outside to resume</span>
+
+        <div id="modal-buttons">
+          <button id="replay-button" class="button">Replay</button>
+          <button id="exit-button" class="button">Exit</button>
+        </div>
+      </div>
+    </div>
+    <div id="modal-dialog-overlay"></div>
 
     <script src="/static/script/gameScript.js" defer></script>
   </body>
