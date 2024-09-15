@@ -1,6 +1,4 @@
 const eph_config = {
-    username:"",
-    highScore:0,
     coordinate: {
       x:0,
       y:0
@@ -10,17 +8,18 @@ const eph_config = {
       y:2
     },
     score:0,
-    knightHealth:100,
+    knightHealth:50,
     knightWeapon:null,
     newGrid:[],
     newCardLocations:[],
     activePoisons:[],
     activeEnema:null,
-    aura:999,
+    aura:0,
     isAuraThresholdThreeCrossed:false,
     isSurvivalMode:false,
     escapeDoorCountdown:0,
-    currentGameStatus:'ongoing'
+    currentGameStatus:'ongoing',
+    screenLogs:['- click on the dice icon to start the game.']
   };
   
 export default eph_config;

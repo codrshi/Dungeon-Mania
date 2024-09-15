@@ -3,12 +3,13 @@ const config = {
     PORT: 8080,
     url: {
       HOME_PAGE: '/',
-      HOME_PAGE_EPH_CONFIG: '/index/eph-config',
+      HOME_PAGE_USERNAME_HIGHSCORE: '/index/username-highscore',
       ONGOING_GAME: '/game',
       ONGOING_GAME_EPH_CONFIG: '/game/eph-config',
       ONGOING_GAME_ROLL_DICE: '/game/roll-dice',
       ONGOING_GAME_PROCESS_MOVE: '/game/process-move',
-      ONGOING_GAME_EXIT: '/game/exit'
+      ONGOING_GAME_EXIT: '/game/exit',
+      STATS: '/stats'
     }
   },
   game: {
@@ -45,7 +46,8 @@ const config = {
       wraith_absorption_rate:{
         MIN_VALUE:10,
         MAX_VALUE:50
-      }
+      },
+      mage_absorption_rate:5
     },
     attribute: {
       common_monster: {
@@ -104,7 +106,7 @@ const config = {
     id:{
       KNIGHT:"knight",
       weapon:{
-        BOW:"weapon_bow",
+        CROSSBOW:"weapon_crossbow",
         STAFF:"weapon_staff",
         GRIMOIRE:"weapon_grimoire",
         SWORD:"weapon_sword"
@@ -112,7 +114,7 @@ const config = {
       monster:{
         WRAITH: "monster_wraith",
         DRAGON:"monster_dragon",
-        GOBLIN:"monster_goblin",
+        ZOMBIE:"monster_zombie",
         GOLEM:"monster_golem",
         IMP:"monster_imp",
         ORC:"monster_orc",

@@ -1,11 +1,11 @@
-import eph_config from "../../configuration/ephemeral_config.js";
 import sillyname from "sillyname";
+import stats_config from "../../configuration/stats_config.js";
 
-eph_config.username=sillyname();
+stats_config.basicStats.username=sillyname();
 
 export const resData={
-    username: eph_config.username,
-    highScore: eph_config.highScore
+    username: stats_config.basicStats.username,
+    highScore: stats_config.basicStats.highScore
 }
 
 

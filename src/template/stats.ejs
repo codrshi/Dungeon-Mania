@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Dungeon Mania</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/style/statsStyle.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nerko+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="stats-panel" class="panel">
+      <div id="stats-panel-content">
+
+        <div class="sub-panel">
+          <span class="stats-sub-heading">BASIC STATS<br></span>
+          <div id="basic-stats-table" class="table">
+            <span>username</span>
+            <span><%= stats_config.basicStats.username %></span>
+            <span>total score</span>
+            <span><%= stats_config.basicStats.totalScore %></span>
+            <span>high score</span>
+            <span><%= stats_config.basicStats.highScore %></span>
+            <span>total games played</span>
+            <span><%= stats_config.basicStats.totalGamesPlayed %></span>
+            <span>total wins</span>
+            <span><%= stats_config.basicStats.gamesWon %></span>
+            <span>total moves</span>
+            <span><%= stats_config.basicStats.totalGamesMoves %></span>
+            <span>least moves taken to win</span>
+            <span><%= stats_config.basicStats.lowestMovesWin %></span>
+          </div>
+        </div> 
+
+        <div class="sub-panel">
+          <span class="stats-sub-heading">MONSTER STATS<br></span>
+          <div id="monster-stats-table" class="table">
+          <span>total monsters killed</span>
+          <span><%= stats_config.monsterStats.totalMonstersKilled %></span>
+          <span>total elemental monsters killed</span>
+          <span><%= stats_config.monsterStats.elementalMonstersKilled %></span>
+          <span>monster kill streak</span>
+          <span><%= stats_config.monsterStats.monsterKillingStreakMoves %></span>
+          <span>strongest monster killed</span>
+          <span><%= stats_config.monsterStats.strongestMonsterKilledName %> of health <%= stats_config.monsterStats.strongestMonsterKilledHealth %></span>
+          </div>
+        </div>
+
+        <div class="sub-panel">
+          <span class="stats-sub-heading">WEAPON STATS<br></span>
+          <div id="weapon-stats-table" class="table">
+          <span>total weapons picked</span>
+          <span><%= stats_config.weaponStats.totalweaponsGrabbed %></span>
+          <span>strongest weapon picked</span>
+          <span><%= stats_config.weaponStats.strongestWeaponName %> of <%= stats_config.weaponStats.strongestWeaponAttribute %> DMG</span>
+          <span>most weapon used</span>
+          <span><%= stats_config.weaponStats.mostUsedWeaponName %></span>
+          </div>
+        </div>
+
+        <div class="sub-panel">
+          <span class="stats-sub-heading">ARTIFACT STATS<br></span>
+          <div id="artifact-stats-table" class="table">
+          <span>total artifacts picked</span>
+          <span><%= stats_config.artifactStats.totalArtifactsPicked %></span>
+          <span>most artifact picked</span>
+          <span><%= stats_config.artifactStats.mostPickedArtifactName %></span>
+          <span>least artifact picked</span>
+          <span><%= stats_config.artifactStats.leastPickedArtifactName %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button id="back-button" class="button">back</button>
+
+    <script src="/static/script/statsScript.js" defer></script>
+  </body>
+</html>

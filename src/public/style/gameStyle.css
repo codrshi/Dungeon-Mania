@@ -7,6 +7,10 @@ html, body{
     display: flex;
     justify-content: center;
     align-items: center;
+    background-image: url('/static/asset/image/artifact_wall.png');
+    background-repeat: repeat;
+    background-size: 10vh;
+    background-position: top left; 
 }
 
 .flex-container{
@@ -22,18 +26,34 @@ html, body{
     display: flex;
     justify-content: center;
     text-align: center;
-    align-items: space-around;
+    align-self: baseline;
     flex-direction: column;
 }
 
 #grid-panel{
-    flex: 7
+    flex: 7;
+    background-color: #977261;
+    border: 2px solid #4E3328;
+}
+
+#username,
+#score {
+    font-family: "VT323", monospace;
+    font-weight: bold;
+    font-style: normal; 
+    font-size: 3.5vh;
+    letter-spacing: 0.5px;
+    background-color: #977261;
+    color: #FCC510;
+    border: 2px solid #4E3328; 
+    padding: 0.5%;
+    margin: 2% 5% 0% 5%;
 }
 
 .sub-panel{
-    margin-left: 5%;
-    margin-right: 5%;
-    margin-top: 5%;
+    background-color: #977261;
+    border: 2px solid #4E3328;
+    margin: 2% 5% 0% 5%;
     padding: 5% 5% 5% 0%;
 }
 
@@ -44,7 +64,6 @@ html, body{
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 0.05em solid black;
 }
 
 .player-attribute-micro-panel{
@@ -55,31 +74,61 @@ html, body{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border: 0.05em solid black;
+    background-color: #FFE181;
+    border: 2px solid #C29500; 
 }
 
 .player-attribute-micro-panel > :nth-child(1) {
     display: block;
-    font-size: 3vh;
-    border: 0.05em solid red;
+    font-family: "VT323", monospace;
+    font-weight: normal;
+    font-style: normal; 
+    color: #7E5543;
 }
 
 .player-attribute-micro-panel> :nth-child(2){
     width: 100%;
     height: 100%;
-    border: 0.05em solid red;
 }
 
 .aura-overlay {
     position: absolute;
     left: 0;
     width: 100%;
-    background: rgba(252, 247, 252, 0.7);
+    background: rgba(85 85 85 / 82%);
     transition: height 0.3s ease; 
 }
 
-.button{
+.roll-dice-image{
+    max-width: 30%;
+    cursor: pointer;
     flex: 1;
+    margin-left: 5%;
+}
+
+#pause-button{
+    flex: 1;
+    margin-left: 5%;
+    background-image: url('/static/asset/image/button.png');
+    background-size: 100% 100%;
+    border: 0;
+    background-color: transparent;
+    cursor: pointer;
+    font-family: "Bowlby One", sans-serif;
+    font-weight: 400;
+    font-size: 4vh;
+    font-style: normal;
+    color: #7E5543;
+    padding: 8%;
+}
+
+#screen-log-sub-panel-text{
+    font-family: "VT323", monospace;
+    font-weight: 400;
+    font-style: normal; 
+    font-size: 3vh;
+    color: #FCC510;
+    text-align: left;
 }
 
 .grid-container {
@@ -90,18 +139,19 @@ html, body{
 }
 
 .cell{
-    margin: 2%;
     position: relative;
     max-height: 13vh;
+    border: 2px solid #C29500;
 }
 
 .cell-image{
   width: 100%;
   height: 100%;
+  pointer-events: visible;
 }
 
 .disabled-cell-image {
-    opacity: 0.5;
+    opacity: 0.3;
     pointer-events: none;
 }
 
@@ -112,11 +162,15 @@ html, body{
     position: absolute;
     bottom: 5%;
     right: 5%;
-    font-size: 2vh;
+    font-size: 3vh;
     padding-left: 1%;
     padding-right: 1%;
-    background-color: tan;
-    border: 0.05em solid black;
+    font-family: "VT323", monospace;
+    font-weight: normal;
+    font-style: normal; 
+    color: #4E3328;
+    background-color: #FFE181;
+    border: 0.05em solid #C29500; 
 }
 
 #modal-dialog-overlay {
@@ -133,13 +187,11 @@ html, body{
 #modal-dialog {
     display: none;
     position: fixed;
-    width: 35%;
-    height: 35%;
+    width: 50%;
+    height: 50%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     z-index: 1001;
     justify-content: center;
     align-items: center;
@@ -153,25 +205,59 @@ html, body{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border: 0.05em solid black;
+    background-image: url('/static/asset/image/menu_panel_background_image.png');
+    background-size: 100% 100%;
+    padding: 5%;
 }
 
-#modal-heading,#modal-body{
+#modal-heading{
     width: 100%;
-    font-size: 5vh;
-    border: 0.05em solid red;
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: "Press Start 2P", monospace;
+    font-weight: bolder;
+    font-style: normal; 
+    text-transform: uppercase;
+    color: #C29500;
+    font-size: 8vh;
+}
+
+#modal-body{
+    width: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "VT323", monospace;
+    font-weight: normal;
+    font-style: normal; 
+    font-size: 6vh;
+    color: #FCC510;
 }
 
 #modal-buttons{
     width: 100%;
     height: 100%;
-    border: 0.05em solid red;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex: 2;
+}
+
+#modal-buttons > * {
     flex: 1;
+    background-image: url('/static/asset/image/button.png');
+    background-size: 100% 100%;
+    border: 0;
+    background-color: transparent;
+    cursor: pointer;
+    font-family: "Bowlby One", sans-serif;
+    font-weight: 400;
+    font-size: 4vh;
+    font-style: normal;
+    color: #7E5543;
+    padding: 5%;
+    margin: 0 5% 0 5%;
 }

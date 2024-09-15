@@ -7,6 +7,12 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" href="/static/style/gameStyle.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nerko+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap" rel="stylesheet">
   </head>
   <body>
     <div class="flex-container">
@@ -19,7 +25,7 @@
 
             <div id="weapon-micro-panel" class="player-attribute-micro-panel">
               <span class="weapon-micro-panel-heading">WEAPON</span>
-              <img class="weapon-micro-panel-image" src="/static/asset/image/placeholder.png">
+              <img class="weapon-micro-panel-image" src="/static/asset/image/weapon_placeholder.png">
               <span class="weapon-micro-panel-attribute"></span>
             </div>
 
@@ -39,12 +45,12 @@
         </div>
 
         <div id="button-sub-panel" class="sub-panel">
-          <button id="roll-dice-button" class="button">Roll</button>
+          <img class="roll-dice-image" src="/static/asset/image/dice_face_1.png">
           <button id="pause-button" class="button">Pause</button>
         </div>
 
         <div id="screen-log-sub-panel" class="sub-panel">
-          <span id="dice-number"></span>
+          <span id="screen-log-sub-panel-text"></span>
         </div>
       </div>
 

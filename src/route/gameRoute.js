@@ -3,6 +3,7 @@ import { clearEphConfig, setInit } from "../controller/e2eGamePhaseController.js
 import { rollDiceExecute,processMove } from "../controller/midGamePhaseController.js";
 import config from "../../configuration/config.js";
 import eph_config from "../../configuration/ephemeral_config.js";
+import stats_config from "../../configuration/stats_config.js";
 
 const router = express.Router();
 
@@ -12,6 +13,7 @@ router.get(config.app.url.ONGOING_GAME,(req,res) => {
 
 router.get(config.app.url.ONGOING_GAME_EPH_CONFIG,(req,res) => {
     res.json({
+        username: stats_config.basicStats.username,
         eph_config: eph_config
     });
 });

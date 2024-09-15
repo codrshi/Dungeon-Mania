@@ -149,7 +149,7 @@ function getRandomMonster(){
         health=getRandom(config.game.attribute.common_monster.MIN_VALUE,config.game.attribute.common_monster.MAX_VALUE);
         
         switch(getRandom(1,config.game.count.COMMON_MONSTER)){
-            case 1: id=config.game.id.monster.GOBLIN;
+            case 1: id=config.game.id.monster.ZOMBIE;
                     break;
             case 2: id=config.game.id.monster.GOLEM;
                     break;
@@ -192,7 +192,7 @@ function getRandomWeapon(){
     damage=getRandom(config.game.attribute.weapon.MIN_VALUE,config.game.attribute.weapon.MAX_VALUE);
         
         switch(getRandom(1,config.game.count.WEAPON)){
-            case 1: id=config.game.id.weapon.BOW;
+            case 1: id=config.game.id.weapon.CROSSBOW;
                     elementType=Element.AERO;
                     break;
             case 2: id=config.game.id.weapon.SWORD;

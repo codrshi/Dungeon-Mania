@@ -32,7 +32,7 @@ function createMageGridPrototype(){
 
             if(weaponCoordinateSet.has(key)){
                 switch(key){
-                    case '00':  grid[i][j]=new WeaponDao(config.game.attribute.INFINTE,Element.AERO,config.game.id.weapon.BOW);
+                    case '00':  grid[i][j]=new WeaponDao(config.game.attribute.INFINTE,Element.AERO,config.game.id.weapon.CROSSBOW);
                                 break;
                     case '06':  grid[i][j]=new WeaponDao(config.game.attribute.INFINTE,Element.ELECTRO,config.game.id.weapon.GRIMOIRE);
                                 break;

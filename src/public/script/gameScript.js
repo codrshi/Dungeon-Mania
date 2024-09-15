@@ -1,4 +1,4 @@
-rollDiceButton = $("#roll-dice-button");
+rollDiceImage = $(".roll-dice-image");
 pauseButton = $("#pause-button");
 modalDialog = $("#modal-dialog");
 modalDialogOverlay = $("#modal-dialog-overlay");
@@ -10,6 +10,8 @@ weaponMicroPanel = $("#weapon-micro-panel");
 activePanelMicroPanel = $("#active-poison-micro-panel");
 auraMicroPanel = $("#aura-micro-panel");
 knightCell = null;
+screenLogSubPanelText = $('#screen-log-sub-panel-text');
+button=$('.button');
 
 diceNumber = -1;
 
@@ -23,7 +25,7 @@ $(function() {
   $.get("/game/eph-config", {}, function (res) {
     const eph_config=res.eph_config;
 
-    username.text(eph_config.username);
+    username.text(res.username);
     score.text(eph_config.score);
 
     if(eph_config.knightWeapon!=null){
@@ -34,46 +36,61 @@ $(function() {
     renderActivePoisons(eph_config.activePoisons);
     updateAura(eph_config.aura);
     checkIfStatusChanged(eph_config.currentGameStatus);
+    populateScreenLogs(eph_config.screenLogs);
   });
 });
 
-rollDiceButton.click(function () {
+$(window).on('beforeunload',function(){
+  $.post({
+    url: "/game/exit",
+    contentType: "application/json",
+    dataType: "json",
+  });
+});
+
+rollDiceImage.on('click',function () {
 
   if(diceNumber!=-1)
     return;
 
-  cell.children('.cell-image').addClass("disabled-cell-image");
+  cell.children().addClass("disabled-cell-image");
 
   $.get("/game/roll-dice", {}, function (res) {
     diceNumber = res.diceNumber;
     const validNextPositions=res.validNextPositions;
 
-    $("#dice-number").text("you got " + String(diceNumber));
+    rollDiceImage.attr('src', '/static/asset/image/roll_dice_animation.gif');
+    
+    setTimeout(function() {
+      screenLogSubPanelText.text("- you got " + String(diceNumber)+".");
+      rollDiceImage.attr('src', '/static/asset/image/dice_face_'+diceNumber+'.png');
+      
+      if(validNextPositions.length==0){
+        cell.children().removeClass("disabled-cell-image");
+        diceNumber=-1;
+      }
 
-    if(validNextPositions.length==0){
-      cell.children('.cell-image').removeClass("disabled-cell-image");
-      diceNumber=-1;
-    }
-
-    cell.each(function () {
-      if ($(this).children('.cell-image').attr("src").includes("knight")) 
-        knightCell = $(this);
-
-      validNextPositions.forEach((validNextPosition) => {
-        if (
-          validNextPosition.coordinate.x === $(this).data("x") &&
-          validNextPosition.coordinate.y === $(this).data("y")
-        ) {
-          $(this).children('.cell-image').removeClass("disabled-cell-image");
-        }
+      cell.each(function () {
+        if ($(this).children('.cell-image').attr("src").includes("knight")) 
+          knightCell = $(this);
+  
+        validNextPositions.forEach((validNextPosition) => {
+          if (
+            validNextPosition.coordinate.x === $(this).data("x") &&
+            validNextPosition.coordinate.y === $(this).data("y")
+          ) {
+            $(this).children().removeClass("disabled-cell-image");
+          }
+        });
       });
-    });
+
+    }, 3500);
   });
 });
 
 cell.on("click", function () {
   if (!$(this).children('.cell-image').hasClass("disabled-cell-image") && diceNumber!=-1) {
-    cell.children('.cell-image').removeClass("disabled-cell-image");
+    cell.children().removeClass("disabled-cell-image");
     let newKnightCell = $(this);
     const newKnightCoordinate = [
       Number($(this).data("x")),
@@ -111,7 +128,7 @@ cell.on("click", function () {
           weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.weapon.damage);
         }
         else{
-          weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/placeholder.png");
+          weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/weapon_placeholder.png");
           weaponMicroPanel.children(".weapon-micro-panel-attribute").text("");
         }
 
@@ -125,6 +142,7 @@ cell.on("click", function () {
 
         score.text(eph_config.score);
         updateAura(eph_config.aura);
+        populateScreenLogs(eph_config.screenLogs);
       },
     });
   }
@@ -234,3 +252,19 @@ function checkIfStatusChanged(gameStatus){
   modalDialog.show();
   modalDialogOverlay.show();
 }
+
+function populateScreenLogs(screenLogs){
+  screenLogSubPanelText.text('');
+  
+  screenLogs.forEach(function(screenLog){
+    screenLogSubPanelText.append(screenLog+'<br>');
+  })
+}
+
+button.on('mousedown', function() {
+  $(this).css('background-image', 'url(/static/asset/image/button_pressed.png)');
+});
+
+button.on('mouseup mouseleave', function() {
+  $(this).css('background-image', 'url(/static/asset/image/button.png)');
+});

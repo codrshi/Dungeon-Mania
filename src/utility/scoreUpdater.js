@@ -1,4 +1,5 @@
 import eph_config from "../../configuration/ephemeral_config.js";
+import temp_stats_config from "../../configuration/temp_stats_config.js";
 
 export function updateScore(value){
     if(eph_config.knightHealth === 0)

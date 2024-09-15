@@ -1,19 +1,25 @@
 import eph_config from "../../configuration/ephemeral_config.js";
 import config from "../../configuration/config.js";
-import { getGrid, setGrid } from "./gridAccessor.js";
+import { getGrid } from "./gridAccessor.js";
 import { initializeMageGrid } from "./mageGridAccessor.js";
 import { mapGrid } from "./gridToImageMapper.js";
+import { terminateGame } from "./terminateGameUtility.js";
 
 export function appreciateAura(auraStatus,amount){
-
-    if(eph_config.isAuraThresholdThreeCrossed)
-        return;
 
     if(auraStatus===config.game.aura.DECREASE){
         eph_config.aura-= Math.ceil(eph_config.aura*amount/100);
         eph_config.aura = Math.max(0,eph_config.aura);
+    
+        if(eph_config.aura===0){
+            terminateGame(config.game.gameStatus.LOST);
+            eph_config.screenLogs.push("- aura exhausted.")
+        }
         return;
     }
+
+    if(eph_config.isAuraThresholdThreeCrossed)
+        return;
 
     eph_config.aura+=Math.ceil(Math.pow(Math.PI,Math.log10(amount))+Math.sqrt(amount));
     eph_config.aura = Math.min(config.game.aura.AURA_THRESHOLD_3,eph_config.aura);
@@ -24,6 +30,7 @@ export function appreciateAura(auraStatus,amount){
         initializeMageGrid();
         eph_config.newGrid=mapGrid(getGrid());
         eph_config.isAuraThresholdThreeCrossed=true;
+        eph_config.screenLogs.push("- aura maxed. Entered mage realm.")
     }
 
 }
