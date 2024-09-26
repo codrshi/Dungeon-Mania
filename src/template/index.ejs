@@ -1,39 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>Dungeon Mania</title>
 
-    <link rel="stylesheet" href="/static/style/indexStyle.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nerko+One&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap" rel="stylesheet">
-  </head>
-  <body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Dungeon Mania</title>
 
-    
-    <!-- panel to display player info -->
-    <div id="player-panel" class="panel">
-      <span id="username" title="your player name"></span>
-      <span id="highScore" title="you current high score"></span>
+  <link rel="stylesheet" href="/static/style/indexStyle.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nerko+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+
+  <!-- panel to display player info -->
+  <div id="player-panel" class="panel">
+    <span id="username" title="your player name"></span>
+    <span id="highScore" title="you current high score"></span>
+  </div>
+
+  <!-- panel to display menu -->
+  <div id="menu-panel" class="panel">
+    <img id="menu-panel-logo" src="/static/asset/image/menu_panel_logo.png">
+
+    <div id="button-sub-panel" class="sub-panel">
+      <button id="simple-button" class="button">simple mode</button>
+      <button id="survival-button" class="button">survival mode</button>
+      <button id="stats-button" class="button">stats</button>
+      <button id="guide-button" class="button">guide</button>
     </div>
+  </div>
 
-    <!-- panel to display menu -->
-    <div id="menu-panel" class="panel">
-        <img id="menu-panel-logo" src="/static/asset/image/menu_panel_logo.png">
+  <div class="audio-panel">
+    <audio id="button-click-audio" src="/static/asset/sound/button_click.wav" preload="auto"></audio>
+  </div>
 
-        <div id="button-sub-panel" class="sub-panel">
-          <button id="simple-button" class="button">simple mode</button>
-          <button id="survival-button" class="button">survival mode</button>
-          <button id="stats-button" class="button">stats</button>
-          <button id="guide-button" class="button">guide</button>
-        </div>
-    </div>
-    
-     <script src="/static/script/indexScript.js" defer></script>
-  </body>
+  <script src="/static/script/indexScript.js" defer></script>
+</body>
+
 </html>

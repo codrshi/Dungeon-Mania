@@ -1,7 +1,7 @@
-export class Artifact{
+export class Artifact {
     id;
 
-    constructor(id){
-        this.id=id;
+    constructor(id) {
+        this.id = id;
     }
 }

@@ -1,8 +1,8 @@
-export class Knight{
-    
+export class Knight {
+
     id;
 
-    constructor(id){
-        this.id=id;
+    constructor(id) {
+        this.id = id;
     }
 }

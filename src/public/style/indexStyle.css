@@ -1,37 +1,38 @@
-body{
+body {
     background-image: url('/static/asset/image/artifact_wall.png');
     background-repeat: repeat;
     background-size: 10vh;
-    background-position: top left; 
+    background-position: top left;
 }
 
-#player-panel{
+#player-panel {
     display: flex;
     justify-content: right;
 }
-#username{
+
+#username {
     font-family: "Nerko One", cursive;
     font-weight: 400;
     font-style: normal;
     font-size: larger;
     background-color: #7E5543;
     color: #FCC510;
-    border-radius: 10px 0 0 10px; 
+    border-radius: 10px 0 0 10px;
     padding: 0.5%;
 }
 
-#highScore{
+#highScore {
     font-family: "Nerko One", cursive;
     font-weight: 400;
     font-style: normal;
     font-size: larger;
     background-color: #FCC510;
     color: #7E5543;
-    border-radius: 0 10px 10px 0; 
+    border-radius: 0 10px 10px 0;
     padding: 0.5%;
 }
 
-#menu-panel{
+#menu-panel {
     position: fixed;
     width: 80%;
     height: 80%;
@@ -42,7 +43,7 @@ body{
     background-size: 100% 100%;
 }
 
-#menu-panel-logo{
+#menu-panel-logo {
     width: 40%;
     height: 40%;
     position: fixed;
@@ -52,17 +53,17 @@ body{
     z-index: 100;
 }
 
-#button-sub-panel{
+#button-sub-panel {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); 
-    grid-template-rows: repeat(2, 1fr); 
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
     place-items: center;
     height: 100%;
     width: 100%;
     column-gap: 20%;
 }
 
-.button{
+.button {
     background-image: url('/static/asset/image/button.png');
     background-size: 100% 100%;
     border: 0;

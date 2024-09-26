@@ -1,25 +1,25 @@
-import {Coordinate} from "../model/coordinate.js";
+import { Coordinate } from "../model/coordinate.js";
 
-export class CoordinateDao{
+export class CoordinateDao {
     coordinate;
 
-    constructor(x,y){
-        this.coordinate=new Coordinate(x,y);
+    constructor(x, y) {
+        this.coordinate = new Coordinate(x, y);
     }
 
     getX() {
         return this.coordinate.x;
     }
 
-    setX(x){
-        this.coordinate.x=x;
+    setX(x) {
+        this.coordinate.x = x;
     }
 
     getY() {
         return this.coordinate.y;
     }
 
-    setY(y){
-        this.coordinate.y=y;
+    setY(y) {
+        this.coordinate.y = y;
     }
 }

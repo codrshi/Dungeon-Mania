@@ -9,9 +9,9 @@ export function shuffleGrid(grid) {
   const flatArray = grid.flat();
 
   for (let i = 0; i < ROWS * COLUMNS; i++) {
-    const j = getRandom(0,ROWS * COLUMNS-1);
+    const j = getRandom(0, ROWS * COLUMNS - 1);
 
-    if(!(flatArray[i] instanceof KnightDao || flatArray[j] instanceof KnightDao))
+    if (!(flatArray[i] instanceof KnightDao || flatArray[j] instanceof KnightDao))
       [flatArray[i], flatArray[j]] = [flatArray[j], flatArray[i]];
   }
 
