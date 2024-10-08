@@ -12,6 +12,17 @@ const config = {
       STATS: "/stats",
       GUIDE: "/guide",
     },
+    loggingLevel:{
+      INFO: "INFO",
+      WARN:"WARN",
+      ERROR:"ERROR"
+    },
+    errorCode:{
+      1001: `an error occured while rendering {0} page : {1}`,
+      1002: `obtained an invalid value of coordinate.\ncoordinate type = {0}, coordinate value = {1}`,
+      1003: `total number of active poisons at a time cannot be greater than 3.\ntotal number of active poisons = {0}`,
+      1004: `undefined card obtained of type {0} and ID {1}`
+    }
   },
   game: {
     COUNTER_WEAPON_DAMAGE_MULTIPLIER: 1.5,
@@ -21,6 +32,7 @@ const config = {
       LOST: "lost",
       CANCELLED: "cancelled",
       ONGOING: "ongoing",
+      CRASHED: "crashed"
     },
     grid: {
       ROWS: 7,

@@ -4,10 +4,20 @@ import stats_config from "../../configuration/stats_config.js";
 import temp_stats_config from "../../configuration/temp_stats_config.js";
 import { getGrid, initializeGrid, setGrid } from "../utility/gridAccessor.js";
 import { mapGrid } from "../utility/gridToImageMapper.js";
+import { logger } from "../utility/loggerService.js";
+
+const loggingLevel = config.app.loggingLevel;
 
 export function setInit(isSurvivalMode) {
-    eph_config.isSurvivalMode = isSurvivalMode === "true";
+    logger(loggingLevel.INFO, "setting up the game.");
 
+    eph_config.isSurvivalMode = isSurvivalMode === "true";
+    logger(loggingLevel.INFO, "isSurvivalMode = {0}",eph_config.isSurvivalMode);
+
+    if(isSurvivalMode !== "true" && isSurvivalMode !== "false"){
+        logger(loggingLevel.WARN,"isSurvivalMode is having an undefined value. So game will proceed in a non-survival mode."); 
+    }
+    
     if (getGrid().length == 0) initializeGrid();
 
     const initResData = {
@@ -18,6 +28,8 @@ export function setInit(isSurvivalMode) {
 }
 
 export function clearEphConfig() {
+    logger(loggingLevel.INFO, "clearing ephemeral configurations.");
+
     restoreDefaultEphConfig();
 }
 
@@ -45,6 +57,8 @@ function restoreDefaultEphConfig() {
 }
 
 function clearTempStatsConfig() {
+    logger(loggingLevel.INFO, "clearing temp stats configurations.");
+
     temp_stats_config.basicStats.totalGamesMoves = 0;
 
     temp_stats_config.monsterStats.totalMonstersKilled = 0;

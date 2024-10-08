@@ -6,15 +6,18 @@ import { ArtifactDao } from "../dao/artifactDao.js";
 import { MonsterDao } from "../dao/monsterDao.js";
 import Element from "../model/element.js";
 import { getRandom } from "./RNG.js";
-import eph_config from "../../configuration/ephemeral_config.js";
+import { logger } from "../utility/loggerService.js";
 import { } from "./mageGridAccessor.js";
+import { CoordinateDao } from "../dao/coordinateDao.js";
+import UndefinedCardException from "../exception/undefinedCardException.js";
 
 const ROWS = config.game.grid.ROWS;
 const COLUMNS = config.game.grid.COLUMNS;
-
+const loggingLevel = config.app.loggingLevel;
 let grid = [];
 
 export function initializeGrid() {
+    logger(loggingLevel.INFO, "initializing grid...");
 
     let grid = [];
     let monsterSpawnCounter = config.game.spawn_rate.MONSTER;
@@ -49,18 +52,28 @@ export function getGrid() {
 
 export function setGrid(newGrid) {
     grid = newGrid;
+    logger(loggingLevel.INFO, "updated grid : \n"+JSON.stringify(newGrid,null, 2));
 }
 
 export function getCardFromGrid(coordinate) {
+    if(coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >=COLUMNS){
+        throw new InvalidCoordinateException("unknown",JSON.stringify(coordinate));
+    }
     return grid[coordinate.getX()][coordinate.getY()];
 }
 
 export function setCardInGrid(coordinate, card) {
+    if(coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >=COLUMNS){
+        throw new InvalidCoordinateException("unknown",JSON.stringify(coordinate));
+    }
     grid[coordinate.getX()][coordinate.getY()] = card;
+    logger(loggingLevel.INFO, "grid location {0} updated with new card {1}.",JSON.stringify(coordinate),JSON.stringify(card));
 }
 
 export function createNewCard(x, y) {
-
+    if(x < 0 || x >= ROWS || y < 0 || y >=COLUMNS){
+        throw new InvalidCoordinateException("unknown",JSON.stringify(new CoordinateDao(x,y)));
+    }
     const randNum = getRandom(1, 48);
     let cardId = config.game.attribute.EMPTY, attribute = config.game.attribute.EMPTY;
 
@@ -86,51 +99,44 @@ export function createNewCard(x, y) {
 }
 
 export function getRandomArtifact() {
-    let id = config.game.attribute.EMPTY, stackedNum = 0;
+    let stackedNum = 0;
     const randNum = getRandom(1, 100);
 
     if (randNum <= stackedNum + config.game.spawn_rate.artifacts_spawn_rate.CHAOS_ORB) {
-        id = config.game.id.artifact.CHAOS_ORB;
-        return id;
+        return config.game.id.artifact.CHAOS_ORB;
     }
 
     stackedNum += config.game.spawn_rate.artifacts_spawn_rate.CHAOS_ORB;
     if (randNum <= stackedNum + config.game.spawn_rate.artifacts_spawn_rate.MYSTERY_CHEST) {
-        id = config.game.id.artifact.MYSTERY_CHEST;
-        return id;
+        return config.game.id.artifact.MYSTERY_CHEST;
     }
 
     stackedNum += config.game.spawn_rate.artifacts_spawn_rate.MYSTERY_CHEST;
     if (randNum <= stackedNum + config.game.spawn_rate.artifacts_spawn_rate.MANA_STONE) {
-        id = config.game.id.artifact.MANA_STONE;
-        return id;
+        return config.game.id.artifact.MANA_STONE;
     }
 
     stackedNum += config.game.spawn_rate.artifacts_spawn_rate.MANA_STONE;
     if (randNum <= stackedNum + config.game.spawn_rate.artifacts_spawn_rate.ENIGMA_ELIXIR) {
-        id = config.game.id.artifact.ENEMA_ELIXIR;
-        return id;
+        return config.game.id.artifact.ENEMA_ELIXIR;
     }
 
     stackedNum += config.game.spawn_rate.artifacts_spawn_rate.ENIGMA_ELIXIR;
     if (randNum <= stackedNum + config.game.spawn_rate.artifacts_spawn_rate.POISON_POTION) {
-        id = config.game.id.artifact.MIXED_POTION;
+        return config.game.id.artifact.MIXED_POTION;
     }
 
     stackedNum += config.game.spawn_rate.artifacts_spawn_rate.POISON_POTION;
     if (randNum <= stackedNum + config.game.spawn_rate.artifacts_spawn_rate.BOMB) {
-        id = config.game.id.artifact.BOMB;
-        return id;
+        return config.game.id.artifact.BOMB;
     }
 
     stackedNum += config.game.spawn_rate.artifacts_spawn_rate.BOMB;
     if (randNum <= stackedNum + config.game.spawn_rate.artifacts_spawn_rate.WEAPON_FORGER) {
-        id = config.game.id.artifact.WEAPON_FORGER;
-        return id;
+        return config.game.id.artifact.WEAPON_FORGER;
     }
 
-    id = config.game.id.artifact.MIXED_POTION;
-    return id;
+    return config.game.id.artifact.MIXED_POTION;
 }
 
 function getRandomMonster() {
@@ -159,7 +165,7 @@ function getRandomMonster() {
                 break;
             case 5: id = config.game.id.monster.VAMPIRE;
                 break;
-            default: console.log("ERROR: error occurred while fetching id of common monster.");
+            default: throw new UndefinedCardException("MonsterDao",config.game.EMPTY);
         }
 
         return [health, elementType, id];
@@ -180,7 +186,7 @@ function getRandomMonster() {
         case 4: id = config.game.id.monster.SERPENT;
             elementType = Element.HYDRO;
             break;
-        default: console.log("ERROR: error occurred while fetching id of elemental monster.");
+        default: throw new UndefinedCardException("MonsterDao",config.game.EMPTY);
     }
 
     return [health, elementType, id];
@@ -196,7 +202,7 @@ function getRandomWeapon() {
             elementType = Element.AERO;
             break;
         case 2: id = config.game.id.weapon.SWORD;
-            elementType = Element.PYRO
+            elementType = Element.PYRO;
             break;
         case 3: id = config.game.id.weapon.GRIMOIRE;
             elementType = Element.ELECTRO;
@@ -204,7 +210,7 @@ function getRandomWeapon() {
         case 4: id = config.game.id.weapon.STAFF;
             elementType = Element.HYDRO;
             break;
-        default: console.log("ERROR: error occurred while fetching id of weapon.");
+        default: throw new UndefinedCardException("WeaponDao",config.game.EMPTY);
     }
 
     return [damage, elementType, id];

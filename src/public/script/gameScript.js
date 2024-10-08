@@ -50,7 +50,8 @@ $(function () {
 
     renderActivePoisons(eph_config.activePoisons);
     updateAura(eph_config.aura);
-    checkIfStatusChanged(eph_config.currentGameStatus);
+    if(eph_config.currentGameStatus!=="ongoing")
+      displayEndGamePanel(eph_config.currentGameStatus);
     populateScreenLogs(eph_config.screenLogs);
   });
 });
@@ -128,7 +129,7 @@ cell.on("click", function () {
         const prevPosCardId = res.prevPosCardId;
         const prevPosNewAttribute = res.prevPosNewAttribute;
         const eph_config = res.eph_config;
-
+        console.log(res.itsover);
         playAudioList(eph_config.audioList);
         knightCell.children('.cell-image').attr("src", "/static/asset/image/" + prevPosCardId + ".png");
         knightCell.children('.cell-attribute').text(prevPosNewAttribute);
@@ -139,7 +140,8 @@ cell.on("click", function () {
           newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
         newKnightCell.children('.cell-attribute').text(eph_config.knightHealth);
 
-        checkIfStatusChanged(eph_config.currentGameStatus);
+        if(eph_config.currentGameStatus!=="ongoing")
+          displayEndGamePanel(eph_config.currentGameStatus);
 
         if (eph_config.knightWeapon != null) {
           weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/" + eph_config.knightWeapon.weapon.id + ".png");
@@ -162,6 +164,10 @@ cell.on("click", function () {
         updateAura(eph_config.aura);
         populateScreenLogs(eph_config.screenLogs);
       },
+
+      error: function(xhr){
+        displayEndGamePanel("crashed");
+      }
     });
   }
   diceNumber = -1
@@ -210,17 +216,16 @@ function renderNewGrid(grid) {
 }
 
 function renderNewCards(newCardLocations) {
-
   const newCardLocationsMap = new Map();
   newCardLocations.forEach(newCardLocation => {
-    newCardLocationsMap.set(newCardLocation[0], newCardLocation.slice(1));
+    newCardLocationsMap.set(newCardLocation.coordinate.x+" "+newCardLocation.coordinate.y, {"cardId":newCardLocation.cardId,"cardAttribute":newCardLocation.cardAttribute});
   });
 
   cell.each(function () {
     const key = $(this).data("x") + " " + $(this).data("y");
     if (newCardLocationsMap.has(key)) {
-      $(this).children('.cell-image').attr("src", "/static/asset/image/" + newCardLocationsMap.get(key)[0] + ".png");
-      $(this).children('.cell-attribute').text(newCardLocationsMap.get(key)[1]);
+      $(this).children('.cell-image').attr("src", "/static/asset/image/" + newCardLocationsMap.get(key).cardId + ".png");
+      $(this).children('.cell-attribute').text(newCardLocationsMap.get(key).cardAttribute);
     }
   });
 }
@@ -249,7 +254,7 @@ function updateAura(auraAmount) {
   auraMicroPanel.children('.aura-micro-panel-attribute').text(auraAmount);
 }
 
-function checkIfStatusChanged(gameStatus) {
+function displayEndGamePanel(gameStatus) {
   if (gameStatus === 'ongoing')
     return;
 
@@ -259,9 +264,13 @@ function checkIfStatusChanged(gameStatus) {
     modalHeading = "GAME WON!";
     modalBody = "you won with a score of " + score.text();
   }
-  else {
+  else if(gameStatus === 'lost'){
     modalHeading = "GAME OVER!";
     modalBody = "you lost with a score of " + score.text();
+  }
+  else{
+    modalHeading = "GAME CRASHED!";
+    modalBody = "an unexpected error occured";
   }
 
   modalDialog.children('#modal-content').children('#modal-heading').text(modalHeading);

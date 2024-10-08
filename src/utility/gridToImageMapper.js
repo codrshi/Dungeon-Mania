@@ -22,6 +22,9 @@ export function mapGrid(grid) {
         if (eph_config.activeEnema != null)
           grid[i][j].setId("knight_enema");
       }
+      else if(!(value instanceof ArtifactDao)){
+        throw new UndefinedCardException(value.constructor.name,config.game.EMPTY);
+      }
       imageGrid[i][j] = new ImageIconDao("/static/asset/image/" + value.getId() + ".png", attribute);
     });
   });

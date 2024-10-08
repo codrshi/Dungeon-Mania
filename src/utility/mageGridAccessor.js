@@ -7,8 +7,10 @@ import Element from "../model/element.js";
 import { getRandom } from "./RNG.js";
 import { CoordinateDao } from "../dao/coordinateDao.js";
 import eph_config from "../../configuration/ephemeral_config.js";
-import { getCardFromGrid, getGrid, setCardInGrid, setGrid } from "./gridAccessor.js";
+import { getCardFromGrid, setCardInGrid, setGrid } from "./gridAccessor.js";
+import { logger } from "../utility/loggerService.js";
 
+const loggingLevel = config.app.loggingLevel;
 const ROWS = config.game.grid.ROWS;
 const COLUMNS = config.game.grid.COLUMNS;
 
@@ -62,11 +64,14 @@ function createMageGridPrototype() {
 }
 
 export function getCardFromMageGridPrototype(coordinate) {
+    if(coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >=COLUMNS){
+        throw new InvalidCoordinateException("unknown",JSON.stringify(new CoordinateDao(x,y)));
+    }
     return mageGridPrototype[coordinate.getX()][coordinate.getY()];
-
 }
 
 export function initializeMageGrid() {
+    logger(loggingLevel.INFO, "initializing mage grid...");
 
     let grid = mageGridPrototype.map(row => row.slice());
 
@@ -122,12 +127,19 @@ export function updateMageLocation() {
     eph_config.mageCoordinate.y = mageCoordinate.getY();
     setCardInGrid(new CoordinateDao(eph_config.mageCoordinate.x, eph_config.mageCoordinate.y), new MonsterDao(config.game.attribute.INFINTE, randomElementForMage, config.game.id.monster.MAGE + "_" + randomElementForMage));
 
+    logger(loggingLevel.INFO, "updated mage coordinate = {0}.",JSON.stringify(eph_config.mageCoordinate));
     eph_config.newCardLocations.push([eph_config.mageCoordinate.x + " " + eph_config.mageCoordinate.y, config.game.id.monster.MAGE + "_" + randomElementForMage, config.game.attribute.INFINTE]);
 }
 
 export function getRandomEscapeDoorCoordinate() {
     let index = getRandom(0, doorCoordinateArray.length - 1);
-    return new CoordinateDao(Number(doorCoordinateArray[index][0]), Number(doorCoordinateArray[index][1]));
+    const randomEscapeDoorCoordinate = new CoordinateDao(Number(doorCoordinateArray[index][0]), Number(doorCoordinateArray[index][1]));
+
+    if(randomEscapeDoorCoordinate.getX() < 0 || randomEscapeDoorCoordinate.getX() >= ROWS || randomEscapeDoorCoordinate.getY() < 0 || randomEscapeDoorCoordinate.getY() >=COLUMNS){
+        throw new InvalidCoordinateException("escape door coordinate",JSON.stringify(randomEscapeDoorCoordinate));
+    }
+    logger(loggingLevel.INFO, "new random escape door coordinate = {0}.",JSON.stringify(randomEscapeDoorCoordinate));
+    return randomEscapeDoorCoordinate;
 }
 
 export function getEscapeDoorCoordinate() {

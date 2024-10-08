@@ -8,7 +8,7 @@ const eph_config = {
     y: 2,
   },
   score: 0,
-  knightHealth: 50,
+  knightHealth: 100,
   knightWeapon: null,
   newGrid: [],
   newCardLocations: [],
@@ -20,6 +20,7 @@ const eph_config = {
   escapeDoorCountdown: 0,
   currentGameStatus: "ongoing",
   audioList: [],
+  isGameCrash: false,
   screenLogs: ["- click on the dice icon to start the game."],
 };
 

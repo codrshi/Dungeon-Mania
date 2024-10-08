@@ -31,7 +31,12 @@ import {
 } from "../utility/mageGridAccessor.js";
 import temp_stats_config from "../../configuration/temp_stats_config.js";
 import { biMaps } from "../utility/keyIndexBiMap.js";
+import InvalidCoordinateException from "../exception/invalidCoordinateException.js";
+import { logger } from "../utility/loggerService.js";
+import ExcessActivePoisonException from "../exception/excessActivePoisonException.js";
+import UndefinedCardException from "../exception/undefinedCardException.js";
 
+const loggingLevel = config.app.loggingLevel;
 const movements = [
     [config.game.coordinate.UP_X, config.game.coordinate.UP_Y],
     [config.game.coordinate.DOWN_X, config.game.coordinate.DOWN_Y],
@@ -54,43 +59,35 @@ const movements = [
         config.game.coordinate.DOWN_Y + config.game.coordinate.RIGHT_Y,
     ],
 ];
-let tempVar = 0,
-    isMonsterCard = false,
-    monsterKillingStreakMoves = 0;
+let tempVar = 0;
+let isMonsterCard = false;
+let monsterKillingStreakMoves = 0;
+const ROWS = config.game.grid.ROWS;
+const COLUMNS = config.game.grid.COLUMNS;
 
 export function rollDiceExecute() {
-    const diceNumber = getRandom(1, 6);
-    let validNextPositions = [];
+    logger(loggingLevel.INFO, "rolling dice...");
 
-    for (const movement of movements) {
+    const diceNumber = getRandom(1, 6);
+    logger(loggingLevel.INFO, "dice number obtained = {0}.",diceNumber);
+
+    const validNextPositions = movements
+    .map(movement => {
         const validNextPosition = new CoordinateDao(
-            (eph_config.coordinate.x +
-                movement[0] * diceNumber +
-                config.game.grid.ROWS) %
-            config.game.grid.ROWS,
-            (eph_config.coordinate.y +
-                movement[1] * diceNumber +
-                config.game.grid.ROWS) %
-            config.game.grid.ROWS
+            (eph_config.coordinate.x + movement[0] * diceNumber + config.game.grid.ROWS) % config.game.grid.ROWS,
+            (eph_config.coordinate.y + movement[1] * diceNumber + config.game.grid.ROWS) % config.game.grid.ROWS
         );
 
-        if (
-            getCardFromGrid(validNextPosition).getId() ===
-            config.game.id.artifact.WALL ||
-            getCardFromGrid(validNextPosition).getId() ===
-            config.game.id.artifact.CLOSE_DOOR
-        )
-            continue;
+        const cardId = getCardFromGrid(validNextPosition).getId();
+        return (cardId === config.game.id.artifact.WALL || cardId === config.game.id.artifact.CLOSE_DOOR) 
+            ? null 
+            : validNextPosition;
+    })
+    .filter(Boolean) 
+    .slice(0, eph_config.aura < config.game.aura.AURA_THRESHOLD_2 ? 4 : undefined);
 
-        validNextPositions.push(validNextPosition);
 
-        if (
-            validNextPositions.length == 4 &&
-            eph_config.aura < config.game.aura.AURA_THRESHOLD_2
-        )
-            break;
-    }
-
+    logger(loggingLevel.INFO, "valid next position(s) = {0}.",JSON.stringify(validNextPositions));
     temp_stats_config.basicStats.totalGamesMoves += 1;
 
     const rollDiceResData = {
@@ -98,17 +95,24 @@ export function rollDiceExecute() {
         validNextPositions: validNextPositions,
     };
 
+    logger(loggingLevel.INFO, "dice roll successful.");
     return rollDiceResData;
 }
 
 export function processMove(newKnightCoordinate, diceNumber) {
+    logger(loggingLevel.INFO, "processing move with data :\nnewKnightCoordinate = {0}\ndice number = {1}.",newKnightCoordinate,diceNumber);
     preProcessMove();
 
     newKnightCoordinate = new CoordinateDao(
         newKnightCoordinate[0],
         newKnightCoordinate[1]
     );
-    const newCard = getCardFromGrid(newKnightCoordinate);
+    throw new InvalidCoordinateException("knight coordinate",JSON.stringify(newKnightCoordinate));
+    if(newKnightCoordinate.getX() < 0 || newKnightCoordinate.getX() >= ROWS || newKnightCoordinate.getY() < 0 || newKnightCoordinate.getY() >=COLUMNS){
+        throw new InvalidCoordinateException("knight coordinate",JSON.stringify(newKnightCoordinate));
+    }
+
+    const currCard = getCardFromGrid(newKnightCoordinate);
     let prevPosCardId = config.game.attribute.EMPTY,
         prevPosNewAttribute = config.game.attribute.EMPTY;
 
@@ -132,16 +136,20 @@ export function processMove(newKnightCoordinate, diceNumber) {
         );
     }
 
+    logger(loggingLevel.INFO, "for previous knight coordinate = {0}, new card created with ID = {1} and attribute = {2}.",JSON.stringify(eph_config.coordinate),prevPosCardId,prevPosNewAttribute);
+
     setCardInGrid(newKnightCoordinate, new KnightDao());
     eph_config.coordinate.x = newKnightCoordinate.getX();
     eph_config.coordinate.y = newKnightCoordinate.getY();
 
-    if (newCard instanceof WeaponDao) {
-        dealWeapon(newCard);
-    } else if (newCard instanceof MonsterDao) {
-        dealMonster(newCard);
-    } else if (newCard instanceof ArtifactDao) {
-        dealArtifact(newCard, diceNumber);
+    logger(loggingLevel.INFO, "current knight coordinate = {0}, interacting with the card = {1}.",JSON.stringify(eph_config.coordinate),JSON.stringify(currCard));
+
+    if (currCard instanceof WeaponDao) {
+        dealWeapon(currCard);
+    } else if (currCard instanceof MonsterDao) {
+        dealMonster(currCard);
+    } else if (currCard instanceof ArtifactDao) {
+        dealArtifact(currCard, diceNumber);
     }
 
     postProcessMove(diceNumber);
@@ -156,13 +164,24 @@ export function processMove(newKnightCoordinate, diceNumber) {
 }
 
 function preProcessMove() {
+    logger(loggingLevel.INFO, "preprocessing moves...");
+
     eph_config.newGrid = [];
     eph_config.newCardLocations = [];
     eph_config.screenLogs = [];
     eph_config.audioList = [];
-
     tempVar = eph_config.knightHealth;
-    if (isMonsterCard === false) monsterKillingStreakMoves = 0;
+
+    if (isMonsterCard === false){
+        monsterKillingStreakMoves = 0;
+        logger(loggingLevel.INFO,"resetted monster killing streak moves to 0.");
+    }
+
+    logger(loggingLevel.INFO, "currently active poisons = {0}.",JSON.stringify(eph_config.activePoisons));
+    
+    if(eph_config.activePoisons.length >= config.game.activePoison.MAX_COUNT_OF_ACTIVE_POISON){
+        throw new ExcessActivePoisonException(eph_config.activePoisons.length);
+    }
 
     eph_config.activePoisons.forEach((activePoison, i) => {
         updateHealth(config.game.health.DECREASE, activePoison.getDamage());
@@ -175,64 +194,84 @@ function preProcessMove() {
             (tempVar - eph_config.knightHealth) +
             " DMG due to poison(s)."
         );
-
+  
     if (
         eph_config.activePoisons.length != 0 &&
         eph_config.activePoisons[0].getDuration() === 0
-    )
+    ){
+        logger(loggingLevel.INFO,"removing the expired poison = {0}.",JSON.stringify(eph_config.activePoisons[0]));
         eph_config.activePoisons.splice(0, 1);
+    }
 
     if (eph_config.activeEnema != null) {
         eph_config.activeEnema.setDuration(
             eph_config.activeEnema.getDuration() - 1
         );
+        logger(loggingLevel.INFO,"decremented enema elixir duration by 1, current duration = {0}.",eph_config.activeEnema.getDuration());
+        
         if (eph_config.activeEnema.getDuration() === 0) {
             eph_config.activeEnema = null;
             eph_config.screenLogs.push("- enema elixir expired.");
+            logger(loggingLevel.INFO,"enema elixir expired.");
         }
     }
+
+    logger(loggingLevel.INFO, "preprocessing moves completed.");
 }
 
 function postProcessMove(diceNumber) {
+    logger(loggingLevel.INFO, "postprocessing moves...");
+
     let bombDamage = 0;
 
-    for (const movement of movements) {
-        const pos = new CoordinateDao(
-            eph_config.coordinate.x + movement[0],
-            eph_config.coordinate.y + movement[1]
+    movements
+    .map(movement => new CoordinateDao(
+        eph_config.coordinate.x + movement[0],
+        eph_config.coordinate.y + movement[1]
+    ))
+    .filter(pos =>
+        0 <= pos.getX() &&
+        pos.getX() < config.game.grid.ROWS &&
+        0 <= pos.getY() &&
+        pos.getY() < config.game.grid.COLUMNS &&
+        getCardFromGrid(pos).getId() === config.game.id.artifact.BOMB
+    )
+    .forEach(pos => {
+        logger(
+            loggingLevel.INFO,
+            "bomb in vicinity found:\nknight location = {0}, bomb location = {1}",
+            JSON.stringify(eph_config.coordinate),
+            JSON.stringify(pos)
         );
 
-        if (
-            0 <= pos.getX() &&
-            pos.getX() < config.game.grid.ROWS &&
-            0 <= pos.getY() &&
-            pos.getY() < config.game.grid.COLUMNS &&
-            getCardFromGrid(pos).getId() === config.game.id.artifact.BOMB
-        ) {
-            bombDamage += Math.ceil(
-                (10 *
-                    (Math.log(Math.pow(2, diceNumber)) +
-                        Math.log(Math.pow(1.5, diceNumber)))) /
-                Math.pow(Math.E, 1 / diceNumber) +
-                10 / diceNumber
-            );
+        bombDamage += Math.ceil(
+            (10 * (Math.log(Math.pow(2, diceNumber)) + Math.log(Math.pow(1.5, diceNumber)))) /
+            Math.pow(Math.E, 1 / diceNumber) +
+            10 / diceNumber
+        );
 
-            while (true) {
-                let [newCardId, newCardAttribute] = createNewCard(
-                    pos.getX(),
-                    pos.getY()
-                );
-                if (newCardId != config.game.id.artifact.BOMB) {
-                    eph_config.newCardLocations.push([
-                        pos.getX() + " " + pos.getY(),
-                        newCardId,
-                        newCardAttribute,
-                    ]);
-                    break;
-                }
-            }
+        let newCardId = config.game.id.artifact.BOMB;
+        let newCardAttribute = config.game.attribute.EMPTY;
+
+        while (newCardId === config.game.id.artifact.BOMB) {
+            [newCardId, newCardAttribute] = createNewCard(pos.getX(), pos.getY());
         }
-    }
+        
+        eph_config.newCardLocations.push({
+                "coordinate":{"x":pos.getX(),"y":pos.getY()},
+                "cardId":newCardId,
+                "cardAttribute":newCardAttribute
+        });
+
+        logger(
+            loggingLevel.INFO,
+            "for location = {0}, created new card with ID = {1} and attribute = {2}.",
+            JSON.stringify(pos),
+            newCardId,
+            newCardAttribute
+        );
+    });
+
 
     tempVar = eph_config.knightHealth;
     updateHealth(config.game.health.DECREASE, bombDamage);
@@ -250,20 +289,24 @@ function postProcessMove(diceNumber) {
                 0,
                 eph_config.escapeDoorCountdown - 1
             );
-
+            logger(loggingLevel.INFO,"decremented escape door countdown by 1, current value = {0}.",eph_config.escapeDoorCoordinate);
+            
             if (eph_config.escapeDoorCountdown == 0) {
                 const escapeDoorCoordinate = getEscapeDoorCoordinate();
                 setCardInGrid(
                     escapeDoorCoordinate,
                     new ArtifactDao(config.game.id.artifact.CLOSE_DOOR)
                 );
-                eph_config.newCardLocations.push([
-                    escapeDoorCoordinate.getX() + " " + escapeDoorCoordinate.getY(),
-                    config.game.id.artifact.CLOSE_DOOR,
-                    config.game.attribute.EMPTY,
-                ]);
+                eph_config.newCardLocations.push({
+                    "coordinate":{"x":escapeDoorCoordinate.getX(),"y":escapeDoorCoordinate.getY()},
+                    "cardId":config.game.id.artifact.CLOSE_DOOR,
+                    "cardAttribute":config.game.attribute.EMPTY
+                });
                 eph_config.audioList.push(config.game.id.artifact.CLOSE_DOOR);
                 eph_config.screenLogs.push("- escape door closed.");
+            }
+            else{
+                logger(loggingLevel.WARN,"escape door countdown value is negative. It should be minimum zero.");
             }
         }
 
@@ -272,6 +315,8 @@ function postProcessMove(diceNumber) {
             config.game.aura.mage_absorption_rate
         );
     }
+
+    logger(loggingLevel.INFO, "postprocessing moves completed.");
 }
 
 function dealWeapon(weaponCard) {
@@ -281,6 +326,8 @@ function dealWeapon(weaponCard) {
         weaponCard.getElement(),
         weaponCard.getId()
     );
+
+    logger(loggingLevel.INFO,"knight obtained a new weapon = {0}.",JSON.stringify(weaponCard));
     appreciateAura(config.game.aura.INCREASE, weaponCard.getDamage());
 
     temp_stats_config.weaponStats.totalweaponsGrabbed += 1;
@@ -313,14 +360,16 @@ function dealMonster(monsterCard) {
     }
 
     let monsterElement = monsterCard.getElement();
-    let knightWeaponElement = null;
     let monsterHealth = monsterCard.getHealth();
+    let knightWeaponElement = null;
     let knightWeaponDamage = 0;
 
     if (monsterCard.getId() === config.game.id.monster.WRAITH) {
         eph_config.knightWeapon = null;
         eph_config.activeEnema = null;
         eph_config.activePoisons = [];
+        
+        logger(loggingLevel.INFO,"knight weapon, active enema and acitve poison(s) is reset.");
 
         if (eph_config.aura >= monsterHealth) {
             appreciateAura(
@@ -360,6 +409,8 @@ function dealMonster(monsterCard) {
         }
     }
 
+    logger(loggingLevel.INFO,"effective monster health = {0}.",monsterHealth);
+
     let scoreSpan = Math.min(
         monsterHealth,
         knightWeaponDamage + eph_config.knightHealth
@@ -368,13 +419,16 @@ function dealMonster(monsterCard) {
 
     if (knightWeaponDamage <= 0) {
         updateHealth(config.game.health.DECREASE, Math.abs(knightWeaponDamage));
-        if (eph_config.knightWeapon != null)
-            eph_config.screenLogs.push("- weapon expired");
-        eph_config.knightWeapon = null;
+        if (eph_config.knightWeapon != null){
+            eph_config.knightWeapon = null;
+            eph_config.screenLogs.push("- weapon expired.");
+            logger(loggingLevel.INFO,"knight weapon expired.");
+        }
     }
 
     if (eph_config.knightWeapon != null) {
         eph_config.knightWeapon.setDamage(knightWeaponDamage);
+        logger(loggingLevel.INFO,"updated knight weapon damage = {0}.",knightWeaponDamage);
     }
 
     if (eph_config.knightHealth > 0) {
@@ -426,26 +480,32 @@ function dealMageMonster(monsterElement) {
     )
         keyDropChance = 0;
 
+    logger(loggingLevel.INFO,"key drop chance = {0}.",keyDropChance);
+
     if (
         eph_config.escapeDoorCountdown == 0 &&
         getRandom(1, 100) <= keyDropChance
     ) {
+        logger(loggingLevel.INFO,"knight obtained the key.");
+
         const randomEscapeDoorCoordinate = getRandomEscapeDoorCoordinate();
         setCardInGrid(
             randomEscapeDoorCoordinate,
             new ArtifactDao(config.game.id.artifact.OPEN_DOOR)
         );
 
-        eph_config.newCardLocations.push([
-            randomEscapeDoorCoordinate.getX() +
-            " " +
-            randomEscapeDoorCoordinate.getY(),
-            config.game.id.artifact.OPEN_DOOR,
-            config.game.attribute.EMPTY,
-        ]);
+        eph_config.newCardLocations.push({
+            "coordinate":{"x":randomEscapeDoorCoordinate.getX(),"y":randomEscapeDoorCoordinate.getY()},
+            "cardId":config.game.id.artifact.OPEN_DOOR,
+            "cardAttribute":config.game.attribute.EMPTY
+        });
+
         eph_config.escapeDoorCountdown = config.game.mage.DOOR_CLOSE_COUNTDOWN + 1;
         eph_config.audioList.push(config.game.id.artifact.OPEN_DOOR);
         eph_config.screenLogs.push("- escape door opened for next 5 turns.");
+    }
+    else{
+        logger(loggingLevel.INFO,"knight failed to obtain key because escape door countdown is non-zero.\nescape door countdown = {0}.",eph_config.escapeDoorCountdown);
     }
 
     updateScore(eph_config.aura);
@@ -496,6 +556,7 @@ function dealArtifact(artifactCard, diceNumber) {
                     5 / diceNumber
                 );
                 eph_config.activeEnema = new ActiveEnemaDao(enemaBuff);
+                logger(loggingLevel.INFO,"updated active enema = {0}.",JSON.stringify(eph_config.activeEnema));
                 appreciateAura(config.game.aura.INCREASE, enemaBuff);
             }
             eph_config.screenLogs.push("- obtained enema elixir.");
@@ -536,17 +597,20 @@ function dealArtifact(artifactCard, diceNumber) {
                 );
                 appreciateAura(config.game.aura.INCREASE, forgedAmount);
                 eph_config.screenLogs.push("- weapon forged.");
+                logger(loggingLevel.INFO,"weapon forger effective value = {0}, updated weapon damage = {1}.",forgedAmount,eph_config.knightWeapon.getDamage());
             } else eph_config.audioList.pop();
             break;
 
         case config.game.id.artifact.MYSTERY_CHEST:
+            logger(loggingLevel.INFO,"mystery chest obtained.");
             dealArtifact(new ArtifactDao(getRandomArtifact()), diceNumber);
 
             break;
         case config.game.id.artifact.OPEN_DOOR:
+            logger(loggingLevel.INFO,"knight stepped on open door.");
             terminateGame(config.game.gameStatus.WON);
         default:
-            break;
+            throw new UndefinedCardException(artifactCard.constructor.name,artifactCard.getId());
     }
 }
 
@@ -583,40 +647,49 @@ function dealPoisonPotion(diceNumber) {
     eph_config.activePoisons.push(new ActivePoisonDao(poisonDamage));
     appreciateAura(config.game.aura.INCREASE, poisonDamage);
     eph_config.screenLogs.push("- gained poison potion.");
+    logger(loggingLevel.INFO,"active poison added = {0}.",JSON.stringify(eph_config.activePoisons[eph_config.activePoisons.length - 1]));
 }
 
 function dealManaStone() {
     let monstersNames = "";
 
-    for (const movement of movements) {
-        const pos = new CoordinateDao(
-            movement[0] + eph_config.coordinate.x,
-            movement[1] + eph_config.coordinate.y
+    movements
+    .map(movement => new CoordinateDao(
+        movement[0] + eph_config.coordinate.x,
+        movement[1] + eph_config.coordinate.y
+    ))
+    .filter(pos =>
+        pos.getX() >= 0 &&
+        pos.getX() < config.game.grid.ROWS &&
+        pos.getY() >= 0 &&
+        pos.getY() < config.game.grid.COLUMNS
+    )
+    .map(pos => ({
+        pos,
+        monsterCard: getCardFromGrid(pos)
+    }))
+    .filter(({ monsterCard }) => monsterCard instanceof MonsterDao)
+    .forEach(({ pos, monsterCard }) => {
+        logger(
+            loggingLevel.INFO,
+            "monster {0} at location {1} defeated by mana stone.",
+            JSON.stringify(monsterCard),
+            JSON.stringify(pos)
         );
-
-        if (
-            pos.getX() < 0 ||
-            pos.getX() >= config.game.grid.ROWS ||
-            pos.getY() < 0 ||
-            pos.getY() >= config.game.grid.COLUMNS
-        ) {
-            continue;
-        }
-
-        const monsterCard = getCardFromGrid(pos);
-        if (!(monsterCard instanceof MonsterDao)) continue;
 
         updateScore(monsterCard.getHealth());
         appreciateAura(config.game.aura.INCREASE, monsterCard.getHealth());
+
         monstersNames += monsterCard.getId().substring(8) + ",";
 
         let [newCardId, newAttribute] = createNewCard(pos.getX(), pos.getY());
-        eph_config.newCardLocations.push([
-            pos.getX() + " " + pos.getY(),
-            newCardId,
-            newAttribute,
-        ]);
-    }
+        eph_config.newCardLocations.push({
+            "coordinate": { "x": pos.getX(), "y": pos.getY() },
+            "cardId": newCardId,
+            "cardAttribute": newAttribute
+        });
+    });
+
     eph_config.screenLogs.push(
         "- slayed monster(s) " +
         monstersNames.substring(0, monstersNames.length - 1) +
