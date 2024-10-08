@@ -117,9 +117,17 @@ export function updateMageLocation() {
         const cardFromMageGridPrototype = getCardFromMageGridPrototype(new CoordinateDao(eph_config.mageCoordinate.x, eph_config.mageCoordinate.y));
 
         if (cardFromMageGridPrototype instanceof WeaponDao)
-            eph_config.newCardLocations.push([eph_config.mageCoordinate.x + " " + eph_config.mageCoordinate.y, cardFromMageGridPrototype.getId(), cardFromMageGridPrototype.getDamage()]);
+            eph_config.newCardLocations.push({
+                "coordinate": { "x": eph_config.mageCoordinate.x, "y": eph_config.mageCoordinate.y },
+                "cardId": cardFromMageGridPrototype.getId(),
+                "cardAttribute": cardFromMageGridPrototype.getDamage()
+            });
         else
-            eph_config.newCardLocations.push([eph_config.mageCoordinate.x + " " + eph_config.mageCoordinate.y, cardFromMageGridPrototype.getId(), config.game.attribute.EMPTY]);
+        eph_config.newCardLocations.push({
+            "coordinate": { "x": eph_config.mageCoordinate.x, "y": eph_config.mageCoordinate.y },
+            "cardId": cardFromMageGridPrototype.getId(),
+            "cardAttribute": config.game.attribute.EMPTY
+        });
     }
 
     const [mageCoordinate, randomElementForMage] = getNewMageLocation();
@@ -128,7 +136,11 @@ export function updateMageLocation() {
     setCardInGrid(new CoordinateDao(eph_config.mageCoordinate.x, eph_config.mageCoordinate.y), new MonsterDao(config.game.attribute.INFINTE, randomElementForMage, config.game.id.monster.MAGE + "_" + randomElementForMage));
 
     logger(loggingLevel.INFO, "updated mage coordinate = {0}.",JSON.stringify(eph_config.mageCoordinate));
-    eph_config.newCardLocations.push([eph_config.mageCoordinate.x + " " + eph_config.mageCoordinate.y, config.game.id.monster.MAGE + "_" + randomElementForMage, config.game.attribute.INFINTE]);
+    eph_config.newCardLocations.push({
+        "coordinate": { "x": eph_config.mageCoordinate.x, "y": eph_config.mageCoordinate.y },
+        "cardId": config.game.id.monster.MAGE + "_" + randomElementForMage,
+        "cardAttribute": config.game.attribute.INFINTE
+    });
 }
 
 export function getRandomEscapeDoorCoordinate() {

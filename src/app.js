@@ -5,7 +5,7 @@ import statsRouter from "./route/statsRoute.js";
 import guideRouter from "./route/guideRoute.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
-import {logger} from "./utility/loggerService.js";
+import { logger } from "./utility/loggerService.js";
 import config from "../configuration/config.js";
 import RenderPageException from "./exception/renderPageException.js";
 import InvalidCoordinateException from "./exception/invalidCoordinateException.js";
@@ -30,10 +30,10 @@ app.use((err, req, res, next) => {
     if (err instanceof RenderPageException) {
         logger(config.app.loggingLevel.ERROR, err.stack);
         res.status(500).json({ error: err.message });
-    } 
+    }
     else if (err instanceof InvalidCoordinateException || err instanceof ExcessActivePoisonException || err instanceof UndefinedCardException) {
         logger(config.app.loggingLevel.ERROR, err.stack);
-        res.status(500).json({error: "an unexpected error occured."});
+        res.status(500).json({ error: "an unexpected error occured." });
     }
     else {
         logger(config.app.loggingLevel.ERROR, `Unknown error occured: ${err.name}: ${err.message}`);
@@ -43,15 +43,15 @@ app.use((err, req, res, next) => {
 
 
 process.on('SIGINT', () => {
-    logger(config.app.loggingLevel.INFO,"gracefully shutting down the game.");
+    logger(config.app.loggingLevel.INFO, "gracefully shutting down the game.");
     process.exit(0);
 });
-  
+
 process.on('unhandledRejection', (reason, promise) => {
     const error = new UnhandledPromiseRejectionException(
         `Unhandled promise rejection: ${reason.message || reason}`,
         promise
-        );
+    );
     error.logError();
 });
 

@@ -12,12 +12,12 @@ export function setInit(isSurvivalMode) {
     logger(loggingLevel.INFO, "setting up the game.");
 
     eph_config.isSurvivalMode = isSurvivalMode === "true";
-    logger(loggingLevel.INFO, "isSurvivalMode = {0}",eph_config.isSurvivalMode);
+    logger(loggingLevel.INFO, "isSurvivalMode = {0}", eph_config.isSurvivalMode);
 
-    if(isSurvivalMode !== "true" && isSurvivalMode !== "false"){
-        logger(loggingLevel.WARN,"isSurvivalMode is having an undefined value. So game will proceed in a non-survival mode."); 
+    if (isSurvivalMode !== "true" && isSurvivalMode !== "false") {
+        logger(loggingLevel.WARN, "isSurvivalMode is having an undefined value. So game will proceed in a non-survival mode.");
     }
-    
+
     if (getGrid().length == 0) initializeGrid();
 
     const initResData = {

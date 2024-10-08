@@ -13,15 +13,15 @@ const loggingLevel = config.app.loggingLevel;
 router.get(config.app.url.ONGOING_GAME, (req, res, next) => {
     logger(loggingLevel.INFO, "redering game page...");
 
-    try{
-        res.render('game',setInit(req.query.survivalMode),(err,html)=>{
-            if(err){
-                throw new RenderPageException("game",err.message);
+    try {
+        res.render('game', setInit(req.query.survivalMode), (err, html) => {
+            if (err) {
+                throw new RenderPageException("game", err.message);
             }
             res.send(html);
         });
     }
-    catch(err){
+    catch (err) {
         next(err);
     }
 });
@@ -37,12 +37,12 @@ router.get(config.app.url.ONGOING_GAME_ROLL_DICE, (req, res) => {
     res.json(rollDiceExecute());
 });
 
-router.post(config.app.url.ONGOING_GAME_PROCESS_MOVE, (req, res,next) => {
-    try{
+router.post(config.app.url.ONGOING_GAME_PROCESS_MOVE, (req, res, next) => {
+    try {
         res.json(processMove(req.body.newKnightCoordinate, req.body.diceNumber));
     }
-    catch(err){
-        eph_config.currentGameStatus=config.game.gameStatus.CRASHED;
+    catch (err) {
+        eph_config.currentGameStatus = config.game.gameStatus.CRASHED;
         next(err);
     }
 });

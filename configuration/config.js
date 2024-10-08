@@ -12,12 +12,12 @@ const config = {
       STATS: "/stats",
       GUIDE: "/guide",
     },
-    loggingLevel:{
+    loggingLevel: {
       INFO: "INFO",
-      WARN:"WARN",
-      ERROR:"ERROR"
+      WARN: "WARN",
+      ERROR: "ERROR"
     },
-    errorCode:{
+    errorCode: {
       1001: `an error occured while rendering {0} page : {1}`,
       1002: `obtained an invalid value of coordinate.\ncoordinate type = {0}, coordinate value = {1}`,
       1003: `total number of active poisons at a time cannot be greater than 3.\ntotal number of active poisons = {0}`,

@@ -50,7 +50,7 @@ $(function () {
 
     renderActivePoisons(eph_config.activePoisons);
     updateAura(eph_config.aura);
-    if(eph_config.currentGameStatus!=="ongoing")
+    if (eph_config.currentGameStatus !== "ongoing")
       displayEndGamePanel(eph_config.currentGameStatus);
     populateScreenLogs(eph_config.screenLogs);
   });
@@ -140,7 +140,7 @@ cell.on("click", function () {
           newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
         newKnightCell.children('.cell-attribute').text(eph_config.knightHealth);
 
-        if(eph_config.currentGameStatus!=="ongoing")
+        if (eph_config.currentGameStatus !== "ongoing")
           displayEndGamePanel(eph_config.currentGameStatus);
 
         if (eph_config.knightWeapon != null) {
@@ -165,7 +165,7 @@ cell.on("click", function () {
         populateScreenLogs(eph_config.screenLogs);
       },
 
-      error: function(xhr){
+      error: function (xhr) {
         displayEndGamePanel("crashed");
       }
     });
@@ -218,7 +218,7 @@ function renderNewGrid(grid) {
 function renderNewCards(newCardLocations) {
   const newCardLocationsMap = new Map();
   newCardLocations.forEach(newCardLocation => {
-    newCardLocationsMap.set(newCardLocation.coordinate.x+" "+newCardLocation.coordinate.y, {"cardId":newCardLocation.cardId,"cardAttribute":newCardLocation.cardAttribute});
+    newCardLocationsMap.set(newCardLocation.coordinate.x + " " + newCardLocation.coordinate.y, { "cardId": newCardLocation.cardId, "cardAttribute": newCardLocation.cardAttribute });
   });
 
   cell.each(function () {
@@ -264,11 +264,11 @@ function displayEndGamePanel(gameStatus) {
     modalHeading = "GAME WON!";
     modalBody = "you won with a score of " + score.text();
   }
-  else if(gameStatus === 'lost'){
+  else if (gameStatus === 'lost') {
     modalHeading = "GAME OVER!";
     modalBody = "you lost with a score of " + score.text();
   }
-  else{
+  else {
     modalHeading = "GAME CRASHED!";
     modalBody = "an unexpected error occured";
   }
