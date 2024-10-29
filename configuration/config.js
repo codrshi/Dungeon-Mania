@@ -13,7 +13,7 @@ const config = {
 
   // === App Configuration ===
   app: {
-    PORT: 8080,   //// Port where the server listens
+    PORT: 3030,   //// Port where the server listens
     url: {
       HOME_PAGE: "/",
       HOME_PAGE_USERNAME_HIGHSCORE: "/index/username-highscore",
