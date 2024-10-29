@@ -1,3 +1,12 @@
+/* healthUpdater.js 
+ *
+ * This utility file manages the health of knight.
+ *
+ * It performs following task:
+ * - increase or decrease health by a certain value.
+ * - terminate the game if health reaches zero.
+ */
+
 import config from "../../configuration/config.js";
 import eph_config from "../../configuration/ephemeral_config.js";
 import { terminateGame } from "./terminateGameUtility.js";
@@ -29,9 +38,9 @@ export function updateHealth(healthStatus, amount) {
         if (tempVar - eph_config.knightHealth != 0)
             eph_config.screenLogs.push("- lost " + (tempVar - eph_config.knightHealth) + " health.");
     }
-    else{
-       logger(loggingLevel.WARN, "Could not update health due to invalid value of health status.");
+    else {
+        logger(loggingLevel.WARN, "Could not update health due to invalid value of health status.");
     }
 
-    logger(loggingLevel.INFO, "health updated:\nprevious value: {0}, new value: {1}, difference = {2}.",tempVar,eph_config.knightHealth, eph_config.knightHealth - tempVar);
+    logger(loggingLevel.INFO, "health updated:\nprevious value: {0}, new value: {1}, difference = {2}.", tempVar, eph_config.knightHealth, eph_config.knightHealth - tempVar);
 }

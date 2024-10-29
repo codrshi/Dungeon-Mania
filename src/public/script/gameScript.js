@@ -1,3 +1,4 @@
+// === Declare DOM Element Variables ===
 rollDiceImage = $(".roll-dice-image");
 pauseButton = $("#pause-button");
 modalDialog = $("#modal-dialog");
@@ -28,12 +29,15 @@ doorCloseAudio = $('#door-close-audio')[0];
 rollDiceAudio = $('#roll-dice-audio')[0];
 weaponForgerAudio = $('#weapon-forger-audio')[0];
 
+// === Local Variables Declaration ===
 diceNumber = -1;
 
+// === Logic to execute when page loads ===
 $(function () {
   const auraMicroPanelHeadingHeight = auraMicroPanel.children('.aura-micro-panel-heading').css('height');
   const auraMicroPanelImageHeight = auraMicroPanel.children('.aura-micro-panel-image').css('height');
 
+  //setting the location of aura-overlay based on the position of aura-micro-panel-heading
   auraMicroPanel.children('.aura-overlay').css('top', parseFloat(auraMicroPanelHeadingHeight));
   auraMicroPanel.children('.aura-overlay').css('height', parseFloat(auraMicroPanelImageHeight));
 
@@ -56,6 +60,7 @@ $(function () {
   });
 });
 
+// notify the server to end the game when the player exits or refreshes the page.
 $(window).on('beforeunload', function () {
   $.post({
     url: "/game/exit",
@@ -64,11 +69,13 @@ $(window).on('beforeunload', function () {
   });
 });
 
+//logic to execute when player clicks on dice button
 rollDiceImage.on('click', function () {
 
   if (diceNumber != -1)
     return;
 
+  //diable interaction with all cells
   cell.children().addClass("disabled-cell-image");
   rollDiceAudio.startTime = 0;
   rollDiceAudio.play();
@@ -83,6 +90,7 @@ rollDiceImage.on('click', function () {
       screenLogSubPanelText.text("- you got " + String(diceNumber) + ".");
       rollDiceImage.attr('src', '/static/asset/image/dice_face_' + diceNumber + '.png');
 
+      //if no available position to move, then reset dice number and allow player to re-roll the dice
       if (validNextPositions.length == 0) {
         cell.children().removeClass("disabled-cell-image");
         diceNumber = -1;
@@ -92,6 +100,7 @@ rollDiceImage.on('click', function () {
         if ($(this).children('.cell-image').attr("src").includes("knight"))
           knightCell = $(this);
 
+        //enable interaction with cell which can be reached by knight card
         validNextPositions.forEach((validNextPosition) => {
           if (
             validNextPosition.coordinate.x === $(this).data("x") &&
@@ -106,8 +115,10 @@ rollDiceImage.on('click', function () {
   });
 });
 
+//logic to execute when user clicks on a card after rolling dice
 cell.on("click", function () {
   if (!$(this).children('.cell-image').hasClass("disabled-cell-image") && diceNumber != -1) {
+    //remove disabled-cell-image from all cell
     cell.children().removeClass("disabled-cell-image");
     let newKnightCell = $(this);
     const newKnightCoordinate = [
@@ -129,11 +140,14 @@ cell.on("click", function () {
         const prevPosCardId = res.prevPosCardId;
         const prevPosNewAttribute = res.prevPosNewAttribute;
         const eph_config = res.eph_config;
-        console.log(res.itsover);
+
         playAudioList(eph_config.audioList);
+
+        //spawn a new card at previous location of knight card
         knightCell.children('.cell-image').attr("src", "/static/asset/image/" + prevPosCardId + ".png");
         knightCell.children('.cell-attribute').text(prevPosNewAttribute);
 
+        //update the location of knight card with the position of card clicked by player
         if (eph_config.activeEnema != null)
           newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight_enema.png");
         else
@@ -173,11 +187,13 @@ cell.on("click", function () {
   diceNumber = -1
 });
 
+//open the pause dialog box when player clicks on pause button
 pauseButton.click(function () {
   modalDialog.show();
   modalDialogOverlay.show();
 });
 
+//if player clicks outside the pause dialog box, then resume the game if it's in ongoing status.
 modalDialogOverlay.click(function () {
   $.get("/game/eph-config", {}, function (res) {
     if (res.eph_config.currentGameStatus === 'ongoing') {
@@ -187,6 +203,7 @@ modalDialogOverlay.click(function () {
   });
 });
 
+//if player clicks on replay button, then exit from current game and start a new game by reloading the current page
 modalButtons.children('#replay-button').click(function () {
   $.post({
     url: "/game/exit",
@@ -197,6 +214,7 @@ modalButtons.children('#replay-button').click(function () {
   window.location = window.location;
 });
 
+//if player clicks on exit button, then exit from current game and load the home page
 modalButtons.children('#exit-button').click(function () {
   $.post({
     url: "/game/exit",

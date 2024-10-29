@@ -1,3 +1,10 @@
+/*
+ * stats_config.js 
+ *
+ * This file encapsulates the final statistics of the player across all gameplay sessions.
+ * These values are updated upon the completion of each game.
+ */
+
 let stats_config = {
     basicStats: {
         username: "",

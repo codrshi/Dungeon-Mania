@@ -1,3 +1,8 @@
+/* statsUpdateUtility.js
+ *
+ * This utility file updates the stats_config using the temp_stats_config after game terminates.
+ */
+
 import config from "../../configuration/config.js";
 import eph_config from "../../configuration/ephemeral_config.js";
 import stats_config from "../../configuration/stats_config.js";

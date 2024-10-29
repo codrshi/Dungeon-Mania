@@ -1,3 +1,13 @@
+/* gridAccessor.js 
+ *
+ * This utility file manipulates the grid.
+ *
+ * It performs following task:
+ * - initializes grid with random cards.
+ * - provides setters and getters for a particular card or whole grid.
+ * - generates a new cards for a particular location in grid.
+ */
+
 import config from "../../configuration/config.js";
 import { shuffleGrid } from "./gridShuffler.js";
 import { KnightDao } from "../dao/knightDao.js";
@@ -52,27 +62,27 @@ export function getGrid() {
 
 export function setGrid(newGrid) {
     grid = newGrid;
-    logger(loggingLevel.INFO, "updated grid : \n"+JSON.stringify(newGrid,null, 2));
+    logger(loggingLevel.INFO, "updated grid : \n" + JSON.stringify(newGrid, null, 2));
 }
 
 export function getCardFromGrid(coordinate) {
-    if(coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >=COLUMNS){
-        throw new InvalidCoordinateException("unknown",JSON.stringify(coordinate));
+    if (coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >= COLUMNS) {
+        throw new InvalidCoordinateException("unknown", JSON.stringify(coordinate));
     }
     return grid[coordinate.getX()][coordinate.getY()];
 }
 
 export function setCardInGrid(coordinate, card) {
-    if(coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >=COLUMNS){
-        throw new InvalidCoordinateException("unknown",JSON.stringify(coordinate));
+    if (coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >= COLUMNS) {
+        throw new InvalidCoordinateException("unknown", JSON.stringify(coordinate));
     }
     grid[coordinate.getX()][coordinate.getY()] = card;
-    logger(loggingLevel.INFO, "grid location {0} updated with new card {1}.",JSON.stringify(coordinate),JSON.stringify(card));
+    logger(loggingLevel.INFO, "grid location {0} updated with new card {1}.", JSON.stringify(coordinate), JSON.stringify(card));
 }
 
 export function createNewCard(x, y) {
-    if(x < 0 || x >= ROWS || y < 0 || y >=COLUMNS){
-        throw new InvalidCoordinateException("unknown",JSON.stringify(new CoordinateDao(x,y)));
+    if (x < 0 || x >= ROWS || y < 0 || y >= COLUMNS) {
+        throw new InvalidCoordinateException("unknown", JSON.stringify(new CoordinateDao(x, y)));
     }
     const randNum = getRandom(1, 48);
     let cardId = config.game.attribute.EMPTY, attribute = config.game.attribute.EMPTY;
@@ -165,7 +175,7 @@ function getRandomMonster() {
                 break;
             case 5: id = config.game.id.monster.VAMPIRE;
                 break;
-            default: throw new UndefinedCardException("MonsterDao",config.game.EMPTY);
+            default: throw new UndefinedCardException("MonsterDao", config.game.EMPTY);
         }
 
         return [health, elementType, id];
@@ -186,7 +196,7 @@ function getRandomMonster() {
         case 4: id = config.game.id.monster.SERPENT;
             elementType = Element.HYDRO;
             break;
-        default: throw new UndefinedCardException("MonsterDao",config.game.EMPTY);
+        default: throw new UndefinedCardException("MonsterDao", config.game.EMPTY);
     }
 
     return [health, elementType, id];
@@ -210,9 +220,9 @@ function getRandomWeapon() {
         case 4: id = config.game.id.weapon.STAFF;
             elementType = Element.HYDRO;
             break;
-        default: throw new UndefinedCardException("WeaponDao",config.game.EMPTY);
+        default: throw new UndefinedCardException("WeaponDao", config.game.EMPTY);
     }
-
+    console.log("weaponnn "+id)
     return [damage, elementType, id];
 }
 

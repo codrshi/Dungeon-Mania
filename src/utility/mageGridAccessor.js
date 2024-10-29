@@ -1,3 +1,20 @@
+/*
+ * mageGridAccessor.js
+ *
+ * Utility for Managing the Mage Grid
+ *
+ * Description:
+ * - This utility file provides functionality for manipulating the mage grid, 
+ *   which is displayed upon entering the mage realm.
+ *
+ * Features:
+ * - Initializes the mage grid using a predefined prototype.
+ * - Retrieves a specific card from the grid.
+ * - Obtains the current location of the mage within the grid.
+ * - Updates the mage's location with each turn.
+ * - Unlocks a random escape door within the grid.
+ */
+
 import config from "../../configuration/config.js";
 import { KnightDao } from "../dao/knightDao.js";
 import { WeaponDao } from "../dao/weaponDao.js";
@@ -64,8 +81,8 @@ function createMageGridPrototype() {
 }
 
 export function getCardFromMageGridPrototype(coordinate) {
-    if(coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >=COLUMNS){
-        throw new InvalidCoordinateException("unknown",JSON.stringify(new CoordinateDao(x,y)));
+    if (coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >= COLUMNS) {
+        throw new InvalidCoordinateException("unknown", JSON.stringify(new CoordinateDao(x, y)));
     }
     return mageGridPrototype[coordinate.getX()][coordinate.getY()];
 }
@@ -123,11 +140,11 @@ export function updateMageLocation() {
                 "cardAttribute": cardFromMageGridPrototype.getDamage()
             });
         else
-        eph_config.newCardLocations.push({
-            "coordinate": { "x": eph_config.mageCoordinate.x, "y": eph_config.mageCoordinate.y },
-            "cardId": cardFromMageGridPrototype.getId(),
-            "cardAttribute": config.game.attribute.EMPTY
-        });
+            eph_config.newCardLocations.push({
+                "coordinate": { "x": eph_config.mageCoordinate.x, "y": eph_config.mageCoordinate.y },
+                "cardId": cardFromMageGridPrototype.getId(),
+                "cardAttribute": config.game.attribute.EMPTY
+            });
     }
 
     const [mageCoordinate, randomElementForMage] = getNewMageLocation();
@@ -135,7 +152,7 @@ export function updateMageLocation() {
     eph_config.mageCoordinate.y = mageCoordinate.getY();
     setCardInGrid(new CoordinateDao(eph_config.mageCoordinate.x, eph_config.mageCoordinate.y), new MonsterDao(config.game.attribute.INFINTE, randomElementForMage, config.game.id.monster.MAGE + "_" + randomElementForMage));
 
-    logger(loggingLevel.INFO, "updated mage coordinate = {0}.",JSON.stringify(eph_config.mageCoordinate));
+    logger(loggingLevel.INFO, "updated mage coordinate = {0}.", JSON.stringify(eph_config.mageCoordinate));
     eph_config.newCardLocations.push({
         "coordinate": { "x": eph_config.mageCoordinate.x, "y": eph_config.mageCoordinate.y },
         "cardId": config.game.id.monster.MAGE + "_" + randomElementForMage,
@@ -147,10 +164,10 @@ export function getRandomEscapeDoorCoordinate() {
     let index = getRandom(0, doorCoordinateArray.length - 1);
     const randomEscapeDoorCoordinate = new CoordinateDao(Number(doorCoordinateArray[index][0]), Number(doorCoordinateArray[index][1]));
 
-    if(randomEscapeDoorCoordinate.getX() < 0 || randomEscapeDoorCoordinate.getX() >= ROWS || randomEscapeDoorCoordinate.getY() < 0 || randomEscapeDoorCoordinate.getY() >=COLUMNS){
-        throw new InvalidCoordinateException("escape door coordinate",JSON.stringify(randomEscapeDoorCoordinate));
+    if (randomEscapeDoorCoordinate.getX() < 0 || randomEscapeDoorCoordinate.getX() >= ROWS || randomEscapeDoorCoordinate.getY() < 0 || randomEscapeDoorCoordinate.getY() >= COLUMNS) {
+        throw new InvalidCoordinateException("escape door coordinate", JSON.stringify(randomEscapeDoorCoordinate));
     }
-    logger(loggingLevel.INFO, "new random escape door coordinate = {0}.",JSON.stringify(randomEscapeDoorCoordinate));
+    logger(loggingLevel.INFO, "new random escape door coordinate = {0}.", JSON.stringify(randomEscapeDoorCoordinate));
     return randomEscapeDoorCoordinate;
 }
 

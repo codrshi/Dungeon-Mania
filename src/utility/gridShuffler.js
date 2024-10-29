@@ -1,3 +1,8 @@
+/* gridShuffler.js
+ *
+ * This utility file shuffles the cards of the grid.
+ */
+
 import { getRandom } from "./RNG.js";
 import config from "../../configuration/config.js";
 import { KnightDao } from "../dao/knightDao.js";

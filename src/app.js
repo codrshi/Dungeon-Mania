@@ -1,3 +1,34 @@
+/*
+ * app.js
+ *
+ * Express Application Initialization and Middleware Configuration
+ *
+ * Description:
+ * - This file serves as the entry point for the Express application.
+ * - It sets up middleware, routes, and error handling for the application.
+ *
+ * Middleware Configuration:
+ * - Parses incoming JSON requests using express.json().
+ * - Serves static files from the "public" directory at the "/static" route.
+ * - Configures the view engine to use EJS and sets the views directory to "template".
+ *
+ * Route Handlers:
+ * - Mounts the indexRouter, gameRouter, statsRouter, and guideRouter to handle requests to the root path ("/").
+ *
+ * Error Handling:
+ * - Centralized error handling middleware that captures and logs errors.
+ * - Differentiates between specific exception types (e.g., RenderPageException, InvalidCoordinateException)
+ *   and responds with appropriate error messages and status codes.
+ * - Logs unknown errors and responds with a generic 'Internal Server Error' message.
+ *
+ * Graceful Shutdown:
+ * - Listens for the SIGINT signal to log a shutdown message and terminate the process gracefully.
+ * - Handles unhandled promise rejections by logging the error details and associated promise.
+ *
+ * Exports:
+ * - Exports the configured Express application instance for use in other modules.
+ */
+
 import express from "express";
 import indexRouter from "./route/indexRoute.js";
 import gameRouter from "./route/gameRoute.js";
@@ -37,6 +68,7 @@ app.use((err, req, res, next) => {
     }
     else {
         logger(config.app.loggingLevel.ERROR, `Unknown error occured: ${err.name}: ${err.message}`);
+        logger(config.app.loggingLevel.ERROR, err.stack);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });

@@ -1,8 +1,17 @@
+/*
+ * ephemeral_config.js 
+ *
+ * This file defines the game's initial state and dynamic values that evolve throughout its lifecycle.
+ * These values are intended to be mutable and will change as the game progresses.
+ */
+
 const eph_config = {
+  //coordinates of knight
   coordinate: {
     x: 0,
     y: 0,
   },
+  //coordinates of mage monster
   mageCoordinate: {
     x: 2,
     y: 2,

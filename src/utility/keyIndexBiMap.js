@@ -1,3 +1,12 @@
+/* keyIndexBiMap.js 
+ * This utility file provides two bidirectional maps:
+ * - weapon-to-index map.
+ * - artifact-to-index map.
+ * 
+ * The index value starts from zero for both maps and it is mapped against IDs of weapon and artifact.
+ * The maps indexes are used to track interaction with each type of artifact and weapon to- maintain stats.
+ */
+
 import config from "../../configuration/config.js";
 
 class BiMap {

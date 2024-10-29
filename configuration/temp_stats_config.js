@@ -1,3 +1,10 @@
+/*
+ * temp_stats_config.js
+ *
+ * This file defines the dynamic statistics of the player, which evolve throughout the course of a specific game session.
+ * Upon the conclusion of the game session, the temp_stats_config is merged into stats_config.
+ */
+
 let temp_stats_config = {
     basicStats: {
         totalGamesMoves: 0,

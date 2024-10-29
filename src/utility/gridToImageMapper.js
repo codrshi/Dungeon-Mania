@@ -1,3 +1,9 @@
+/* gridToImageMapper.js 
+ *
+ * This utility files maps each dao element of grid with a 
+ * corressponding UI icon with image and attribute.
+ */
+
 import { ImageIconDao } from "../dao/imageIconDao.js";
 import { ArtifactDao } from "../dao/artifactDao.js";
 import { MonsterDao } from "../dao/monsterDao.js"
@@ -22,8 +28,8 @@ export function mapGrid(grid) {
         if (eph_config.activeEnema != null)
           grid[i][j].setId("knight_enema");
       }
-      else if(!(value instanceof ArtifactDao)){
-        throw new UndefinedCardException(value.constructor.name,config.game.EMPTY);
+      else if (!(value instanceof ArtifactDao)) {
+        throw new UndefinedCardException(value.constructor.name, config.game.EMPTY);
       }
       imageGrid[i][j] = new ImageIconDao("/static/asset/image/" + value.getId() + ".png", attribute);
     });

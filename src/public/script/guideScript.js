@@ -1,3 +1,4 @@
+// === Declare DOM Element Variables ===
 button = $(".button");
 guidePanelContent = $("#guide-panel-content");
 buttonClickAudio = $('#button-click-audio')[0];

@@ -1,3 +1,8 @@
+/* terminateGameUtility.js
+ *
+ * This utility file terminates the game by changing gameStatus and calls the statsUpdateUtility.js
+ */
+
 import config from "../../configuration/config.js";
 import eph_config from "../../configuration/ephemeral_config.js";
 import { updateStats } from "./statsUpdateUtility.js";

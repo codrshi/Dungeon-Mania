@@ -1,3 +1,4 @@
+// === Declare DOM Element Variables ===
 monsterStatsTable = $("#monster-stats-table");
 weaponStatsTable = $("#weapon-stats-table");
 button = $(".button");

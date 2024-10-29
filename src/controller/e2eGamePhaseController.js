@@ -1,3 +1,12 @@
+/*
+ * e2eGamePhaseController.js 
+ *
+ * This file contains the code responsible for initializing the game at its onset and concluding it at its end.
+ *
+ * Game Initialization: Sets up the grid with new cards.
+ * Game Conclusion: Clears the grid and resets both temp_stats_config and ephemeral_config.
+ */
+
 import config from "../../configuration/config.js";
 import eph_config from "../../configuration/ephemeral_config.js";
 import stats_config from "../../configuration/stats_config.js";
@@ -8,6 +17,7 @@ import { logger } from "../utility/loggerService.js";
 
 const loggingLevel = config.app.loggingLevel;
 
+// === Game Initialization Section ===
 export function setInit(isSurvivalMode) {
     logger(loggingLevel.INFO, "setting up the game.");
 
@@ -27,10 +37,13 @@ export function setInit(isSurvivalMode) {
     return initResData;
 }
 
+// === Game Conclusion Section ===
 export function clearEphConfig() {
     logger(loggingLevel.INFO, "clearing ephemeral configurations.");
 
     restoreDefaultEphConfig();
+    setGrid([]);
+    clearTempStatsConfig();
 }
 
 function restoreDefaultEphConfig() {
@@ -51,9 +64,6 @@ function restoreDefaultEphConfig() {
     eph_config.mageCoordinate.y = 2;
     eph_config.audioList = [];
     eph_config.screenLogs = ["- click on the dice icon to start the game."];
-
-    setGrid([]);
-    clearTempStatsConfig();
 }
 
 function clearTempStatsConfig() {

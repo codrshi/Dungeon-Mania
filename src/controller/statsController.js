@@ -1,3 +1,6 @@
+/* statsController.js returns the stats_config
+ */
+
 import stats_config from "../../configuration/stats_config.js";
 import { logger } from "../utility/loggerService.js";
 import config from "../../configuration/config.js";

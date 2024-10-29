@@ -1,3 +1,4 @@
+// === Declare DOM Element Variables ===
 button = $(".button");
 username = $('#username');
 highScore = $('#highScore');

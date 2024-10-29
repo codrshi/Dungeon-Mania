@@ -1,6 +1,19 @@
+/*
+ * config.js 
+ *
+ * This file defines application-wide configuration settings that remain constant throughout execution.
+ * Modifying these values is generally discouraged, as changes may lead to unexpected application behavior.
+ * 
+ * Sections:
+ * - App Configuration: Settings for general application behavior, such as server port and log levels.
+ * - Game Configuration: Settings specific to game mechanics, including attributes for monsters, weapons, and the game's grid layout.
+ */
+
 const config = {
+
+  // === App Configuration ===
   app: {
-    PORT: 8080,
+    PORT: 8080,   //// Port where the server listens
     url: {
       HOME_PAGE: "/",
       HOME_PAGE_USERNAME_HIGHSCORE: "/index/username-highscore",
@@ -24,6 +37,8 @@ const config = {
       1004: `undefined card obtained of type {0} and ID {1}`
     }
   },
+
+  // === Game Configuration ===
   game: {
     COUNTER_WEAPON_DAMAGE_MULTIPLIER: 1.5,
     COMMON_MONSTER_DAMAGE_MULTIPLIER: 2,
@@ -134,6 +149,7 @@ const config = {
       INFINTE: "∞",
       EMPTY: "",
     },
+    // Game spawn rates, setting probability for different monsters, weapons and artifacts to appear
     spawn_rate: {
       MONSTER: 22,
       monsters_spawn_rate: {
