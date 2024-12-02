@@ -17,9 +17,9 @@ Upon rolling the dice, player may move in any of the four cardinal directions (e
   ```
   git clone https://github.com/codrshi/Dungeon-Mania.git
   ```
-- Navigate to the `dungeon-mania` directory:
+- Navigate to the `Dungeon-Mania` directory:
   ```
-  cd dungeon-mania
+  cd Dungeon-Mania
   ```
 - Install all Node dependencies:
   ```
