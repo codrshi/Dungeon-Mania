@@ -19,7 +19,7 @@
  *
  */
 
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import { errorMessageBuilder } from "../utility/errorMessageBuilder.js";
 
 class UndefinedCardException extends Error {

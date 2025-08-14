@@ -15,7 +15,7 @@
  * - Unlocks a random escape door within the grid.
  */
 
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import { KnightDao } from "../dao/knightDao.js";
 import { WeaponDao } from "../dao/weaponDao.js";
 import { ArtifactDao } from "../dao/artifactDao.js";
@@ -23,7 +23,7 @@ import { MonsterDao } from "../dao/monsterDao.js";
 import Element from "../model/element.js";
 import { getRandom } from "./RNG.js";
 import { CoordinateDao } from "../dao/coordinateDao.js";
-import eph_config from "../../configuration/ephemeral_config.js";
+import eph_config from "../configuration/ephemeral_config.js";
 import { getCardFromGrid, setCardInGrid, setGrid } from "./gridAccessor.js";
 import { logger } from "../utility/loggerService.js";
 

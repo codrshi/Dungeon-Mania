@@ -4,11 +4,11 @@
  * of knight card with an weapon card.
  */
 
-import eph_config from "../../configuration/ephemeral_config.js";
-import config from "../../configuration/config.js";
+import eph_config from "../configuration/ephemeral_config.js";
+import config from "../configuration/config.js";
 import { WeaponDao } from "../dao/weaponDao.js";
 import { appreciateAura } from "../utility/auraAppreciator.js";
-import temp_stats_config from "../../configuration/temp_stats_config.js";
+import temp_stats_config from "../configuration/temp_stats_config.js";
 import { biMaps } from "../utility/keyIndexBiMap.js";
 import { logger } from "../utility/loggerService.js";
 

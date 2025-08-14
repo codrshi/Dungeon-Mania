@@ -12,6 +12,8 @@ Upon rolling the dice, player may move in any of the four cardinal directions (e
 - **Templating**/**Rendering**: HTML, EJS
 
 ## Installation Guide
+
+### Installation using Node.js
 - Ensure you have Node.js installed on your system.
 - Clone the repository:
   ```
@@ -29,4 +31,19 @@ Upon rolling the dice, player may move in any of the four cardinal directions (e
   ```
   npm start
   ```
+- The game should now be running at http://localhost:3030
+
+### Installation using docker
+- Ensure you have docker installed on your system.
+
+- Pull the latest docker image:
+  ```
+  docker pull codrshi/dungeon-mania:latest
+  ```
+
+- Run the docker image:
+  ```
+  docker run -p 3030:3030 codrshi/dungeon-mania:latest
+  ```
+
 - The game should now be running at http://localhost:3030

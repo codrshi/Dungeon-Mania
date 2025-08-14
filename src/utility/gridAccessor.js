@@ -8,7 +8,7 @@
  * - generates a new cards for a particular location in grid.
  */
 
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import { shuffleGrid } from "./gridShuffler.js";
 import { KnightDao } from "../dao/knightDao.js";
 import { WeaponDao } from "../dao/weaponDao.js";

@@ -17,7 +17,7 @@
  *   - DEFAULT: If an unrecognized level is passed, logs with a default label.
  */
 
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 
 export const logger = (level, message, ...params) => {
     const timestamp = new Date().toISOString();

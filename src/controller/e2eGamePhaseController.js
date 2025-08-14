@@ -7,10 +7,10 @@
  * Game Conclusion: Clears the grid and resets both temp_stats_config and ephemeral_config.
  */
 
-import config from "../../configuration/config.js";
-import eph_config from "../../configuration/ephemeral_config.js";
-import stats_config from "../../configuration/stats_config.js";
-import temp_stats_config from "../../configuration/temp_stats_config.js";
+import config from "../configuration/config.js";
+import eph_config from "../configuration/ephemeral_config.js";
+import stats_config from "../configuration/stats_config.js";
+import temp_stats_config from "../configuration/temp_stats_config.js";
 import { getGrid, initializeGrid, setGrid } from "../utility/gridAccessor.js";
 import { mapGrid } from "../utility/gridToImageMapper.js";
 import { logger } from "../utility/loggerService.js";

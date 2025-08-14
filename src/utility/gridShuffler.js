@@ -4,7 +4,7 @@
  */
 
 import { getRandom } from "./RNG.js";
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import { KnightDao } from "../dao/knightDao.js";
 
 const ROWS = config.game.grid.ROWS;

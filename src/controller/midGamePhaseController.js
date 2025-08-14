@@ -5,14 +5,14 @@
  * This includes functionality for dice rolls, as well as pre- and post-interaction logic for card engagement.
  */
 
-import eph_config from "../../configuration/ephemeral_config.js";
+import eph_config from "../configuration/ephemeral_config.js";
 import {
     createNewCard,
     setCardInGrid,
     getCardFromGrid,
 } from "../utility/gridAccessor.js";
 import { getRandom } from "../utility/RNG.js";
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import { WeaponDao } from "../dao/weaponDao.js";
 import { MonsterDao } from "../dao/monsterDao.js";
 import { KnightDao } from "../dao/knightDao.js";
@@ -25,7 +25,7 @@ import {
     getEscapeDoorCoordinate,
     updateMageLocation,
 } from "../utility/mageGridAccessor.js";
-import temp_stats_config from "../../configuration/temp_stats_config.js";
+import temp_stats_config from "../configuration/temp_stats_config.js";
 import InvalidCoordinateException from "../exception/invalidCoordinateException.js";
 import { logger } from "../utility/loggerService.js";
 import ExcessActivePoisonException from "../exception/excessActivePoisonException.js";

@@ -3,8 +3,8 @@
  * This utility file updates the score by a given value.
  */
 
-import eph_config from "../../configuration/ephemeral_config.js";
-import config from "../../configuration/config.js";
+import eph_config from "../configuration/ephemeral_config.js";
+import config from "../configuration/config.js";
 import { logger } from "../utility/loggerService.js";
 
 const loggingLevel = config.app.loggingLevel;

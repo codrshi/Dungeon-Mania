@@ -4,7 +4,7 @@
  * of knight card with an artifact card.
  */
 
-import eph_config from "../../configuration/ephemeral_config.js";
+import eph_config from "../configuration/ephemeral_config.js";
 import {
     getGrid,
     setGrid,
@@ -14,7 +14,7 @@ import {
 } from "../utility/gridAccessor.js";
 import { mapGrid } from "../utility/gridToImageMapper.js";
 import { getRandom } from "../utility/RNG.js";
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import { MonsterDao } from "../dao/monsterDao.js";
 import { updateScore } from "../utility/scoreUpdater.js";
 import { ArtifactDao } from "../dao/artifactDao.js";
@@ -25,7 +25,7 @@ import { ActiveEnemaDao } from "../dao/activeEnemaDao.js";
 import { updateHealth } from "../utility/healthUpdater.js";
 import { appreciateAura } from "../utility/auraAppreciator.js";
 import { terminateGame } from "../utility/terminateGameUtility.js";
-import temp_stats_config from "../../configuration/temp_stats_config.js";
+import temp_stats_config from "../configuration/temp_stats_config.js";
 import { biMaps } from "../utility/keyIndexBiMap.js";
 import { logger } from "../utility/loggerService.js";
 import UndefinedCardException from "../exception/undefinedCardException.js";

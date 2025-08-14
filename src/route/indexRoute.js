@@ -23,7 +23,7 @@
 
 import express from "express";
 import { getusernameAndHighScore } from "../controller/indexController.js";
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import { logger } from "../utility/loggerService.js";
 import RenderPageException from "../exception/renderPageException.js";
 

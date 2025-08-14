@@ -39,9 +39,9 @@
 import express from "express";
 import { clearEphConfig, setInit } from "../controller/e2eGamePhaseController.js";
 import { rollDiceExecute, processMove } from "../controller/midGamePhaseController.js";
-import config from "../../configuration/config.js";
-import eph_config from "../../configuration/ephemeral_config.js";
-import stats_config from "../../configuration/stats_config.js";
+import config from "../configuration/config.js";
+import eph_config from "../configuration/ephemeral_config.js";
+import stats_config from "../configuration/stats_config.js";
 import RenderPageException from "../exception/renderPageException.js";
 import { logger } from "../utility/loggerService.js";
 

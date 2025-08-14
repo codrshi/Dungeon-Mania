@@ -37,7 +37,7 @@ import guideRouter from "./route/guideRoute.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { logger } from "./utility/loggerService.js";
-import config from "../configuration/config.js";
+import config from "./configuration/config.js";
 import RenderPageException from "./exception/renderPageException.js";
 import InvalidCoordinateException from "./exception/invalidCoordinateException.js";
 import ExcessActivePoisonException from "./exception/excessActivePoisonException.js";

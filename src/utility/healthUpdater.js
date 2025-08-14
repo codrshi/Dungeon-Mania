@@ -7,8 +7,8 @@
  * - terminate the game if health reaches zero.
  */
 
-import config from "../../configuration/config.js";
-import eph_config from "../../configuration/ephemeral_config.js";
+import config from "../configuration/config.js";
+import eph_config from "../configuration/ephemeral_config.js";
 import { terminateGame } from "./terminateGameUtility.js";
 import { logger } from "../utility/loggerService.js";
 

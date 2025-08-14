@@ -8,8 +8,8 @@
  * - responsible for initializing mage grid if aura reaches 1000
  */
 
-import eph_config from "../../configuration/ephemeral_config.js";
-import config from "../../configuration/config.js";
+import eph_config from "../configuration/ephemeral_config.js";
+import config from "../configuration/config.js";
 import { getGrid } from "./gridAccessor.js";
 import { initializeMageGrid } from "./mageGridAccessor.js";
 import { mapGrid } from "./gridToImageMapper.js";

@@ -9,8 +9,8 @@ import { ArtifactDao } from "../dao/artifactDao.js";
 import { MonsterDao } from "../dao/monsterDao.js"
 import { WeaponDao } from "../dao/weaponDao.js";
 import { KnightDao } from "../dao/knightDao.js";
-import eph_config from "../../configuration/ephemeral_config.js";
-import config from "../../configuration/config.js";
+import eph_config from "../configuration/ephemeral_config.js";
+import config from "../configuration/config.js";
 
 export function mapGrid(grid) {
   let imageGrid = [];

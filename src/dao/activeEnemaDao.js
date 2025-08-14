@@ -1,4 +1,4 @@
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import { ActiveEnema } from "../model/activeEnema.js";
 
 export class ActiveEnemaDao {

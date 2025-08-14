@@ -7,7 +7,7 @@
  * The maps indexes are used to track interaction with each type of artifact and weapon to- maintain stats.
  */
 
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 
 class BiMap {
     constructor() {

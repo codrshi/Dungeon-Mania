@@ -1,4 +1,4 @@
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import { ActivePoison } from "../model/activePoison.js";
 
 export class ActivePoisonDao {

@@ -4,9 +4,9 @@
  * of knight card with an monster card.
  */
 
-import eph_config from "../../configuration/ephemeral_config.js";
+import eph_config from "../configuration/ephemeral_config.js";
 import { getRandom } from "../utility/RNG.js";
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 import Element from "../model/element.js";
 import { updateScore } from "../utility/scoreUpdater.js";
 import { ArtifactDao } from "../dao/artifactDao.js";
@@ -15,7 +15,7 @@ import { appreciateAura } from "../utility/auraAppreciator.js";
 import {
     getRandomEscapeDoorCoordinate,
 } from "../utility/mageGridAccessor.js";
-import temp_stats_config from "../../configuration/temp_stats_config.js";
+import temp_stats_config from "../configuration/temp_stats_config.js";
 import { logger } from "../utility/loggerService.js";
 
 const loggingLevel = config.app.loggingLevel;

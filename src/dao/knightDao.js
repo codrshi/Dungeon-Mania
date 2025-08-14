@@ -1,5 +1,5 @@
 import { Knight } from "../model/knight.js";
-import config from "../../configuration/config.js";
+import config from "../configuration/config.js";
 
 export class KnightDao {
     knight;

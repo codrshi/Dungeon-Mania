@@ -6,7 +6,7 @@
  */
 
 import sillyname from "sillyname";
-import stats_config from "../../configuration/stats_config.js";
+import stats_config from "../configuration/stats_config.js";
 
 stats_config.basicStats.username = sillyname();
 

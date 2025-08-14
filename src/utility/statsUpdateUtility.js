@@ -3,10 +3,10 @@
  * This utility file updates the stats_config using the temp_stats_config after game terminates.
  */
 
-import config from "../../configuration/config.js";
-import eph_config from "../../configuration/ephemeral_config.js";
-import stats_config from "../../configuration/stats_config.js";
-import temp_stats_config from "../../configuration/temp_stats_config.js";
+import config from "../configuration/config.js";
+import eph_config from "../configuration/ephemeral_config.js";
+import stats_config from "../configuration/stats_config.js";
+import temp_stats_config from "../configuration/temp_stats_config.js";
 import { biMaps } from "./keyIndexBiMap.js";
 
 export function updateStats(gameStatus) {
