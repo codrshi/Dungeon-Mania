@@ -1,114 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Dungeon Mania</title>
+  <%- include('partials/head', {style: 'gameStyle.css'}) %>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="/static/style/gameStyle.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Nerko+One&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap" rel="stylesheet">
-</head>
+  <body>
+    <div class="flex-container">
+      <!-- player status panel -->
+      <div id="player-status-panel" class="panel">
+        <span id="username"></span>
+        <span id="score"></span>
 
-<body>
-  <div class="flex-container">
-    <!-- player status panel -->
-    <div id="player-status-panel" class="panel">
-      <span id="username"></span>
-      <span id="score"></span>
+        <div id="player-attribute-sub-panel" class="sub-panel">
 
-      <div id="player-attribute-sub-panel" class="sub-panel">
-
-        <div id="weapon-micro-panel" class="player-attribute-micro-panel">
-          <span class="weapon-micro-panel-heading">WEAPON</span>
-          <img class="weapon-micro-panel-image" src="/static/asset/image/weapon_placeholder.png">
-          <span class="weapon-micro-panel-attribute"></span>
-        </div>
-
-        <div id="active-poison-micro-panel" class="player-attribute-micro-panel">
-          <span class="active-poison-panel-heading">POISON</span>
-          <img class="active-poison-micro-panel-image disabled-cell-image"
-            src="/static/asset/image/artifact_poison_potion.png">
-          <span class="active-poison-micro-panel-attribute"></span>
-        </div>
-
-        <div id="aura-micro-panel" class="player-attribute-micro-panel">
-          <span class="aura-micro-panel-heading">AURA</span>
-          <img class="aura-micro-panel-image" src="/static/asset/image/aura.png">
-          <div class="aura-overlay"></div>
-          <span class="aura-micro-panel-attribute">0</span>
-        </div>
-
-      </div>
-
-      <div id="button-sub-panel" class="sub-panel">
-        <img class="roll-dice-image" src="/static/asset/image/dice_face_1.png">
-        <button id="pause-button" class="button">Pause</button>
-      </div>
-
-      <div id="screen-log-sub-panel" class="sub-panel">
-        <span id="screen-log-sub-panel-text"></span>
-      </div>
-    </div>
-
-    <!-- grid panel -->
-    <div id="grid-panel" class="grid-container panel">
-
-      <% for(let i=0;i<grid.length;i++) { %>
-        <% for(let j=0;j<grid[i].length;j++){ %>
-
-          <div class="cell" data-x=<%=i %> data-y=<%= j %>>
-              <img class="cell-image" src=<%=grid[i][j].getImageSource() %>>
-              <span class="cell-attribute">
-                <%= grid[i][j].getAttribute() %>
-              </span>
+          <div id="weapon-micro-panel" class="player-attribute-micro-panel">
+            <span class="weapon-micro-panel-heading">WEAPON</span>
+            <img class="weapon-micro-panel-image" src="/static/asset/image/weapon_placeholder.png">
+            <span class="weapon-micro-panel-attribute"></span>
           </div>
 
-          <% }; %>
+          <div id="active-poison-micro-panel" class="player-attribute-micro-panel">
+            <span class="active-poison-panel-heading">POISON</span>
+            <img class="active-poison-micro-panel-image disabled-cell-image"
+              src="/static/asset/image/artifact_poison_potion.png">
+            <span class="active-poison-micro-panel-attribute"></span>
+          </div>
+
+          <div id="aura-micro-panel" class="player-attribute-micro-panel">
+            <span class="aura-micro-panel-heading">AURA</span>
+            <img class="aura-micro-panel-image" src="/static/asset/image/aura.png">
+            <div class="aura-overlay"></div>
+            <span class="aura-micro-panel-attribute">0</span>
+          </div>
+
+        </div>
+
+        <div id="button-sub-panel" class="sub-panel">
+          <img class="roll-dice-image" src="/static/asset/image/dice_face_1.png">
+          <button id="pause-button" class="button">Pause</button>
+        </div>
+
+        <div id="screen-log-sub-panel" class="sub-panel">
+          <span id="screen-log-sub-panel-text"></span>
+        </div>
+      </div>
+
+      <!-- grid panel -->
+      <div id="grid-panel" class="grid-container panel">
+
+        <% for(let i=0;i<grid.length;i++) { %>
+          <% for(let j=0;j<grid[i].length;j++){ %>
+
+            <div class="cell" data-x=<%=i %> data-y=<%= j %>>
+                <img class="cell-image" src=<%=grid[i][j].getImageSource() %>>
+                <span class="cell-attribute">
+                  <%= grid[i][j].getAttribute() %>
+                </span>
+            </div>
+
             <% }; %>
+              <% }; %>
 
-    </div>
-  </div>
-
-  <div id="modal-dialog">
-    <div id="modal-content">
-      <span id="modal-heading">game paused</span>
-      <span id="modal-body">press anywhere outside to resume</span>
-
-      <div id="modal-buttons">
-        <button id="replay-button" class="button">Replay</button>
-        <button id="exit-button" class="button">Exit</button>
       </div>
     </div>
-  </div>
-  <div id="modal-dialog-overlay">
-  </div>
 
-  <div class="audio-panel">
-    <audio id="button-click-audio" src="/static/asset/sound/button_click.wav" preload="auto"></audio>
-    <audio id="bomb-explode-audio" src="/static/asset/sound/bomb_explode.mp3" preload="auto"></audio>
-    <audio id="game-lost-audio" src="/static/asset/sound/game_lost.mp3" preload="auto"></audio>
-    <audio id="game-won-audio" src="/static/asset/sound/game_won.wav" preload="auto"></audio>
-    <audio id="mage-appears-audio" src="/static/asset/sound/mage_appears.mp3" preload="auto"></audio>
-    <audio id="monster-killed-audio" src="/static/asset/sound/monster_killed.wav" preload="auto"></audio>
-    <audio id="potion-drink-audio" src="/static/asset/sound/potion_drink.mp3" preload="auto"></audio>
-    <audio id="weapon-grabbed-audio" src="/static/asset/sound/weapon_grabbed.wav" preload="auto"></audio>
-    <audio id="roll-dice-audio" src="/static/asset/sound/dice_roll.mp3" preload="auto"></audio>
-    <audio id="door-open-audio" src="/static/asset/sound/door_open.mp3" preload="auto"></audio>
-    <audio id="door-close-audio" src="/static/asset/sound/door_close.mp3" preload="auto"></audio>
-    <audio id="chaos-orb-audio" src="/static/asset/sound/chaos_orb_pickup.mp3" preload="auto"></audio>
-    <audio id="enema-elixir-audio" src="/static/asset/sound/enema_elixir_pickup.mp3" preload="auto"></audio>
-    <audio id="mana-stone-audio" src="/static/asset/sound/mana_stone_pickup.mp3" preload="auto"></audio>
-    <audio id="weapon-forger-audio" src="/static/asset/sound/weapon_forger_pickup.mp3" preload="auto"></audio>
-  </div>
+    <div id="modal-dialog">
+      <div id="modal-content">
+        <span id="modal-heading">game paused</span>
+        <span id="modal-body">press anywhere outside to resume</span>
 
-  <script src="/static/script/gameScript.js" defer></script>
-</body>
+        <div id="modal-buttons">
+          <button id="replay-button" class="button">Replay</button>
+          <button id="exit-button" class="button">Exit</button>
+        </div>
+      </div>
+    </div>
+    <div id="modal-dialog-overlay">
+    </div>
+
+    <div class="audio-panel">
+      <audio id="button-click-audio" src="/static/asset/sound/button_click.wav" preload="auto"></audio>
+      <audio id="bomb-explode-audio" src="/static/asset/sound/bomb_explode.mp3" preload="auto"></audio>
+      <audio id="game-lost-audio" src="/static/asset/sound/game_lost.mp3" preload="auto"></audio>
+      <audio id="game-won-audio" src="/static/asset/sound/game_won.wav" preload="auto"></audio>
+      <audio id="mage-appears-audio" src="/static/asset/sound/mage_appears.mp3" preload="auto"></audio>
+      <audio id="monster-killed-audio" src="/static/asset/sound/monster_killed.wav" preload="auto"></audio>
+      <audio id="potion-drink-audio" src="/static/asset/sound/potion_drink.mp3" preload="auto"></audio>
+      <audio id="weapon-grabbed-audio" src="/static/asset/sound/weapon_grabbed.wav" preload="auto"></audio>
+      <audio id="roll-dice-audio" src="/static/asset/sound/dice_roll.mp3" preload="auto"></audio>
+      <audio id="door-open-audio" src="/static/asset/sound/door_open.mp3" preload="auto"></audio>
+      <audio id="door-close-audio" src="/static/asset/sound/door_close.mp3" preload="auto"></audio>
+      <audio id="chaos-orb-audio" src="/static/asset/sound/chaos_orb_pickup.mp3" preload="auto"></audio>
+      <audio id="enema-elixir-audio" src="/static/asset/sound/enema_elixir_pickup.mp3" preload="auto"></audio>
+      <audio id="mana-stone-audio" src="/static/asset/sound/mana_stone_pickup.mp3" preload="auto"></audio>
+      <audio id="weapon-forger-audio" src="/static/asset/sound/weapon_forger_pickup.mp3" preload="auto"></audio>
+    </div>
+
+    <script src="/static/script/gameScript.js" defer></script>
+  </body>
 
 </html>

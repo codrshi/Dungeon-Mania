@@ -1,182 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Dungeon Mania</title>
+  <%- include('partials/head', {style: 'guideStyle.css'}) %>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="/static/style/guideStyle.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Nerko+One&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap" rel="stylesheet">
-</head>
+  <body>
+    <div id="guide-panel" class="panel">
+      <div id="guide-panel-content">
+        <span class="sub-heading">INTRODUCTION</span>
+        <p class="paragraph">Dungeon Mania is a dice-based card game in which player navigate their character card
+          across a board, with movement determined by the dice roll. Player interacts with other
+          cards on the board as they progress.<br><br><br></p>
 
-<body>
-  <div id="guide-panel" class="panel">
-    <div id="guide-panel-content">
-      <span class="sub-heading">INTRODUCTION</span>
-      <p class="paragraph">Dungeon Mania is a dice-based card game in which player navigate their character card
-        across a board, with movement determined by the dice roll. Player interacts with other
-        cards on the board as they progress.<br><br><br></p>
+        <span class="sub-heading">HOW TO PLAY</span>
+        <p class="paragraph">Upon clicking the dice button
+          <image src="/static/asset/image/dice_face_1.png" class="image-icon"></image>
+          and receiving a number, <span class="game-highlight">player may move in any of the
+            four cardinal directions (east, west, north, south)</span> by that number and interact with
+          the card they land on. Depending upon the card type, player's health might increase or decrease.
+          <span class="game-highlight">Once health reaches zero, the game terminates</span>.<br><br>
+          <b>NOTE:</b> Once the player's aura reaches a certain threshold, diagonal movements also becomes
+          available.<br><br><br>
+        </p>
 
-      <span class="sub-heading">HOW TO PLAY</span>
-      <p class="paragraph">Upon clicking the dice button
-        <image src="/static/asset/image/dice_face_1.png" class="image-icon"></image>
-        and receiving a number, <span class="game-highlight">player may move in any of the
-          four cardinal directions (east, west, north, south)</span> by that number and interact with
-        the card they land on. Depending upon the card type, player's health might increase or decrease.
-        <span class="game-highlight">Once health reaches zero, the game terminates</span>.<br><br>
-        <b>NOTE:</b> Once the player's aura reaches a certain threshold, diagonal movements also becomes
-        available.<br><br><br>
-      </p>
+        <span class="sub-heading">INTERACTION WITH WEAPON CARD</span>
+        <p class="paragraph">When a player lands on a weapon card with a specific damage value,
+          <span class="game-highlight">the player acquires that weapon and can utilize it to defeat monsters</span>
+          until the damage value is fully depleted. However, if player uses it's weapon against whose health exceeds
+          weapon's damage, the weapon will break and the player will lose it.<br><br>There are four distinct types of
+          weapons in the game, each corresponding to a particular elemental category:<br>
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>WEAPON</th>
+              <th>ELEMENT TYPE</th>
+              <th>EFFECTIVE AGAINST</th>
+              <th>INEFFECTIVE AGAINST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sword <img class="image-icon" src="/static/asset/image/weapon_sword.png"></td>
+              <td>Pyro <img class="image-icon" src="/static/asset/image/element_pyro.png"></td>
+              <td>Aero monsters</td>
+              <td>Hydro monsters</td>
+            </tr>
+            <tr>
+              <td>Crossbow <img class="image-icon" src="/static/asset/image/weapon_crossbow.png"></td>
+              <td>Aero <img class="image-icon" src="/static/asset/image/element_aero.png"></td>
+              <td>Electro monsters</td>
+              <td>Pyro monsters</td>
+            </tr>
+            <tr>
+              <td>Grimoire <img class="image-icon" src="/static/asset/image/weapon_grimoire.png"></td>
+              <td>Electro <img class="image-icon" src="/static/asset/image/element_electro.png"></td>
+              <td>Hydro monsters</td>
+              <td>Aero monsters</td>
+            </tr>
+            <tr>
+              <td>Staff <img class="image-icon" src="/static/asset/image/weapon_staff.png"></td>
+              <td>Hydro <img class="image-icon" src="/static/asset/image/element_hydro.png"></td>
+              <td>Pyro monsters</td>
+              <td>Electro monsters</td>
+            </tr>
+          </tbody>
+        </table>
+        <br><br><br>
 
-      <span class="sub-heading">INTERACTION WITH WEAPON CARD</span>
-      <p class="paragraph">When a player lands on a weapon card with a specific damage value,
-        <span class="game-highlight">the player acquires that weapon and can utilize it to defeat monsters</span>
-        until the damage value is fully depleted. However, if player uses it's weapon against whose health exceeds
-        weapon's damage, the weapon will break and the player will lose it.<br><br>There are four distinct types of
-        weapons in the game, each corresponding to a particular elemental category:<br>
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>WEAPON</th>
-            <th>ELEMENT TYPE</th>
-            <th>EFFECTIVE AGAINST</th>
-            <th>INEFFECTIVE AGAINST</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Sword <img class="image-icon" src="/static/asset/image/weapon_sword.png"></td>
-            <td>Pyro <img class="image-icon" src="/static/asset/image/element_pyro.png"></td>
-            <td>Aero monsters</td>
-            <td>Hydro monsters</td>
-          </tr>
-          <tr>
-            <td>Crossbow <img class="image-icon" src="/static/asset/image/weapon_crossbow.png"></td>
-            <td>Aero <img class="image-icon" src="/static/asset/image/element_aero.png"></td>
-            <td>Electro monsters</td>
-            <td>Pyro monsters</td>
-          </tr>
-          <tr>
-            <td>Grimoire <img class="image-icon" src="/static/asset/image/weapon_grimoire.png"></td>
-            <td>Electro <img class="image-icon" src="/static/asset/image/element_electro.png"></td>
-            <td>Hydro monsters</td>
-            <td>Aero monsters</td>
-          </tr>
-          <tr>
-            <td>Staff <img class="image-icon" src="/static/asset/image/weapon_staff.png"></td>
-            <td>Hydro <img class="image-icon" src="/static/asset/image/element_hydro.png"></td>
-            <td>Pyro monsters</td>
-            <td>Electro monsters</td>
-          </tr>
-        </tbody>
-      </table>
-      <br><br><br>
+        <span class="sub-heading">INTERACTION WITH MONSTER CARD</span>
+        <p class="paragraph">When the player lands on a monster card, they can defeat the monster using the weapon
+          equipped.
+          <span class="game-highlight">If the player is unarmed, their health will be compromised</span>.
+          There are three categories of monsters:
+        </p>
+        <ul>
+          <li><b>Normal Monsters</b> : These are the low health monster which can be slayed easily.</li>
+          <li><b>Elemental Monsters</b> : These monsters have comparatively higher health and are associatd with
+            a specific elemental type.</li>
+          <li><b>Dark Elemental Monsters</b> : These monsters spawns less frequently and have possess much higher health.
+            <span class="game-highlight">They can only be defeated if the player's aura exceeds the monster health</span>,
+            otherwise the monster will consume
+            up the player's aura.
+            </b>
+          </li>
+        </ul>
+        <br><br><br>
 
-      <span class="sub-heading">INTERACTION WITH MONSTER CARD</span>
-      <p class="paragraph">When the player lands on a monster card, they can defeat the monster using the weapon
-        equipped.
-        <span class="game-highlight">If the player is unarmed, their health will be compromised</span>.
-        There are three categories of monsters:
-      </p>
-      <ul>
-        <li><b>Normal Monsters</b> : These are the low health monster which can be slayed easily.</li>
-        <li><b>Elemental Monsters</b> : These monsters have comparatively higher health and are associatd with
-          a specific elemental type.</li>
-        <li><b>Dark Elemental Monsters</b> : These monsters spawns less frequently and have possess much higher health.
-          <span class="game-highlight">They can only be defeated if the player's aura exceeds the monster health</span>,
-          otherwise the monster will consume
-          up the player's aura.
-          </b>
-        </li>
-      </ul>
-      <br><br><br>
+        <span class="sub-heading">INTERACTION WITH ARTIFACT CARD</span>
+        <p class="paragraph">When player lands on an artifact card, <span class="game-highlight">the effect of the
+            artifact is determined by the dice value</span>.<br>
+          Available artifacts:</p>
+        <ul>
+          <li><b>Bomb</b>
+            <image src="/static/asset/image/artifact_bomb.png" class="image-icon"></image> : The player takes damage if
+            they land on the bomb card or any card adjacent to it.
+          </li>
+          <li><b>Health Potion</b>
+            <image src="/static/asset/image/artifact_health_potion.png" class="image-icon"></image> : restores a portion
+            of the player's health
+          </li>
+          <li><b>Poison Potion</b>
+            <image src="/static/asset/image/artifact_poison_potion.png" class="image-icon"></image> : gradually decreases
+            the player's health for the next three turns.
+          </li>
+          <li><b>Mixed Potion</b>
+            <image src="/static/asset/image/artifact_mixed_potion.png" class="image-icon"></image> : acts as either a
+            health potion or a poison potion.
+          </li>
+          <li><b>Weapon Forger</b>
+            <image src="/static/asset/image/artifact_weapon_forger.png" class="image-icon"></image> : enchances the damage
+            value of the weapon currently equipped by the player.
+          </li>
+          <li><b>Chaos Orb</b>
+            <image src="/static/asset/image/artifact_chaos_orb.png" class="image-icon"></image> : shuffles all the cards
+            on the grid
+          </li>
+          <li><b>Enema Elixir</b>
+            <image src="/static/asset/image/artifact_enema_elixir.png" class="image-icon"></image> : buffs the player for
+            the next five turns, allowing player to defeat monsters more effectively while dealing reduced damage.
+          </li>
+          <li><b>Mana Stone</b>
+            <image src="/static/asset/image/artifact_mana_stone.png" class="image-icon"></image> : instantly kills all the
+            monsters present adjacent to this card.
+          </li>
+          <li><b>Mystery Chest</b>
+            <image src="/static/asset/image/artifact_mystery_chest.png" class="image-icon"></image> : contains any one of
+            the artifacts mentioned above.
+          </li>
+        </ul>
+        <br><br><br>
 
-      <span class="sub-heading">INTERACTION WITH ARTIFACT CARD</span>
-      <p class="paragraph">When player lands on an artifact card, <span class="game-highlight">the effect of the
-          artifact is determined by the dice value</span>.<br>
-        Available artifacts:</p>
-      <ul>
-        <li><b>Bomb</b>
-          <image src="/static/asset/image/artifact_bomb.png" class="image-icon"></image> : The player takes damage if
-          they land on the bomb card or any card adjacent to it.
-        </li>
-        <li><b>Health Potion</b>
-          <image src="/static/asset/image/artifact_health_potion.png" class="image-icon"></image> : restores a portion
-          of the player's health
-        </li>
-        <li><b>Poison Potion</b>
-          <image src="/static/asset/image/artifact_poison_potion.png" class="image-icon"></image> : gradually decreases
-          the player's health for the next three turns.
-        </li>
-        <li><b>Mixed Potion</b>
-          <image src="/static/asset/image/artifact_mixed_potion.png" class="image-icon"></image> : acts as either a
-          health potion or a poison potion.
-        </li>
-        <li><b>Weapon Forger</b>
-          <image src="/static/asset/image/artifact_weapon_forger.png" class="image-icon"></image> : enchances the damage
-          value of the weapon currently equipped by the player.
-        </li>
-        <li><b>Chaos Orb</b>
-          <image src="/static/asset/image/artifact_chaos_orb.png" class="image-icon"></image> : shuffles all the cards
-          on the grid
-        </li>
-        <li><b>Enema Elixir</b>
-          <image src="/static/asset/image/artifact_enema_elixir.png" class="image-icon"></image> : buffs the player for
-          the next five turns, allowing player to defeat monsters more effectively while dealing reduced damage.
-        </li>
-        <li><b>Mana Stone</b>
-          <image src="/static/asset/image/artifact_mana_stone.png" class="image-icon"></image> : instantly kills all the
-          monsters present adjacent to this card.
-        </li>
-        <li><b>Mystery Chest</b>
-          <image src="/static/asset/image/artifact_mystery_chest.png" class="image-icon"></image> : contains any one of
-          the artifacts mentioned above.
-        </li>
-      </ul>
-      <br><br><br>
+        <span class="sub-heading">ABOUT AURA</span>
+        <p class="paragraph">The player possesses an aura attribute that
+          <span class="game-highlight">ranges from a minimum of 0 to a maximum of 1000</span>. The aura value increases
+          through interactions with any type of card, with the exception of encounters with dark elemental monsters,
+          which results in a decrease in aura.<br>
+          When the aura exceeds the threshold of 600,the player gains ability to move diagonally on the grid.
+          <span class="game-highlight"> Upon reaching the maximum aura value of 1000, the player transitions
+            into the Mage Realm</span>, where aura diminishes by 500 with every subsequent turns.<br><br>
+          At any point during the game, <span class="game-highlight">if aura drops to 0, the player will die and game
+            terminates</span>.
+        </p>
+        <br><br><br>
 
-      <span class="sub-heading">ABOUT AURA</span>
-      <p class="paragraph">The player possesses an aura attribute that
-        <span class="game-highlight">ranges from a minimum of 0 to a maximum of 1000</span>. The aura value increases
-        through interactions with any type of card, with the exception of encounters with dark elemental monsters,
-        which results in a decrease in aura.<br>
-        When the aura exceeds the threshold of 600,the player gains ability to move diagonally on the grid.
-        <span class="game-highlight"> Upon reaching the maximum aura value of 1000, the player transitions
-          into the Mage Realm</span>, where aura diminishes by 500 with every subsequent turns.<br><br>
-        At any point during the game, <span class="game-highlight">if aura drops to 0, the player will die and game
-          terminates</span>.
-      </p>
-      <br><br><br>
-
-      <span class="sub-heading">ABOUT THE MAGE REALM</span>
-      <p class="paragraph">In the mage realm, the player's aura decreases by 500 with each turn. The player must
-        swiftly escape before the aura drops to 0 by defeating the mage.<br>
-        <span class="game-highlight">The mage possesses infinte health and hence, cannot be defeated</span>. In
-        each turn, the mage updates its location in grid and changes its elemental type.<br>
-        When player lands on a Mage card, there is a slight chance that mage will drop the key. This will unlock one
-        of the four locked doors for the subsequent five turns.<span class="game-highlight"> The player must escape
-          before the door closes in order
-          to win the game</span>.<br>
-        If a mage is attacked with a counter-elemental weapon, the chance of obtaining the key increases.
-      </p>
+        <span class="sub-heading">ABOUT THE MAGE REALM</span>
+        <p class="paragraph">In the mage realm, the player's aura decreases by 500 with each turn. The player must
+          swiftly escape before the aura drops to 0 by defeating the mage.<br>
+          <span class="game-highlight">The mage possesses infinte health and hence, cannot be defeated</span>. In
+          each turn, the mage updates its location in grid and changes its elemental type.<br>
+          When player lands on a Mage card, there is a slight chance that mage will drop the key. This will unlock one
+          of the four locked doors for the subsequent five turns.<span class="game-highlight"> The player must escape
+            before the door closes in order
+            to win the game</span>.<br>
+          If a mage is attacked with a counter-elemental weapon, the chance of obtaining the key increases.
+        </p>
+      </div>
     </div>
-  </div>
 
-  <button id="back-button" class="button">back</button>
+    <button id="back-button" class="button">back</button>
 
-  <div class="audio-panel">
-    <audio id="button-click-audio" src="/static/asset/sound/button_click.wav" preload="auto"></audio>
-  </div>
+    <div class="audio-panel">
+      <audio id="button-click-audio" src="/static/asset/sound/button_click.wav" preload="auto"></audio>
+    </div>
 
-  <script src="/static/script/guideScript.js" defer></script>
-</body>
+    <script src="/static/script/guideScript.js" defer></script>
+  </body>
 
 </html>
