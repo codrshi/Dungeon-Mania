@@ -23,13 +23,9 @@ Upon rolling the dice, player may move in any of the four cardinal directions (e
   ```
   cd Dungeon-Mania
   ```
-- Install all Node dependencies:
+- Run the deploy command:
   ```
-  npm install
-  ```
-- Start the server:
-  ```
-  npm start
+  npm run deploy
   ```
 - The game should now be running at http://localhost:3030
 
