@@ -14,4 +14,8 @@ export class ArtifactDao {
     setId(id) {
         this.artifact.id = id;
     }
+
+    toJSON() {
+        return { id: this.artifact.id };
+    }
 }

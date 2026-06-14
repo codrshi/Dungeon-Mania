@@ -19,7 +19,14 @@ export class ImageIconDao {
         return this.imageIcon.attribute;
     }
 
-    setImageSource(attribute) {
+    setAttribute(attribute) {
         this.imageIcon.attribute = attribute;
+    }
+
+    toJSON() {
+        return {
+            imageSource: this.imageIcon.imageSource,
+            attribute: this.imageIcon.attribute,
+        };
     }
 }

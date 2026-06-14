@@ -22,7 +22,7 @@ const eph_config = {
   newGrid: [],
   newCardLocations: [],
   activePoisons: [],
-  activeEnema: null,
+  activeEnigma: null,
   aura: 0,
   isAuraThresholdThreeCrossed: false,
   isSurvivalMode: false,
@@ -31,6 +31,9 @@ const eph_config = {
   audioList: [],
   isGameCrash: false,
   screenLogs: ["- click on the dice icon to start the game."],
+  // Server-tracked dice roll so process-move can't be replayed or spoofed.
+  lastValidPositions: [],
+  lastDiceNumber: null,
 };
 
 export default eph_config;

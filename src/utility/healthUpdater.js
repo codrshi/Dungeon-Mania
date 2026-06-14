@@ -25,8 +25,8 @@ export function updateHealth(healthStatus, amount) {
             eph_config.screenLogs.push("- gained " + (eph_config.knightHealth - tempVar) + " health.");
     }
     else if (healthStatus === config.game.health.DECREASE) {
-        if (eph_config.activeEnema != null) {
-            amount -= Math.ceil(amount * eph_config.activeEnema.getBuff() / 100);
+        if (eph_config.activeEnigma != null) {
+            amount -= Math.ceil(amount * eph_config.activeEnigma.getBuff() / 100);
         }
         eph_config.knightHealth = Math.max(0, eph_config.knightHealth - amount);
 
@@ -39,7 +39,8 @@ export function updateHealth(healthStatus, amount) {
             eph_config.screenLogs.push("- lost " + (tempVar - eph_config.knightHealth) + " health.");
     }
     else {
-        logger(loggingLevel.WARN, "Could not update health due to invalid value of health status.");
+        logger(loggingLevel.WARN, "Could not update health due to invalid value of health status = {0}.", healthStatus);
+        return;
     }
 
     logger(loggingLevel.INFO, "health updated:\nprevious value: {0}, new value: {1}, difference = {2}.", tempVar, eph_config.knightHealth, eph_config.knightHealth - tempVar);

@@ -1,8 +1,10 @@
+'use strict';
+
 // === Declare DOM Element Variables ===
-monsterStatsTable = $("#monster-stats-table");
-weaponStatsTable = $("#weapon-stats-table");
-button = $(".button");
-buttonClickAudio = $("#button-click-audio")[0];
+const monsterStatsTable = $("#monster-stats-table");
+const weaponStatsTable = $("#weapon-stats-table");
+const button = $(".button");
+const buttonClickAudio = $("#button-click-audio")[0];
 
 $(function () {
     if (monsterStatsTable.children().eq(7).text().startsWith("-"))

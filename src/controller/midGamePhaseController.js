@@ -32,6 +32,8 @@ import ExcessActivePoisonException from "../exception/excessActivePoisonExceptio
 import { dealWeapon } from "../utility/weaponInteractionManager.js";
 import { dealArtifact } from "../utility/artifactInteractionManager.js";
 import { dealMonster } from "../utility/monsterInteractionManager.js";
+import { computeBombDamage } from "../utility/bombFormula.js";
+import { buildEphConfigDto } from "./ephConfigDto.js";
 
 const loggingLevel = config.app.loggingLevel;
 const movements = [
@@ -69,21 +71,27 @@ export function rollDiceExecute() {
     const diceNumber = getRandom(1, 6);
     logger(loggingLevel.INFO, "dice number obtained = {0}.", diceNumber);
 
-    const validNextPositions = movements
-        .map(movement => {
-            const validNextPosition = new CoordinateDao(
-                (eph_config.coordinate.x + movement[0] * diceNumber + config.game.grid.ROWS) % config.game.grid.ROWS,
-                (eph_config.coordinate.y + movement[1] * diceNumber + config.game.grid.ROWS) % config.game.grid.ROWS
-            );
+    // Decide the allowed direction set BEFORE filtering for walls/doors,
+    // so blocked cardinals can never get replaced by diagonals.
+    const allowedMovements = eph_config.aura < config.game.aura.AURA_THRESHOLD_2
+        ? movements.slice(0, 4)
+        : movements;
 
-            const cardId = getCardFromGrid(validNextPosition).getId();
-            return (cardId === config.game.id.artifact.WALL || cardId === config.game.id.artifact.CLOSE_DOOR)
-                ? null
-                : validNextPosition;
-        })
-        .filter(Boolean)
-        .slice(0, eph_config.aura < config.game.aura.AURA_THRESHOLD_2 ? 4 : undefined);
+    const validNextPositions = allowedMovements
+        .map(movement => new CoordinateDao(
+            (eph_config.coordinate.x + movement[0] * diceNumber + ROWS) % ROWS,
+            (eph_config.coordinate.y + movement[1] * diceNumber + COLUMNS) % COLUMNS
+        ))
+        .filter(pos => {
+            const cardId = getCardFromGrid(pos).getId();
+            return cardId !== config.game.id.artifact.WALL && cardId !== config.game.id.artifact.CLOSE_DOOR;
+        });
 
+    eph_config.lastValidPositions = validNextPositions.map(pos => ({
+        x: pos.getX(),
+        y: pos.getY(),
+    }));
+    eph_config.lastDiceNumber = diceNumber;
 
     logger(loggingLevel.INFO, "valid next position(s) = {0}.", JSON.stringify(validNextPositions));
     temp_stats_config.basicStats.totalGamesMoves += 1;
@@ -100,6 +108,30 @@ export function rollDiceExecute() {
 // === Move Processing Section ===
 export function processMove(newKnightCoordinate, diceNumber) {
     logger(loggingLevel.INFO, "processing move with data :\nnewKnightCoordinate = {0}\ndice number = {1}.", newKnightCoordinate, diceNumber);
+
+    // Validate request shape before mutating anything.
+    if (!Array.isArray(newKnightCoordinate) || newKnightCoordinate.length !== 2
+        || !Number.isInteger(newKnightCoordinate[0]) || !Number.isInteger(newKnightCoordinate[1])) {
+        throw new InvalidCoordinateException("knight coordinate", JSON.stringify(newKnightCoordinate));
+    }
+    if (!Number.isInteger(diceNumber) || diceNumber < 1 || diceNumber > 6) {
+        throw new InvalidCoordinateException("dice number", String(diceNumber));
+    }
+
+    // Reject any coordinate that wasn't part of the most recent dice roll's
+    // valid positions. This prevents clients from teleporting the knight.
+    const lastPositions = eph_config.lastValidPositions || [];
+    const isAllowed = lastPositions.some(
+        pos => pos.x === newKnightCoordinate[0] && pos.y === newKnightCoordinate[1]
+    );
+    if (!isAllowed || diceNumber !== eph_config.lastDiceNumber) {
+        throw new InvalidCoordinateException("knight coordinate", JSON.stringify(newKnightCoordinate));
+    }
+
+    // Consume the dice roll so it can't be reused for a second move.
+    eph_config.lastValidPositions = [];
+    eph_config.lastDiceNumber = null;
+
     preProcessMove();
 
     newKnightCoordinate = new CoordinateDao(
@@ -159,7 +191,7 @@ export function processMove(newKnightCoordinate, diceNumber) {
     const processMoveResData = {
         prevPosCardId: prevPosCardId,
         prevPosNewAttribute: prevPosNewAttribute,
-        eph_config: eph_config,
+        eph_config: buildEphConfigDto(eph_config),
     };
 
     return processMoveResData;
@@ -206,16 +238,16 @@ function preProcessMove() {
         eph_config.activePoisons.splice(0, 1);
     }
 
-    if (eph_config.activeEnema != null) {
-        eph_config.activeEnema.setDuration(
-            eph_config.activeEnema.getDuration() - 1
+    if (eph_config.activeEnigma != null) {
+        eph_config.activeEnigma.setDuration(
+            eph_config.activeEnigma.getDuration() - 1
         );
-        logger(loggingLevel.INFO, "decremented enema elixir duration by 1, current duration = {0}.", eph_config.activeEnema.getDuration());
+        logger(loggingLevel.INFO, "decremented enigma elixir duration by 1, current duration = {0}.", eph_config.activeEnigma.getDuration());
 
-        if (eph_config.activeEnema.getDuration() === 0) {
-            eph_config.activeEnema = null;
-            eph_config.screenLogs.push("- enema elixir expired.");
-            logger(loggingLevel.INFO, "enema elixir expired.");
+        if (eph_config.activeEnigma.getDuration() === 0) {
+            eph_config.activeEnigma = null;
+            eph_config.screenLogs.push("- enigma elixir expired.");
+            logger(loggingLevel.INFO, "enigma elixir expired.");
         }
     }
 
@@ -235,9 +267,9 @@ function postProcessMove(diceNumber) {
         ))
         .filter(pos =>
             0 <= pos.getX() &&
-            pos.getX() < config.game.grid.ROWS &&
+            pos.getX() < ROWS &&
             0 <= pos.getY() &&
-            pos.getY() < config.game.grid.COLUMNS &&
+            pos.getY() < COLUMNS &&
             getCardFromGrid(pos).getId() === config.game.id.artifact.BOMB
         )
         .forEach(pos => {
@@ -248,11 +280,7 @@ function postProcessMove(diceNumber) {
                 JSON.stringify(pos)
             );
 
-            bombDamage += Math.ceil(
-                (10 * (Math.log(Math.pow(2, diceNumber)) + Math.log(Math.pow(1.5, diceNumber)))) /
-                Math.pow(Math.E, 1 / diceNumber) +
-                10 / diceNumber
-            );
+            bombDamage += computeBombDamage(diceNumber);
 
             let newCardId = config.game.id.artifact.BOMB;
             let newCardAttribute = config.game.attribute.EMPTY;
@@ -277,13 +305,15 @@ function postProcessMove(diceNumber) {
         });
 
 
-    tempVar = eph_config.knightHealth;
-    updateHealth(config.game.health.DECREASE, bombDamage);
-    if (tempVar - eph_config.knightHealth != 0) {
-        eph_config.screenLogs.push(
-            "- dealt " + (tempVar - eph_config.knightHealth) + " DMG due to bomb(s)."
-        );
-        eph_config.audioList.push(config.game.id.artifact.BOMB);
+    if (bombDamage > 0) {
+        tempVar = eph_config.knightHealth;
+        updateHealth(config.game.health.DECREASE, bombDamage);
+        if (tempVar - eph_config.knightHealth != 0) {
+            eph_config.screenLogs.push(
+                "- dealt " + (tempVar - eph_config.knightHealth) + " DMG due to bomb(s)."
+            );
+            eph_config.audioList.push(config.game.id.artifact.BOMB);
+        }
     }
     if (eph_config.isAuraThresholdThreeCrossed) {
         updateMageLocation();
@@ -293,7 +323,7 @@ function postProcessMove(diceNumber) {
                 0,
                 eph_config.escapeDoorCountdown - 1
             );
-            logger(loggingLevel.INFO, "decremented escape door countdown by 1, current value = {0}.", eph_config.escapeDoorCoordinate);
+            logger(loggingLevel.INFO, "decremented escape door countdown by 1, current value = {0}.", eph_config.escapeDoorCountdown);
 
             if (eph_config.escapeDoorCountdown == 0) {
                 const escapeDoorCoordinate = getEscapeDoorCoordinate();
@@ -308,9 +338,6 @@ function postProcessMove(diceNumber) {
                 });
                 eph_config.audioList.push(config.game.id.artifact.CLOSE_DOOR);
                 eph_config.screenLogs.push("- escape door closed.");
-            }
-            else {
-                logger(loggingLevel.WARN, "escape door countdown value is negative. It should be minimum zero.");
             }
         }
 

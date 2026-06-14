@@ -1,7 +1,9 @@
+'use strict';
+
 // === Declare DOM Element Variables ===
-button = $(".button");
-guidePanelContent = $("#guide-panel-content");
-buttonClickAudio = $('#button-click-audio')[0];
+const button = $(".button");
+const guidePanelContent = $("#guide-panel-content");
+const buttonClickAudio = $('#button-click-audio')[0];
 
 button.on('mousedown', function () {
     buttonClickAudio.currentTime = 0;

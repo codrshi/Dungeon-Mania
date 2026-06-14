@@ -22,4 +22,8 @@ export class CoordinateDao {
     setY(y) {
         this.coordinate.y = y;
     }
+
+    toJSON() {
+        return { x: this.coordinate.x, y: this.coordinate.y };
+    }
 }

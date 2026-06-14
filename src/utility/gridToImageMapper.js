@@ -11,6 +11,7 @@ import { WeaponDao } from "../dao/weaponDao.js";
 import { KnightDao } from "../dao/knightDao.js";
 import eph_config from "../configuration/ephemeral_config.js";
 import config from "../configuration/config.js";
+import UndefinedCardException from "../exception/undefinedCardException.js";
 
 export function mapGrid(grid) {
   let imageGrid = [];
@@ -19,19 +20,22 @@ export function mapGrid(grid) {
     imageGrid[i] = [];
     row.forEach((value, j) => {
       let attribute = config.game.attribute.EMPTY;
-      if (value instanceof MonsterDao)
+      let imageId = value.getId();
+
+      if (value instanceof MonsterDao) {
         attribute = value.getHealth();
-      else if (value instanceof WeaponDao)
+      } else if (value instanceof WeaponDao) {
         attribute = value.getDamage();
-      else if (value instanceof KnightDao) {
+      } else if (value instanceof KnightDao) {
         attribute = eph_config.knightHealth;
-        if (eph_config.activeEnema != null)
-          grid[i][j].setId("knight_enema");
+        // Pure: pick the right sprite without mutating the DAO.
+        if (eph_config.activeEnigma != null) {
+          imageId = "knight_enigma";
+        }
+      } else if (!(value instanceof ArtifactDao)) {
+        throw new UndefinedCardException(value.constructor.name, config.game.attribute.EMPTY);
       }
-      else if (!(value instanceof ArtifactDao)) {
-        throw new UndefinedCardException(value.constructor.name, config.game.EMPTY);
-      }
-      imageGrid[i][j] = new ImageIconDao("/static/asset/image/" + value.getId() + ".png", attribute);
+      imageGrid[i][j] = new ImageIconDao("/static/asset/image/" + imageId + ".png", attribute);
     });
   });
 

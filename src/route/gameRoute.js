@@ -44,30 +44,31 @@ import eph_config from "../configuration/ephemeral_config.js";
 import stats_config from "../configuration/stats_config.js";
 import RenderPageException from "../exception/renderPageException.js";
 import { logger } from "../utility/loggerService.js";
+import { buildEphConfigDto } from "../controller/ephConfigDto.js";
 
 const router = express.Router();
 const loggingLevel = config.app.loggingLevel;
 
 router.get(config.app.url.ONGOING_GAME, (req, res, next) => {
-    logger(loggingLevel.INFO, "redering game page...");
+    logger(loggingLevel.INFO, "rendering game page...");
 
+    let renderData;
     try {
-        res.render('game', setInit(req.query.survivalMode), (err, html) => {
-            if (err) {
-                throw new RenderPageException("game", err.message);
-            }
-            res.send(html);
-        });
+        renderData = setInit(req.query.survivalMode);
+    } catch (err) {
+        return next(err);
     }
-    catch (err) {
-        next(err);
-    }
+
+    res.render('game', renderData, (err, html) => {
+        if (err) return next(new RenderPageException("game", err.message));
+        res.send(html);
+    });
 });
 
 router.get(config.app.url.ONGOING_GAME_EPH_CONFIG, (req, res) => {
     res.json({
         username: stats_config.basicStats.username,
-        eph_config: eph_config
+        eph_config: buildEphConfigDto(eph_config),
     });
 });
 

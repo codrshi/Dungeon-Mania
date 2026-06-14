@@ -1,36 +1,42 @@
+'use strict';
+
 // === Declare DOM Element Variables ===
-rollDiceImage = $(".roll-dice-image");
-pauseButton = $("#pause-button");
-modalDialog = $("#modal-dialog");
-modalDialogOverlay = $("#modal-dialog-overlay");
-username = $('#username')
-modalButtons = $("#modal-buttons");
-score = $("#score");
-cell = $(".cell");
-weaponMicroPanel = $("#weapon-micro-panel");
-activePanelMicroPanel = $("#active-poison-micro-panel");
-auraMicroPanel = $("#aura-micro-panel");
-knightCell = null;
-screenLogSubPanelText = $('#screen-log-sub-panel-text');
-button = $('.button');
-buttonClickAudio = $('#button-click-audio')[0];
-bombExplodeAudio = $('#bomb-explode-audio')[0];
-gameLostAudio = $('#game-lost-audio')[0];
-gameWonAudio = $('#game-won-audio')[0];
-mageAppearsAudio = $('#mage-appears-audio')[0];
-monsterKilledAudio = $('#monster-killed-audio')[0];
-potionDrinkAudio = $('#potion-drink-audio')[0];
-weaponGrabbedAudio = $('#weapon-grabbed-audio')[0];
-manaStoneAudio = $('#mana-stone-audio')[0];
-enemaElixirAudio = $('#enema-elixir-audio')[0];
-chaosOrbAudio = $('#chaos-orb-audio')[0];
-doorOpenAudio = $('#door-open-audio')[0];
-doorCloseAudio = $('#door-close-audio')[0];
-rollDiceAudio = $('#roll-dice-audio')[0];
-weaponForgerAudio = $('#weapon-forger-audio')[0];
+const rollDiceImage = $(".roll-dice-image");
+const pauseButton = $("#pause-button");
+const modalDialog = $("#modal-dialog");
+const modalDialogOverlay = $("#modal-dialog-overlay");
+const username = $('#username');
+const modalButtons = $("#modal-buttons");
+const score = $("#score");
+const cell = $(".cell");
+const weaponMicroPanel = $("#weapon-micro-panel");
+const activePanelMicroPanel = $("#active-poison-micro-panel");
+const auraMicroPanel = $("#aura-micro-panel");
+let knightCell = null;
+const screenLogSubPanelText = $('#screen-log-sub-panel-text');
+const button = $('.button');
+const buttonClickAudio = $('#button-click-audio')[0];
+const bombExplodeAudio = $('#bomb-explode-audio')[0];
+const gameLostAudio = $('#game-lost-audio')[0];
+const gameWonAudio = $('#game-won-audio')[0];
+const mageAppearsAudio = $('#mage-appears-audio')[0];
+const monsterKilledAudio = $('#monster-killed-audio')[0];
+const potionDrinkAudio = $('#potion-drink-audio')[0];
+const weaponGrabbedAudio = $('#weapon-grabbed-audio')[0];
+const manaStoneAudio = $('#mana-stone-audio')[0];
+const enigmaElixirAudio = $('#enigma-elixir-audio')[0];
+const chaosOrbAudio = $('#chaos-orb-audio')[0];
+const doorOpenAudio = $('#door-open-audio')[0];
+const doorCloseAudio = $('#door-close-audio')[0];
+const rollDiceAudio = $('#roll-dice-audio')[0];
+const weaponForgerAudio = $('#weapon-forger-audio')[0];
 
 // === Local Variables Declaration ===
-diceNumber = -1;
+let diceNumber = -1;
+
+// Duration (ms) of the dice-roll GIF in /static/asset/image/roll_dice_animation.gif.
+// If the GIF is replaced, update this value to match the new length.
+const DICE_ROLL_ANIMATION_DURATION_MS = 3500;
 
 // === Logic to execute when page loads ===
 $(function () {
@@ -48,8 +54,8 @@ $(function () {
     score.text(eph_config.score);
 
     if (eph_config.knightWeapon != null) {
-      weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/" + eph_config.knightWeapon.weapon.id + ".png");
-      weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.weapon.damage);
+      weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/" + eph_config.knightWeapon.id + ".png");
+      weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.damage);
     }
 
     renderActivePoisons(eph_config.activePoisons);
@@ -60,13 +66,19 @@ $(function () {
   });
 });
 
-// notify the server to end the game when the player exits or refreshes the page.
+// Notify the server to end the game when the player exits or refreshes the page.
+// We use sendBeacon because $.post is cancelled by the browser as soon as
+// navigation starts, so the server-side cleanup would otherwise be skipped.
+function exitCurrentGame() {
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon('/game/exit');
+  } else {
+    $.ajax({ url: '/game/exit', type: 'POST', async: false });
+  }
+}
+
 $(window).on('beforeunload', function () {
-  $.post({
-    url: "/game/exit",
-    contentType: "application/json",
-    dataType: "json",
-  });
+  exitCurrentGame();
 });
 
 //logic to execute when player clicks on dice button
@@ -77,7 +89,7 @@ rollDiceImage.on('click', function () {
 
   //diable interaction with all cells
   cell.children().addClass("disabled-cell-image");
-  rollDiceAudio.startTime = 0;
+  rollDiceAudio.currentTime = 0;
   rollDiceAudio.play();
 
   $.get("/game/roll-dice", {}, function (res) {
@@ -103,15 +115,15 @@ rollDiceImage.on('click', function () {
         //enable interaction with cell which can be reached by knight card
         validNextPositions.forEach((validNextPosition) => {
           if (
-            validNextPosition.coordinate.x === $(this).data("x") &&
-            validNextPosition.coordinate.y === $(this).data("y")
+            validNextPosition.x === $(this).data("x") &&
+            validNextPosition.y === $(this).data("y")
           ) {
             $(this).children().removeClass("disabled-cell-image");
           }
         });
       });
 
-    }, 3500);
+    }, DICE_ROLL_ANIMATION_DURATION_MS);
   });
 });
 
@@ -148,8 +160,8 @@ cell.on("click", function () {
         knightCell.children('.cell-attribute').text(prevPosNewAttribute);
 
         //update the location of knight card with the position of card clicked by player
-        if (eph_config.activeEnema != null)
-          newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight_enema.png");
+        if (eph_config.activeEnigma != null)
+          newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight_enigma.png");
         else
           newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
         newKnightCell.children('.cell-attribute').text(eph_config.knightHealth);
@@ -158,8 +170,8 @@ cell.on("click", function () {
           displayEndGamePanel(eph_config.currentGameStatus);
 
         if (eph_config.knightWeapon != null) {
-          weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/" + eph_config.knightWeapon.weapon.id + ".png");
-          weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.weapon.damage);
+          weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/" + eph_config.knightWeapon.id + ".png");
+          weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.damage);
         }
         else {
           weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/weapon_placeholder.png");
@@ -205,31 +217,21 @@ modalDialogOverlay.click(function () {
 
 //if player clicks on replay button, then exit from current game and start a new game by reloading the current page
 modalButtons.children('#replay-button').click(function () {
-  $.post({
-    url: "/game/exit",
-    contentType: "application/json",
-    dataType: "json",
-  });
-
+  exitCurrentGame();
   window.location = window.location;
 });
 
 //if player clicks on exit button, then exit from current game and load the home page
 modalButtons.children('#exit-button').click(function () {
-  $.post({
-    url: "/game/exit",
-    contentType: "application/json",
-    dataType: "json",
-  });
-
+  exitCurrentGame();
   window.location = '/';
 });
 
 function renderNewGrid(grid) {
   cell.each(function () {
     const x = Number($(this).data("x")), y = Number($(this).data("y"));
-    $(this).children('.cell-image').attr("src", grid[x][y].imageIcon.imageSource);
-    $(this).children('.cell-attribute').text(grid[x][y].imageIcon.attribute);
+    $(this).children('.cell-image').attr("src", grid[x][y].imageSource);
+    $(this).children('.cell-attribute').text(grid[x][y].attribute);
   });
 }
 
@@ -256,8 +258,8 @@ function renderActivePoisons(activePoisons) {
     return;
   }
 
-  const activePoisonDamage = activePoisons.reduce((totalDamage, activePoisonDao) => {
-    return totalDamage + activePoisonDao.activePoison.damage;
+  const activePoisonDamage = activePoisons.reduce((totalDamage, activePoison) => {
+    return totalDamage + activePoison.damage;
   }, 0);
 
   activePanelMicroPanel.children('.active-poison-micro-panel-image').removeClass("disabled-cell-image");
@@ -307,7 +309,7 @@ function populateScreenLogs(screenLogs) {
 }
 
 button.on('mousedown', function () {
-  buttonClickAudio.startTime = 0;
+  buttonClickAudio.currentTime = 0;
   buttonClickAudio.play();
   $(this).css('background-image', 'url(/static/asset/image/button_pressed.png)');
 });
@@ -316,68 +318,52 @@ button.on('mouseup mouseleave', function () {
   $(this).css('background-image', 'url(/static/asset/image/button.png)');
 });
 
+function playAudio(audio) {
+  audio.currentTime = 0;
+  audio.play();
+}
+
 function playAudioList(audioList) {
 
   audioList.forEach(audioName => {
-    if (audioName.startsWith("weapon")) {
-      weaponGrabbedAudio.startTime = 0;
-      weaponGrabbedAudio.play();
+    if (audioName.startsWith("weapon_forger") || audioName.endsWith("weapon_forger")) {
+      playAudio(weaponForgerAudio);
+    }
+    else if (audioName.startsWith("weapon")) {
+      playAudio(weaponGrabbedAudio);
     }
     else if (audioName.endsWith("mage")) {
-      mageAppearsAudio.startTime = 0;
-      mageAppearsAudio.play();
+      playAudio(mageAppearsAudio);
     }
     else if (audioName.startsWith("monster")) {
-      monsterKilledAudio.startTime = 0;
-      monsterKilledAudio.play();
+      playAudio(monsterKilledAudio);
     }
     else if (audioName.endsWith("bomb")) {
-      console.log(bombExplodeAudio);
-      bombExplodeAudio.startTime = 0;
-      bombExplodeAudio.play();
-    }
-    else if (audioName.endsWith("potion")) {
-      console.log(potionDrinkAudio);
-      potionDrinkAudio.startTime = 0;
-      potionDrinkAudio.play();
+      playAudio(bombExplodeAudio);
     }
     else if (audioName.endsWith("mana_stone")) {
-      console.log(manaStoneAudio);
-      manaStoneAudio.startTime = 0;
-      manaStoneAudio.play();
+      playAudio(manaStoneAudio);
     }
-    else if (audioName.endsWith("weapon_forger")) {
-      console.log(weaponForgerAudio);
-      weaponForgerAudio.startTime = 0;
-      weaponForgerAudio.play();
-    }
-    else if (audioName.endsWith("enema_elixir")) {
-      console.log(enemaElixirAudio);
-      enemaElixirAudio.startTime = 0;
-      enemaElixirAudio.play();
+    else if (audioName.endsWith("enigma_elixir")) {
+      playAudio(enigmaElixirAudio);
     }
     else if (audioName.endsWith("chaos_orb")) {
-      console.log(chaosOrbAudio);
-      chaosOrbAudio.startTime = 0;
-      chaosOrbAudio.play();
+      playAudio(chaosOrbAudio);
     }
     else if (audioName.endsWith("close_door")) {
-      console.log(doorCloseAudio);
-      doorCloseAudio.startTime = 0;
-      doorCloseAudio.play();
+      playAudio(doorCloseAudio);
     }
     else if (audioName.endsWith("open_door")) {
-      console.log(doorOpenAudio);
-      doorOpenAudio.startTime = 0;
-      doorOpenAudio.play();
+      playAudio(doorOpenAudio);
+    }
+    else if (audioName.endsWith("potion")) {
+      playAudio(potionDrinkAudio);
     }
     else if (audioName === "won") {
-      gameWonAudio.startTime = 0;
-      gameWonAudio.play();
+      playAudio(gameWonAudio);
     }
     else if (audioName === "lost") {
-      gameLostAudio.startTime = 0;
-      gameLostAudio.play();
+      playAudio(gameLostAudio);
     }
   });
 }

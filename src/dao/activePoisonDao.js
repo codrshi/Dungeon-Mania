@@ -26,4 +26,11 @@ export class ActivePoisonDao {
     setDuration(duration) {
         this.activePoison.duration = duration;
     }
+
+    toJSON() {
+        return {
+            damage: this.activePoison.damage,
+            duration: this.activePoison.duration,
+        };
+    }
 }

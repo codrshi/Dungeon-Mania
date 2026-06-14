@@ -23,20 +23,13 @@ import RenderPageException from "../exception/renderPageException.js";
 
 const router = express.Router();
 
-router.get(config.app.url.GUIDE, (req, res) => {
-    logger(config.app.loggingLevel.INFO, "redering guide page...");
+router.get(config.app.url.GUIDE, (req, res, next) => {
+    logger(config.app.loggingLevel.INFO, "rendering guide page...");
 
-    try {
-        res.render('guide', (err, html) => {
-            if (err) {
-                throw new RenderPageException("guide", err.message);
-            }
-            res.send(html);
-        });
-    }
-    catch (err) {
-        next(err);
-    }
+    res.render('guide', (err, html) => {
+        if (err) return next(new RenderPageException("guide", err.message));
+        res.send(html);
+    });
 });
 
 export default router;

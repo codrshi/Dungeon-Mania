@@ -1,9 +1,11 @@
+'use strict';
+
 // === Declare DOM Element Variables ===
-button = $(".button");
-username = $('#username');
-highScore = $('#highScore');
-menuPanel = $('#menu-panel');
-buttonClickAudio = $('#button-click-audio')[0];
+const button = $(".button");
+const username = $('#username');
+const highScore = $('#highScore');
+const menuPanel = $('#menu-panel');
+const buttonClickAudio = $('#button-click-audio')[0];
 
 $(function () {
     $.get("/index/username-highscore", {}, function (res) {

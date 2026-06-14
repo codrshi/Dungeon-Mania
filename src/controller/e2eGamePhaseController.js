@@ -21,6 +21,13 @@ const loggingLevel = config.app.loggingLevel;
 export function setInit(isSurvivalMode) {
     logger(loggingLevel.INFO, "setting up the game.");
 
+    // If the previous game crashed/ended (or the client never made it back to
+    // /game/exit), wipe stale state so the new visit starts clean.
+    if (eph_config.currentGameStatus !== config.game.gameStatus.ONGOING) {
+        logger(loggingLevel.INFO, "previous game status = {0}, clearing stale state.", eph_config.currentGameStatus);
+        clearEphConfig();
+    }
+
     eph_config.isSurvivalMode = isSurvivalMode === "true";
     logger(loggingLevel.INFO, "isSurvivalMode = {0}", eph_config.isSurvivalMode);
 
@@ -53,7 +60,7 @@ function restoreDefaultEphConfig() {
     eph_config.newGrid = [];
     eph_config.newCardLocations = [];
     eph_config.activePoisons = [];
-    eph_config.activeEnema = null;
+    eph_config.activeEnigma = null;
     eph_config.aura = 0;
     eph_config.isAuraThresholdThreeCrossed = false;
     eph_config.escapeDoorCountdown = 0;
@@ -64,6 +71,8 @@ function restoreDefaultEphConfig() {
     eph_config.mageCoordinate.y = 2;
     eph_config.audioList = [];
     eph_config.screenLogs = ["- click on the dice icon to start the game."];
+    eph_config.lastValidPositions = [];
+    eph_config.lastDiceNumber = null;
 }
 
 function clearTempStatsConfig() {
@@ -72,7 +81,7 @@ function clearTempStatsConfig() {
     temp_stats_config.basicStats.totalGamesMoves = 0;
 
     temp_stats_config.monsterStats.totalMonstersKilled = 0;
-    temp_stats_config.monsterStats.totalMonstersKilled = 0;
+    temp_stats_config.monsterStats.elementalMonstersKilled = 0;
     temp_stats_config.monsterStats.monsterKillingStreakMoves = 0;
     temp_stats_config.monsterStats.strongestMonsterKilledHealth = "-";
     temp_stats_config.monsterStats.strongestMonsterKilledName = "-";
@@ -82,6 +91,6 @@ function clearTempStatsConfig() {
     temp_stats_config.weaponStats.strongestWeaponAttribute = "-";
     temp_stats_config.weaponStats.weaponUsage = new Array(4).fill(0);
 
-    temp_stats_config.weaponStats.totalArtifactsPicked = 0;
-    temp_stats_config.weaponStats.artifactUsage = new Array(9).fill(0);
+    temp_stats_config.artifactStats.totalArtifactsPicked = 0;
+    temp_stats_config.artifactStats.artifactUsage = new Array(9).fill(0);
 }

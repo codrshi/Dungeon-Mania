@@ -22,6 +22,11 @@ export function appreciateAura(auraStatus, amount) {
 
     const tempVar = eph_config.aura;
 
+    if (!Number.isFinite(amount) || amount <= 0) {
+        logger(loggingLevel.WARN, "ignored aura update because amount = {0} is invalid.", amount);
+        return;
+    }
+
     if (auraStatus === config.game.aura.DECREASE) {
         eph_config.aura -= Math.ceil(eph_config.aura * amount / 100);
         eph_config.aura = Math.max(0, eph_config.aura);

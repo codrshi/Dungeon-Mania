@@ -12,16 +12,16 @@ import config from "../configuration/config.js";
 class BiMap {
     constructor() {
         this.keyToIndex = new Map();
-        this.IndexTokey = new Map();
+        this.indexToKey = new Map();
     }
 
     set(key, index) {
         this.keyToIndex.set(key, index);
-        this.IndexTokey.set(index, key);
+        this.indexToKey.set(index, key);
     }
 
     getKey(index) {
-        return this.IndexTokey.get(index);
+        return this.indexToKey.get(index);
     }
 
     getIndex(key) {
@@ -38,7 +38,7 @@ weaponIndexBiMap.set(config.game.id.weapon.GRIMOIRE, 3);
 const artifactIndexBiMap = new BiMap();
 artifactIndexBiMap.set(config.game.id.artifact.BOMB, 0);
 artifactIndexBiMap.set(config.game.id.artifact.CHAOS_ORB, 1);
-artifactIndexBiMap.set(config.game.id.artifact.ENEMA_ELIXIR, 2);
+artifactIndexBiMap.set(config.game.id.artifact.ENIGMA_ELIXIR, 2);
 artifactIndexBiMap.set(config.game.id.artifact.HEALTH_POTION, 3);
 artifactIndexBiMap.set(config.game.id.artifact.MANA_STONE, 4);
 artifactIndexBiMap.set(config.game.id.artifact.MIXED_POTION, 5);

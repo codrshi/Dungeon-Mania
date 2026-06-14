@@ -15,6 +15,7 @@ import { appreciateAura } from "../utility/auraAppreciator.js";
 import {
     getRandomEscapeDoorCoordinate,
 } from "../utility/mageGridAccessor.js";
+import { setCardInGrid } from "../utility/gridAccessor.js";
 import temp_stats_config from "../configuration/temp_stats_config.js";
 import { logger } from "../utility/loggerService.js";
 
@@ -33,22 +34,43 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
 
     if (monsterCard.getId() === config.game.id.monster.WRAITH) {
         eph_config.knightWeapon = null;
-        eph_config.activeEnema = null;
+        eph_config.activeEnigma = null;
         eph_config.activePoisons = [];
 
-        logger(loggingLevel.INFO, "knight weapon, active enema and acitve poison(s) is reset.");
+        logger(loggingLevel.INFO, "knight weapon, active enigma and active poison(s) is reset.");
 
-        if (eph_config.aura >= monsterHealth) {
+        const wraithSlain = eph_config.aura >= monsterHealth;
+        if (wraithSlain) {
             appreciateAura(
                 config.game.aura.DECREASE,
                 config.game.aura.wraith_absorption_rate.MIN_VALUE
             );
             updateScore(monsterHealth);
-        } else
+
+            // Wraith counts as a slain monster for stats purposes.
+            temp_stats_config.monsterStats.totalMonstersKilled += 1;
+            if (
+                temp_stats_config.monsterStats.strongestMonsterKilledHealth === "-" ||
+                monsterCard.getHealth() > temp_stats_config.monsterStats.strongestMonsterKilledHealth
+            ) {
+                temp_stats_config.monsterStats.strongestMonsterKilledHealth = monsterCard.getHealth();
+                temp_stats_config.monsterStats.strongestMonsterKilledName = monsterCard.getId().substring(8);
+            }
+            monsterKillingStreakMoves += 1;
+            temp_stats_config.monsterStats.monsterKillingStreakMoves = Math.max(
+                temp_stats_config.monsterStats.monsterKillingStreakMoves,
+                monsterKillingStreakMoves
+            );
+
+            eph_config.audioList.push(monsterCard.getId());
+            eph_config.screenLogs.push("- wraith slayed.");
+        } else {
             appreciateAura(
                 config.game.aura.DECREASE,
                 config.game.aura.wraith_absorption_rate.MAX_VALUE
             );
+            eph_config.screenLogs.push("- wraith drained your aura.");
+        }
         return;
     }
 
@@ -105,13 +127,15 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
         temp_stats_config.monsterStats.totalMonstersKilled += 1;
         if (monsterCard.getElement() != null)
             temp_stats_config.monsterStats.elementalMonstersKilled += 1;
+        // Compare against the monster's RAW health (not the post-element-multiplier
+        // value used for the damage calculation), so the stat reflects the true
+        // strength of the monster slain.
+        const rawMonsterHealth = monsterCard.getHealth();
         if (
             temp_stats_config.monsterStats.strongestMonsterKilledHealth === "-" ||
-            monsterHealth >
-            temp_stats_config.monsterStats.strongestMonsterKilledHealth
+            rawMonsterHealth > temp_stats_config.monsterStats.strongestMonsterKilledHealth
         ) {
-            temp_stats_config.monsterStats.strongestMonsterKilledHealth =
-                monsterHealth;
+            temp_stats_config.monsterStats.strongestMonsterKilledHealth = rawMonsterHealth;
             temp_stats_config.monsterStats.strongestMonsterKilledName = monsterCard
                 .getId()
                 .substring(8);

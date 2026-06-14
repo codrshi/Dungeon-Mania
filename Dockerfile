@@ -1,37 +1,33 @@
-# ---------- Stage 1: Build Stage ----------
-FROM node:20-alpine AS build
+# syntax=docker/dockerfile:1.6
 
-# Set working directory
+# ---------- Stage 1: Install production dependencies ----------
+FROM node:20-alpine AS deps
 WORKDIR /app
 
-# Copy only package.json first for better caching
-COPY package.json ./
+# Copy manifests first so this layer is cached when only source code changes.
+COPY package.json package-lock.json* ./
 
-# Install all dependencies (including dev) for the build
-RUN npm install
+# Install only the production dependencies into /app/node_modules. We prefer
+# `npm ci` when a lockfile is present so the install is reproducible.
+RUN if [ -f package-lock.json ]; then \
+        npm ci --omit=dev; \
+    else \
+        npm install --omit=dev --no-audit --no-fund; \
+    fi
 
-# Copy all source code
-COPY . .
-
-# ---------- Stage 2: Production Stage ----------
+# ---------- Stage 2: Final image ----------
 FROM node:20-alpine AS production
-
-# Set environment variable for production
-ENV NODE_ENV=production
-
 WORKDIR /app
 
-# Copy only the package.json for prod install
-COPY package.json ./
+ENV NODE_ENV=production \
+    PORT=3030
 
-# Install only production dependencies
-RUN npm install --omit=dev
+# Run as the non-root `node` user that the base image already provides.
+COPY --from=deps --chown=node:node /app/node_modules ./node_modules
+COPY --chown=node:node package.json ./
+COPY --chown=node:node src ./src
 
-# Copy built app from build stage (excluding node_modules)
-COPY --from=build /app . 
-
-# Expose app port
+USER node
 EXPOSE 3030
 
-# Start the application
 CMD ["node", "src/server.js"]

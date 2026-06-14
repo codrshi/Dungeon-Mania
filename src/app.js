@@ -42,6 +42,7 @@ import RenderPageException from "./exception/renderPageException.js";
 import InvalidCoordinateException from "./exception/invalidCoordinateException.js";
 import ExcessActivePoisonException from "./exception/excessActivePoisonException.js";
 import UndefinedCardException from "./exception/undefinedCardException.js";
+import UnhandledPromiseRejectionException from "./exception/unhandledRejectionException.js";
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
