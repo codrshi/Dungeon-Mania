@@ -40,6 +40,31 @@ let diceNumber = -1;
 // "spin" feedback.
 const DICE_ROLL_ANIMATION_DURATION_MS = 1000;
 
+// Grid is laid out as ROWS x COLUMNS, matching the server (see
+// config.game.grid). Hard-coded here because the EJS template doesn't expose
+// the values to JS; if the grid ever becomes configurable, surface it via a
+// data-attribute on #grid-panel instead.
+const GRID_ROWS = 7;
+const GRID_COLUMNS = 7;
+
+// Direction keys for movement after a dice roll. The grid uses (x = row, y =
+// column) with x growing downward, so "north" decreases x. We accept both
+// arrow keys / WASD (familiar to most players) and Q/E/Z/C for diagonals
+// (visually arranged around WASD like the corners of a numpad). Server-side
+// rules (aura threshold gating diagonals, wall/door blocks, dice validation)
+// still apply because we only complete the move if the resolved tile is
+// currently enabled.
+const DIRECTION_KEYS = {
+    'ArrowUp':    [-1,  0], 'w': [-1,  0], 'W': [-1,  0],
+    'ArrowDown':  [ 1,  0], 's': [ 1,  0], 'S': [ 1,  0],
+    'ArrowLeft':  [ 0, -1], 'a': [ 0, -1], 'A': [ 0, -1],
+    'ArrowRight': [ 0,  1], 'd': [ 0,  1], 'D': [ 0,  1],
+    'q': [-1, -1], 'Q': [-1, -1],
+    'e': [-1,  1], 'E': [-1,  1],
+    'z': [ 1, -1], 'Z': [ 1, -1],
+    'c': [ 1,  1], 'C': [ 1,  1],
+};
+
 // === Logic to execute when page loads ===
 $(function () {
   const auraMicroPanelHeadingHeight = auraMicroPanel.children('.aura-micro-panel-heading').css('height');
@@ -239,9 +264,16 @@ cell.on("click", function () {
 
 //open the pause dialog box when player clicks on pause button
 pauseButton.click(function () {
+  openModal();
+});
+
+function openModal() {
   modalDialog.show();
   modalDialogOverlay.show();
-});
+  // Move focus into the modal so keyboard users can immediately act on
+  // Replay/Exit without first hunting for it via Tab.
+  modalButtons.children('#replay-button').focus();
+}
 
 //if player clicks outside the pause dialog box, then resume the game if it's in ongoing status.
 modalDialogOverlay.click(function () {
@@ -334,8 +366,7 @@ function displayEndGamePanel(gameStatus) {
   modalDialog.children('#modal-content').children('#modal-heading').text(modalHeading);
   modalDialog.children('#modal-content').children('#modal-body').text(modalBody);
 
-  modalDialog.show();
-  modalDialogOverlay.show();
+  openModal();
 }
 
 function populateScreenLogs(screenLogs) {
@@ -405,3 +436,110 @@ function playAudioList(audioList) {
     }
   });
 }
+
+// === Keyboard Navigation ===
+
+// Synthesise the same press-feedback that mousedown does (audio + pressed
+// background image) and then fire the actual click. Used when the player
+// activates a button via Enter/Space so the experience matches a real click.
+function pressButton($btn) {
+  buttonClickAudio.currentTime = 0;
+  buttonClickAudio.play();
+  $btn.css('background-image', 'url(/static/asset/image/button_pressed.png)');
+  setTimeout(function () {
+    $btn.css('background-image', 'url(/static/asset/image/button.png)');
+  }, 100);
+  $btn.trigger('click');
+}
+
+// Resolve a movement key into a cell click. We compute the target tile using
+// the same `(coord + delta * diceNumber) mod size` wrap that the server uses
+// when assembling validNextPositions, then click it only if it's actually
+// enabled. That keeps every server-side rule (aura threshold for diagonals,
+// walls/doors, dice consumption) authoritative; keyboard input is just a
+// different surface on top of the existing click handler.
+function moveInDirection(dx, dy) {
+  if (knightCell === null || diceNumber === -1) return;
+
+  const kx = Number(knightCell.data('x'));
+  const ky = Number(knightCell.data('y'));
+  const targetX = (kx + dx * diceNumber + GRID_ROWS) % GRID_ROWS;
+  const targetY = (ky + dy * diceNumber + GRID_COLUMNS) % GRID_COLUMNS;
+
+  const targetCell = $('.cell').filter(function () {
+    return Number($(this).data('x')) === targetX
+      && Number($(this).data('y')) === targetY;
+  });
+
+  if (targetCell.length === 0) return;
+  if (targetCell.children('.cell-image').hasClass('disabled-cell-image')) return;
+  targetCell.trigger('click');
+}
+
+function handleModalKeydown(e) {
+  const replayBtn = modalButtons.children('#replay-button')[0];
+  const exitBtn = modalButtons.children('#exit-button')[0];
+  const modalBtns = [replayBtn, exitBtn];
+  const activeIdx = modalBtns.indexOf(document.activeElement);
+
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const next = activeIdx <= 0 ? modalBtns.length - 1 : activeIdx - 1;
+    modalBtns[next].focus();
+    return;
+  }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    const next = activeIdx >= modalBtns.length - 1 ? 0 : activeIdx + 1;
+    modalBtns[next].focus();
+    return;
+  }
+  if (e.key === 'Enter' || e.key === ' ') {
+    // Browser would auto-click on Enter/Space; drive the full press feedback
+    // ourselves so the modal buttons feel identical to mouse use.
+    if (activeIdx >= 0) {
+      e.preventDefault();
+      pressButton($(modalBtns[activeIdx]));
+    }
+    return;
+  }
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    // Defer to the existing overlay-click handler so the "only resume if
+    // game is ongoing" rule stays in one place.
+    modalDialogOverlay.trigger('click');
+  }
+}
+
+$(document).on('keydown', function (e) {
+  if (modalDialog.is(':visible')) {
+    handleModalKeydown(e);
+    return;
+  }
+
+  // Roll-dice phase.
+  if (diceNumber === -1) {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      rollDiceImage.trigger('click');
+      return;
+    }
+    if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+      e.preventDefault();
+      pressButton(pauseButton);
+    }
+    return;
+  }
+
+  // Movement phase.
+  if (Object.prototype.hasOwnProperty.call(DIRECTION_KEYS, e.key)) {
+    e.preventDefault();
+    const [dx, dy] = DIRECTION_KEYS[e.key];
+    moveInDirection(dx, dy);
+    return;
+  }
+  if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+    e.preventDefault();
+    pressButton(pauseButton);
+  }
+});

@@ -101,3 +101,12 @@ body {
     height: 20%;
     width: 20%;
 }
+
+.button:focus {
+    outline: none;
+}
+
+.button:focus-visible {
+    outline: 4px solid #FCC510;
+    outline-offset: 4px;
+}

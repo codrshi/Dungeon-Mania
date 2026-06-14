@@ -77,3 +77,15 @@ body {
     height: 50%;
     width: 50%;
 }
+
+/* Hide the browser-default focus ring (it clashes with the wooden button art)
+ * but render a thick gold outline when focus arrives via keyboard, so arrow-key
+ * users always know which button Enter will trigger. */
+.button:focus {
+    outline: none;
+}
+
+.button:focus-visible {
+    outline: 4px solid #FCC510;
+    outline-offset: 4px;
+}

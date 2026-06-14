@@ -123,6 +123,17 @@ body {
     padding: 8%;
 }
 
+/* Focus rings (keyboard-only) so the user always knows which button Enter
+ * will hit. :focus-visible suppresses the ring on plain mouse clicks. */
+#pause-button:focus {
+    outline: none;
+}
+
+#pause-button:focus-visible {
+    outline: 4px solid #FCC510;
+    outline-offset: 4px;
+}
+
 #screen-log-sub-panel-text {
     font-family: "VT323", monospace;
     font-weight: 400;
@@ -261,4 +272,13 @@ body {
     color: #7E5543;
     padding: 5%;
     margin: 0 5% 0 5%;
+}
+
+#modal-buttons>*:focus {
+    outline: none;
+}
+
+#modal-buttons>*:focus-visible {
+    outline: 4px solid #FCC510;
+    outline-offset: 4px;
 }
