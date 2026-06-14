@@ -171,7 +171,7 @@ function dealPoisonPotion(diceNumber) {
 function dealManaStone(movements) {
     const slainNames = [];
 
-    movements
+    const targets = movements
         .map(movement => new CoordinateDao(
             movement[0] + eph_config.coordinate.x,
             movement[1] + eph_config.coordinate.y
@@ -186,27 +186,46 @@ function dealManaStone(movements) {
             pos,
             monsterCard: getCardFromGrid(pos)
         }))
-        .filter(({ monsterCard }) => monsterCard instanceof MonsterDao)
-        .forEach(({ pos, monsterCard }) => {
+        .filter(({ monsterCard }) => monsterCard instanceof MonsterDao);
+
+    // `.some` lets us short-circuit the moment a kill pushes the aura past
+    // threshold 3. Without this guard, `appreciateAura` would flip the game
+    // into the mage realm (replacing the entire grid with the mage prototype)
+    // and subsequent iterations would happily call `createNewCard` on the
+    // *mage* grid using pre-boss coordinates, sprinkling random monsters /
+    // weapons / artifacts onto walls, doors, corner weapons, perimeter
+    // poisons, etc. That's the source of the rare "wrong tiles" sightings in
+    // the mage realm.
+    targets.some(({ pos, monsterCard }) => {
+        logger(
+            loggingLevel.INFO,
+            "monster {0} at location {1} defeated by mana stone.",
+            JSON.stringify(monsterCard),
+            JSON.stringify(pos)
+        );
+
+        updateScore(monsterCard.getHealth());
+        appreciateAura(config.game.aura.INCREASE, monsterCard.getHealth());
+
+        slainNames.push(monsterCard.getId().substring(8));
+
+        if (eph_config.isAuraThresholdThreeCrossed) {
             logger(
                 loggingLevel.INFO,
-                "monster {0} at location {1} defeated by mana stone.",
-                JSON.stringify(monsterCard),
+                "mana stone scan aborted because the kill at {0} triggered the mage realm transition.",
                 JSON.stringify(pos)
             );
+            return true;
+        }
 
-            updateScore(monsterCard.getHealth());
-            appreciateAura(config.game.aura.INCREASE, monsterCard.getHealth());
-
-            slainNames.push(monsterCard.getId().substring(8));
-
-            let [newCardId, newAttribute] = createNewCard(pos.getX(), pos.getY());
-            eph_config.newCardLocations.push({
-                "coordinate": { "x": pos.getX(), "y": pos.getY() },
-                "cardId": newCardId,
-                "cardAttribute": newAttribute
-            });
+        const [newCardId, newAttribute] = createNewCard(pos.getX(), pos.getY());
+        eph_config.newCardLocations.push({
+            "coordinate": { "x": pos.getX(), "y": pos.getY() },
+            "cardId": newCardId,
+            "cardAttribute": newAttribute
         });
+        return false;
+    });
 
     if (slainNames.length > 0) {
         eph_config.screenLogs.push(

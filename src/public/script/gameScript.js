@@ -34,9 +34,11 @@ const weaponForgerAudio = $('#weapon-forger-audio')[0];
 // === Local Variables Declaration ===
 let diceNumber = -1;
 
-// Duration (ms) of the dice-roll GIF in /static/asset/image/roll_dice_animation.gif.
-// If the GIF is replaced, update this value to match the new length.
-const DICE_ROLL_ANIMATION_DURATION_MS = 3500;
+// Target wall-clock duration of the dice-roll phase. The roll_dice_animation.gif
+// is a longer loop, but we cut to the dice face after this many ms - the GIF
+// just plays its first DICE_ROLL_ANIMATION_DURATION_MS worth of frames as
+// "spin" feedback.
+const DICE_ROLL_ANIMATION_DURATION_MS = 1000;
 
 // === Logic to execute when page loads ===
 $(function () {
@@ -81,6 +83,33 @@ $(window).on('beforeunload', function () {
   exitCurrentGame();
 });
 
+// Start the dice-roll SFX, sped up so it finishes inside the animation window
+// instead of being cut off mid-stream. We measure the clip's natural duration
+// (available because the <audio> tag has preload="auto") and scale playbackRate
+// so the audio ends right around DICE_ROLL_ANIMATION_DURATION_MS. preservesPitch
+// keeps it from sounding chipmunk-y.
+function startDiceRollAudio() {
+  rollDiceAudio.pause();
+  rollDiceAudio.currentTime = 0;
+
+  const targetSeconds = DICE_ROLL_ANIMATION_DURATION_MS / 1000;
+  const naturalDuration = rollDiceAudio.duration;
+  if (Number.isFinite(naturalDuration) && naturalDuration > targetSeconds) {
+    rollDiceAudio.playbackRate = naturalDuration / targetSeconds;
+  } else {
+    rollDiceAudio.playbackRate = 1;
+  }
+  rollDiceAudio.preservesPitch = true;
+
+  rollDiceAudio.play();
+}
+
+function stopDiceRollAudio() {
+  rollDiceAudio.pause();
+  rollDiceAudio.currentTime = 0;
+  rollDiceAudio.playbackRate = 1;
+}
+
 //logic to execute when player clicks on dice button
 rollDiceImage.on('click', function () {
 
@@ -89,8 +118,7 @@ rollDiceImage.on('click', function () {
 
   //diable interaction with all cells
   cell.children().addClass("disabled-cell-image");
-  rollDiceAudio.currentTime = 0;
-  rollDiceAudio.play();
+  startDiceRollAudio();
 
   $.get("/game/roll-dice", {}, function (res) {
     diceNumber = res.diceNumber;
@@ -99,6 +127,7 @@ rollDiceImage.on('click', function () {
     rollDiceImage.attr('src', '/static/asset/image/roll_dice_animation.gif');
 
     setTimeout(function () {
+      stopDiceRollAudio();
       screenLogSubPanelText.text("- you got " + String(diceNumber) + ".");
       rollDiceImage.attr('src', '/static/asset/image/dice_face_' + diceNumber + '.png');
 
@@ -129,74 +158,83 @@ rollDiceImage.on('click', function () {
 
 //logic to execute when user clicks on a card after rolling dice
 cell.on("click", function () {
-  if (!$(this).children('.cell-image').hasClass("disabled-cell-image") && diceNumber != -1) {
-    //remove disabled-cell-image from all cell
-    cell.children().removeClass("disabled-cell-image");
-    let newKnightCell = $(this);
-    const newKnightCoordinate = [
-      Number($(this).data("x")),
-      Number($(this).data("y")),
-    ];
+  // Misclicks on disabled cells must be no-ops. Previously `diceNumber = -1`
+  // ran unconditionally at the end of this handler, so any misclick (on a
+  // faded cell, on the knight, between cells) silently consumed the roll and
+  // stranded the player until they re-rolled.
+  if ($(this).children('.cell-image').hasClass("disabled-cell-image") || diceNumber === -1)
+    return;
 
-    $.post({
-      url: "/game/process-move",
-      contentType: "application/json",
-      dataType: "json",
+  // Consume the roll immediately so a fast double-click during the network
+  // round-trip can't fire a second /process-move with a stale dice number.
+  const consumedDiceNumber = diceNumber;
+  diceNumber = -1;
 
-      data: JSON.stringify({
-        newKnightCoordinate: newKnightCoordinate,
-        diceNumber: diceNumber,
-      }),
+  //remove disabled-cell-image from all cell
+  cell.children().removeClass("disabled-cell-image");
+  const newKnightCell = $(this);
+  const newKnightCoordinate = [
+    Number($(this).data("x")),
+    Number($(this).data("y")),
+  ];
 
-      success: function (res) {
-        const prevPosCardId = res.prevPosCardId;
-        const prevPosNewAttribute = res.prevPosNewAttribute;
-        const eph_config = res.eph_config;
+  $.post({
+    url: "/game/process-move",
+    contentType: "application/json",
+    dataType: "json",
 
-        playAudioList(eph_config.audioList);
+    data: JSON.stringify({
+      newKnightCoordinate: newKnightCoordinate,
+      diceNumber: consumedDiceNumber,
+    }),
 
-        //spawn a new card at previous location of knight card
-        knightCell.children('.cell-image').attr("src", "/static/asset/image/" + prevPosCardId + ".png");
-        knightCell.children('.cell-attribute').text(prevPosNewAttribute);
+    success: function (res) {
+      const prevPosCardId = res.prevPosCardId;
+      const prevPosNewAttribute = res.prevPosNewAttribute;
+      const eph_config = res.eph_config;
 
-        //update the location of knight card with the position of card clicked by player
-        if (eph_config.activeEnigma != null)
-          newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight_enigma.png");
-        else
-          newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
-        newKnightCell.children('.cell-attribute').text(eph_config.knightHealth);
+      playAudioList(eph_config.audioList);
 
-        if (eph_config.currentGameStatus !== "ongoing")
-          displayEndGamePanel(eph_config.currentGameStatus);
+      //spawn a new card at previous location of knight card
+      knightCell.children('.cell-image').attr("src", "/static/asset/image/" + prevPosCardId + ".png");
+      knightCell.children('.cell-attribute').text(prevPosNewAttribute);
 
-        if (eph_config.knightWeapon != null) {
-          weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/" + eph_config.knightWeapon.id + ".png");
-          weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.damage);
-        }
-        else {
-          weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/weapon_placeholder.png");
-          weaponMicroPanel.children(".weapon-micro-panel-attribute").text("");
-        }
+      //update the location of knight card with the position of card clicked by player
+      if (eph_config.activeEnigma != null)
+        newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight_enigma.png");
+      else
+        newKnightCell.children('.cell-image').attr("src", "/static/asset/image/knight.png");
+      newKnightCell.children('.cell-attribute').text(eph_config.knightHealth);
 
-        if (eph_config.newGrid.length != 0)
-          renderNewGrid(eph_config.newGrid);
+      if (eph_config.currentGameStatus !== "ongoing")
+        displayEndGamePanel(eph_config.currentGameStatus);
 
-        if (eph_config.newCardLocations.length != 0)
-          renderNewCards(eph_config.newCardLocations);
-
-        renderActivePoisons(eph_config.activePoisons);
-
-        score.text(eph_config.score);
-        updateAura(eph_config.aura);
-        populateScreenLogs(eph_config.screenLogs);
-      },
-
-      error: function (xhr) {
-        displayEndGamePanel("crashed");
+      if (eph_config.knightWeapon != null) {
+        weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/" + eph_config.knightWeapon.id + ".png");
+        weaponMicroPanel.children(".weapon-micro-panel-attribute").text(eph_config.knightWeapon.damage);
       }
-    });
-  }
-  diceNumber = -1
+      else {
+        weaponMicroPanel.children(".weapon-micro-panel-image").attr("src", "/static/asset/image/weapon_placeholder.png");
+        weaponMicroPanel.children(".weapon-micro-panel-attribute").text("");
+      }
+
+      if (eph_config.newGrid.length != 0)
+        renderNewGrid(eph_config.newGrid);
+
+      if (eph_config.newCardLocations.length != 0)
+        renderNewCards(eph_config.newCardLocations);
+
+      renderActivePoisons(eph_config.activePoisons);
+
+      score.text(eph_config.score);
+      updateAura(eph_config.aura);
+      populateScreenLogs(eph_config.screenLogs);
+    },
+
+    error: function (xhr) {
+      displayEndGamePanel("crashed");
+    }
+  });
 });
 
 //open the pause dialog box when player clicks on pause button
