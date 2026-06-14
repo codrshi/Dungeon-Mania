@@ -21,10 +21,21 @@ const loggingLevel = config.app.loggingLevel;
 export function setInit(isSurvivalMode) {
     logger(loggingLevel.INFO, "setting up the game.");
 
-    if (eph_config.currentGameStatus !== config.game.gameStatus.ONGOING) {
-        logger(loggingLevel.INFO, "previous game status = {0}, clearing stale state.", eph_config.currentGameStatus);
-        clearEphConfig();
-    }
+    // Always reset state on a fresh /game request. Hitting this route
+    // means "start a new game", and there is no resume-on-refresh
+    // feature (beforeunload already kills the game on every navigation).
+    //
+    // The previous "if status !== ONGOING" guard only reset when the
+    // server still believed a game was in progress -- which is exactly
+    // the state during a mid-game Replay/F5 race against the async
+    // sendBeacon('/game/exit'). When GET /game won that race, setInit
+    // rendered the *old* grid while the exit beacon was still in
+    // flight, then the beacon landed and wiped the grid -- leaving the
+    // browser displaying cards the server had no backing data for, so
+    // every subsequent /game/roll-dice 500'd silently and the player
+    // was stranded on a frozen, faded board.
+    logger(loggingLevel.INFO, "previous game status = {0}, clearing state for the new game.", eph_config.currentGameStatus);
+    clearEphConfig();
 
     eph_config.isSurvivalMode = isSurvivalMode === "true";
     logger(loggingLevel.DEBUG, "isSurvivalMode = {0}", eph_config.isSurvivalMode);
@@ -68,7 +79,7 @@ function restoreDefaultEphConfig() {
     eph_config.mageCoordinate.x = 2;
     eph_config.mageCoordinate.y = 2;
     eph_config.audioList = [];
-    eph_config.screenLogs = ["- click on the dice icon to start the game."];
+    eph_config.screenLogs = ["Click the dice to begin."];
     eph_config.lastValidPositions = [];
     eph_config.lastDiceNumber = null;
 }

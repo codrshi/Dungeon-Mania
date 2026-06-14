@@ -223,11 +223,12 @@ function preProcessMove() {
         eph_config.activePoisons[i].setDuration(activePoison.getDuration() - 1);
     });
 
-    if (tempVar - eph_config.knightHealth != 0)
+    // Only narrate the poison hit if the knight survived; otherwise
+    // updateHealth already pushed "HP depleted." and a damage line under
+    // it would be redundant noise on the same move.
+    if (eph_config.knightHealth > 0 && tempVar - eph_config.knightHealth != 0)
         eph_config.screenLogs.push(
-            "- dealt " +
-            (tempVar - eph_config.knightHealth) +
-            " DMG due to poison(s)."
+            "Poison drained " + (tempVar - eph_config.knightHealth) + " HP."
         );
 
     if (
@@ -246,7 +247,7 @@ function preProcessMove() {
 
         if (eph_config.activeEnigma.getDuration() === 0) {
             eph_config.activeEnigma = null;
-            eph_config.screenLogs.push("- enigma elixir expired.");
+            eph_config.screenLogs.push("Enigma Elixir faded.");
             logger(loggingLevel.INFO, "enigma elixir expired.");
         }
     }
@@ -309,10 +310,14 @@ function postProcessMove(diceNumber) {
         tempVar = eph_config.knightHealth;
         updateHealth(config.game.health.DECREASE, bombDamage);
         if (tempVar - eph_config.knightHealth != 0) {
-            eph_config.screenLogs.push(
-                "- dealt " + (tempVar - eph_config.knightHealth) + " DMG due to bomb(s)."
-            );
             eph_config.audioList.push(config.game.id.artifact.BOMB);
+            // Skip the narration line when the bomb chain killed the
+            // knight -- updateHealth already pushed "HP depleted."
+            if (eph_config.knightHealth > 0) {
+                eph_config.screenLogs.push(
+                    "Bombs erupted: -" + (tempVar - eph_config.knightHealth) + " HP."
+                );
+            }
         }
     }
     if (eph_config.isAuraThresholdThreeCrossed) {
@@ -337,7 +342,7 @@ function postProcessMove(diceNumber) {
                     "cardAttribute": config.game.attribute.EMPTY
                 });
                 eph_config.audioList.push(config.game.id.artifact.CLOSE_DOOR);
-                eph_config.screenLogs.push("- escape door closed.");
+                eph_config.screenLogs.push("Escape door sealed.");
                 logger(loggingLevel.INFO, "escape door countdown reached zero; door closed at {0}.", JSON.stringify(escapeDoorCoordinate));
             }
         }

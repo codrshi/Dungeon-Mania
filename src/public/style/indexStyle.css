@@ -1,36 +1,65 @@
+/* indexStyle.css
+ *
+ * Home / menu screen. Builds on theme.css.
+ */
+
+/* Explicit viewport dimensions are important here: the page-enter
+ * animation animates `transform`, which turns the body into the
+ * containing block for any `position: fixed` descendants (CSS spec).
+ * `#menu-panel` is fixed-positioned, so without these dimensions it
+ * would size itself to 80% of the body's natural content height
+ * (basically just the player plate) and collapse to a tiny strip at
+ * the top of the screen. */
+html,
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     background-image: url('/static/asset/image/artifact_wall.png');
     background-repeat: repeat;
     background-size: 10vh;
     background-position: top left;
+    animation: page-enter 0.45s ease-out both;
 }
+
+/* === Player info plate (top-right) ===================================== */
 
 #player-panel {
     display: flex;
-    justify-content: right;
+    justify-content: flex-end;
+    gap: 2px;
+    padding: 1vh 1vh 0 0;
+}
+
+#username,
+#highScore {
+    font-family: var(--font-body);
+    font-weight: bold;
+    font-size: 3vh;
+    letter-spacing: 1px;
+    padding: 0.6vh 1.4vh;
+    border: var(--pixel-border);
+    box-shadow:
+        inset 2px 2px 0 0 rgba(255, 255, 255, 0.35),
+        inset -2px -2px 0 0 rgba(0, 0, 0, 0.40),
+        4px 4px 0 0 var(--color-shadow);
 }
 
 #username {
-    font-family: "Nerko One", cursive;
-    font-weight: 400;
-    font-style: normal;
-    font-size: larger;
-    background-color: #7E5543;
-    color: #FCC510;
-    border-radius: 10px 0 0 10px;
-    padding: 0.5%;
+    background-color: var(--color-brown);
+    color: var(--color-gold);
 }
 
 #highScore {
-    font-family: "Nerko One", cursive;
-    font-weight: 400;
-    font-style: normal;
-    font-size: larger;
-    background-color: #FCC510;
-    color: #7E5543;
-    border-radius: 0 10px 10px 0;
-    padding: 0.5%;
+    background-color: var(--color-gold);
+    color: var(--color-brown);
 }
+
+/* === Menu panel ======================================================== */
 
 #menu-panel {
     position: fixed;
@@ -41,6 +70,11 @@ body {
     transform: translate(-50%, -50%);
     background-image: url('/static/asset/image/menu_panel_background_image.png');
     background-size: 100% 100%;
+    border: var(--pixel-border-thick);
+    box-shadow:
+        inset 3px 3px 0 0 rgba(255, 225, 129, 0.35),
+        inset -3px -3px 0 0 rgba(0, 0, 0, 0.45),
+        6px 6px 0 0 var(--color-deep-shadow);
 }
 
 #menu-panel-logo {
@@ -49,8 +83,21 @@ body {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
     z-index: 100;
+    /* Gentle vertical float so the logo feels "alive" without the
+     * distraction of a fast / jumpy animation. We can't reuse the
+     * generic `float-bob` keyframe from theme.css because that one
+     * only animates `transform: translateY(...)`, which would clobber
+     * the `translate(-50%, -50%)` we need to keep the logo centered
+     * over its fixed (top:50%, left:50%) anchor point. Hence a local
+     * keyframe that bakes the centering translate into every frame.  */
+    animation: menu-logo-float 3s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px var(--color-deep-shadow));
+}
+
+@keyframes menu-logo-float {
+    0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+    50%      { transform: translate(-50%, -50%) translateY(-8px); }
 }
 
 #button-sub-panel {
@@ -63,29 +110,42 @@ body {
     column-gap: 20%;
 }
 
+/* === Menu buttons ====================================================== */
+
 .button {
     background-image: url('/static/asset/image/button.png');
     background-size: 100% 100%;
     border: 0;
     background-color: transparent;
     cursor: pointer;
-    font-family: "Bowlby One", sans-serif;
+    font-family: var(--font-button);
     font-weight: 400;
-    font-size: larger;
-    font-style: normal;
-    color: #7E5543;
+    font-size: 2.8vh;
+    color: var(--color-brown);
     height: 50%;
     width: 50%;
+    transition:
+        transform var(--transition-quick),
+        filter var(--transition-quick);
 }
 
-/* Hide the browser-default focus ring (it clashes with the wooden button art)
- * but render a thick gold outline when focus arrives via keyboard, so arrow-key
- * users always know which button Enter will trigger. */
+.button:hover {
+    transform: translateY(-3px) scale(1.04);
+    filter: brightness(1.10) drop-shadow(0 6px 6px var(--color-shadow));
+}
+
+.button:active {
+    transform: translateY(1px) scale(0.98);
+    filter: brightness(0.92);
+}
+
 .button:focus {
     outline: none;
 }
 
+/* Visible keyboard-focus ring (suppressed on plain mouse focus).       */
 .button:focus-visible {
-    outline: 4px solid #FCC510;
+    outline: 4px solid var(--color-gold);
     outline-offset: 4px;
+    animation: glow-gold 1.4s ease-in-out infinite;
 }

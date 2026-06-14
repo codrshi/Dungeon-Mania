@@ -55,9 +55,14 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
             const damage = computeBombDamage(diceNumber);
             updateHealth(config.game.health.DECREASE, damage);
             appreciateAura(config.game.aura.INCREASE, damage);
-            eph_config.screenLogs.push(
-                "- dealt " + (tempVar - eph_config.knightHealth) + " DMG from bomb."
-            );
+            // Only push the explosion line when the knight survived; if HP
+            // hit 0, updateHealth already pushed "HP depleted." and a
+            // detonation line under it would be noise.
+            if (eph_config.knightHealth > 0 && tempVar - eph_config.knightHealth > 0) {
+                eph_config.screenLogs.push(
+                    "Bomb detonated: -" + (tempVar - eph_config.knightHealth) + " HP."
+                );
+            }
             break;
 
         case config.game.id.artifact.CHAOS_ORB:
@@ -67,7 +72,7 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
                 config.game.aura.INCREASE,
                 config.game.grid.ROWS * config.game.grid.COLUMNS
             );
-            eph_config.screenLogs.push("- grid shuffled.");
+            eph_config.screenLogs.push("Chaos Orb shuffled the grid.");
             break;
         case config.game.id.artifact.ENIGMA_ELIXIR:
             if (eph_config.activeEnigma == null) {
@@ -80,7 +85,7 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
                 logger(loggingLevel.DEBUG, "updated active enigma = {0}.", JSON.stringify(eph_config.activeEnigma));
                 appreciateAura(config.game.aura.INCREASE, enigmaBuff);
             }
-            eph_config.screenLogs.push("- obtained enigma elixir.");
+            eph_config.screenLogs.push("Enigma Elixir activated.");
             break;
         case config.game.id.artifact.MIXED_POTION:
             if (
@@ -117,7 +122,7 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
                     eph_config.knightWeapon.getDamage() + forgedAmount
                 );
                 appreciateAura(config.game.aura.INCREASE, forgedAmount);
-                eph_config.screenLogs.push("- weapon forged.");
+                eph_config.screenLogs.push("Weapon forged (+" + forgedAmount + " damage).");
                 logger(loggingLevel.DEBUG, "weapon forger effective value = {0}, updated weapon damage = {1}.", forgedAmount, eph_config.knightWeapon.getDamage());
             } else eph_config.audioList.pop();
             break;
@@ -164,7 +169,7 @@ function dealPoisonPotion(diceNumber) {
     // ExcessActivePoisonException; no per-call check is needed here.
     eph_config.activePoisons.push(new ActivePoisonDao(poisonDamage));
     appreciateAura(config.game.aura.INCREASE, poisonDamage);
-    eph_config.screenLogs.push("- gained poison potion.");
+    eph_config.screenLogs.push("Poison Potion stored.");
     logger(loggingLevel.DEBUG, "active poison added = {0}.", JSON.stringify(eph_config.activePoisons[eph_config.activePoisons.length - 1]));
 }
 
@@ -228,10 +233,13 @@ function dealManaStone(movements) {
     });
 
     if (slainNames.length > 0) {
+        const capitalized = slainNames.map(function (name) {
+            return name.charAt(0).toUpperCase() + name.slice(1);
+        });
         eph_config.screenLogs.push(
-            "- slayed monster(s) " + slainNames.join(", ") + " from mana stone."
+            "Mana Stone slew " + capitalized.join(", ") + "."
         );
     } else {
-        eph_config.screenLogs.push("- mana stone fizzled (no adjacent monsters).");
+        eph_config.screenLogs.push("Mana Stone fizzled.");
     }
 }

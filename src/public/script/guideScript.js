@@ -13,7 +13,42 @@ const PAGE_SCROLL_STEP_PX = 360;
 
 $(function () {
     backButton.focus();
+    initScrollReveal();
 });
+
+// Fade-and-rise each guide section into view as the user scrolls down.
+// We observe each <section class="guide-section"> against the scrolling
+// container (#guide-panel-content), not the viewport, because the page
+// itself doesn't scroll -- only the panel does.
+function initScrollReveal() {
+    const sections = document.querySelectorAll('.guide-section');
+    if (sections.length === 0) return;
+
+    sections.forEach(function (section) {
+        section.classList.add('reveal');
+    });
+
+    // Browsers without IntersectionObserver get the content immediately
+    // -- no animation, but no broken UI either.
+    if (typeof IntersectionObserver === 'undefined') {
+        sections.forEach(function (s) { s.classList.add('visible'); });
+        return;
+    }
+
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        root: guidePanelContent[0],
+        threshold: 0.12,
+    });
+
+    sections.forEach(function (s) { observer.observe(s); });
+}
 
 function pressButton($btn) {
     buttonClickAudio.currentTime = 0;

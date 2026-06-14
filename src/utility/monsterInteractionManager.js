@@ -63,13 +63,13 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
             );
 
             eph_config.audioList.push(monsterCard.getId());
-            eph_config.screenLogs.push("- wraith slayed.");
+            eph_config.screenLogs.push("Wraith slain.");
         } else {
             appreciateAura(
                 config.game.aura.DECREASE,
                 config.game.aura.wraith_absorption_rate.MAX_VALUE
             );
-            eph_config.screenLogs.push("- wraith drained your aura.");
+            eph_config.screenLogs.push("Wraith drained your aura.");
         }
         return;
     }
@@ -107,10 +107,18 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
     knightWeaponDamage -= monsterHealth;
 
     if (knightWeaponDamage <= 0) {
+        const healthBeforeResidue = eph_config.knightHealth;
         updateHealth(config.game.health.DECREASE, Math.abs(knightWeaponDamage));
+        const residueDealt = healthBeforeResidue - eph_config.knightHealth;
+        // Only push the bite-back line if the monster did not finish the
+        // knight (otherwise updateHealth already pushed "HP depleted.").
+        if (eph_config.knightHealth > 0 && residueDealt > 0) {
+            const monsterName = capitalize(monsterCard.getId().substring(8));
+            eph_config.screenLogs.push(monsterName + " bit back: -" + residueDealt + " HP.");
+        }
         if (eph_config.knightWeapon != null) {
             eph_config.knightWeapon = null;
-            eph_config.screenLogs.push("- weapon expired.");
+            eph_config.screenLogs.push("Weapon shattered.");
             logger(loggingLevel.INFO, "knight weapon expired.");
         }
     }
@@ -148,9 +156,17 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
 
         eph_config.audioList.push(monsterCard.getId());
         eph_config.screenLogs.push(
-            "- monster " + monsterCard.getId().substring(8) + " slayed."
+            capitalize(monsterCard.getId().substring(8)) + " slain."
         );
     }
+}
+
+// Local title-case helper. The DAO ids are stored lowercase (e.g.
+// "monster_skeleton" -> "skeleton"); the screen log displays them as
+// proper nouns ("Skeleton") to match the new sentence-case message style.
+function capitalize(name) {
+    if (!name || name.length === 0) return name;
+    return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 function dealMageMonster(monsterElement) {
@@ -193,7 +209,7 @@ function dealMageMonster(monsterElement) {
 
         eph_config.escapeDoorCountdown = config.game.mage.DOOR_CLOSE_COUNTDOWN + 1;
         eph_config.audioList.push(config.game.id.artifact.OPEN_DOOR);
-        eph_config.screenLogs.push("- escape door opened for next 5 turns.");
+        eph_config.screenLogs.push("Escape door opened (5 turns).");
     }
     else {
         logger(loggingLevel.DEBUG, "knight failed to obtain key because escape door countdown is non-zero.\nescape door countdown = {0}.", eph_config.escapeDoorCountdown);

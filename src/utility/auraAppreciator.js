@@ -35,7 +35,7 @@ export function appreciateAura(auraStatus, amount) {
 
         if (eph_config.aura === 0) {
             terminateGame(config.game.gameStatus.LOST);
-            eph_config.screenLogs.push("- aura exhausted.")
+            eph_config.screenLogs.push("Aura depleted.");
         }
         return;
     }
@@ -54,7 +54,7 @@ export function appreciateAura(auraStatus, amount) {
         eph_config.newGrid = mapGrid(getGrid());
         eph_config.isAuraThresholdThreeCrossed = true;
         eph_config.audioList.push(config.game.id.monster.MAGE);
-        eph_config.screenLogs.push("- aura maxed. Entered mage realm.");
+        eph_config.screenLogs.push("Aura maxed. Mage Realm awakened.");
 
         logger(loggingLevel.INFO, "aura maximum value of 1000 reached. Entering mage realm.");
     }

@@ -42,7 +42,8 @@ export function dealWeapon(weaponCard) {
     ] += 1;
 
     eph_config.audioList.push(weaponCard.getId());
+    const weaponName = weaponCard.getId().substring(7);
     eph_config.screenLogs.push(
-        "- obtained weapon " + weaponCard.getId().substring(7) + "."
+        "Picked up " + weaponName.charAt(0).toUpperCase() + weaponName.slice(1) + "."
     );
 }

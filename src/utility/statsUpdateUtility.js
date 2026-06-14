@@ -13,7 +13,7 @@ export function updateStats(gameStatus) {
   stats_config.basicStats.totalScore += eph_config.score;
   if (stats_config.basicStats.highScore === "-" || eph_config.score > stats_config.basicStats.highScore) {
     stats_config.basicStats.highScore = eph_config.score;
-    eph_config.screenLogs.push("- new high score achieved.")
+    eph_config.screenLogs.push("New high score!");
   }
 
   stats_config.basicStats.totalGamesPlayed += 1;

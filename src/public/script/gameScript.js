@@ -13,7 +13,7 @@ const weaponMicroPanel = $("#weapon-micro-panel");
 const activePanelMicroPanel = $("#active-poison-micro-panel");
 const auraMicroPanel = $("#aura-micro-panel");
 let knightCell = null;
-const screenLogSubPanelText = $('#screen-log-sub-panel-text');
+const screenLogStack = $('#screen-log-stack');
 const button = $('.button');
 const buttonClickAudio = $('#button-click-audio')[0];
 const bombExplodeAudio = $('#bomb-explode-audio')[0];
@@ -74,6 +74,9 @@ $(function () {
   auraMicroPanel.children('.aura-overlay').css('top', parseFloat(auraMicroPanelHeadingHeight));
   auraMicroPanel.children('.aura-overlay').css('height', parseFloat(auraMicroPanelImageHeight));
 
+  // Start the dice bobbing immediately so the player knows where to click.
+  rollDiceImage.addClass('idle');
+
   $.get("/game/eph-config", {}, function (res) {
     const eph_config = res.eph_config;
 
@@ -89,7 +92,7 @@ $(function () {
     updateAura(eph_config.aura);
     if (eph_config.currentGameStatus !== "ongoing")
       displayEndGamePanel(eph_config.currentGameStatus);
-    populateScreenLogs(eph_config.screenLogs);
+    setScreenLogs(eph_config.screenLogs);
   });
 });
 
@@ -143,6 +146,13 @@ rollDiceImage.on('click', function () {
 
   //diable interaction with all cells
   cell.children().addClass("disabled-cell-image");
+  // Clear the previous turn's knight highlight; the correct cell gets
+  // re-marked once the server response lands and we re-discover the
+  // knight in the grid.
+  cell.removeClass('knight-cell');
+  // Stop the idle bob while the dice is spinning -- otherwise the bob and
+  // the rolling GIF compete for the same translate transform.
+  rollDiceImage.removeClass('idle');
   startDiceRollAudio();
 
   $.get("/game/roll-dice", {}, function (res) {
@@ -153,18 +163,30 @@ rollDiceImage.on('click', function () {
 
     setTimeout(function () {
       stopDiceRollAudio();
-      screenLogSubPanelText.text("- you got " + String(diceNumber) + ".");
       rollDiceImage.attr('src', '/static/asset/image/dice_face_' + diceNumber + '.png');
 
       //if no available position to move, then reset dice number and allow player to re-roll the dice
       if (validNextPositions.length == 0) {
+        // One entry per roll: the no-moves branch carries the reason
+        // inline so the player doesn't see two stack lines for the
+        // same dice click.
+        appendScreenLogs(["Rolled " + diceNumber + " (no valid moves)."]);
         cell.children().removeClass("disabled-cell-image");
         diceNumber = -1;
+        // No legal moves -- back to idle dice bob immediately.
+        rollDiceImage.addClass('idle');
+      } else {
+        appendScreenLogs(["Rolled " + diceNumber + "."]);
       }
 
       cell.each(function () {
-        if ($(this).children('.cell-image').attr("src").includes("knight"))
+        if ($(this).children('.cell-image').attr("src").includes("knight")) {
           knightCell = $(this);
+          // Tag the knight's cell so CSS can un-fade it and draw the
+          // distinct blue "you are here" pulse around it during the
+          // move-selection phase.
+          knightCell.addClass('knight-cell');
+        }
 
         //enable interaction with cell which can be reached by knight card
         validNextPositions.forEach((validNextPosition) => {
@@ -177,7 +199,27 @@ rollDiceImage.on('click', function () {
         });
       });
 
+      // The grid is now in "pick a tile" mode (unless we already rolled
+      // back to idle on the no-valid-moves branch above). The CSS uses
+      // body.move-selection to apply the gold pulse on legal tiles and
+      // the blue pulse on the knight's tile.
+      if (validNextPositions.length > 0) {
+        $('body').addClass('move-selection');
+      }
     }, DICE_ROLL_ANIMATION_DURATION_MS);
+  }).fail(function () {
+    // Defensive: if /game/roll-dice ever 500s (e.g. server-side state
+    // got wedged), we'd otherwise leave the player stranded -- cells
+    // are already disabled, diceNumber is still -1, so every re-click
+    // would play the SFX and re-fire the same broken request without
+    // any visible progress. Restore the board, stop the SFX, and
+    // surface the crash modal so the player can Replay out of it.
+    stopDiceRollAudio();
+    cell.children().removeClass("disabled-cell-image");
+    rollDiceImage.attr('src', '/static/asset/image/dice_face_1.png');
+    rollDiceImage.addClass('idle');
+    diceNumber = -1;
+    displayEndGamePanel('crashed');
   });
 });
 
@@ -197,11 +239,19 @@ cell.on("click", function () {
 
   //remove disabled-cell-image from all cell
   cell.children().removeClass("disabled-cell-image");
+  // The roll has been consumed; drop the "pick a tile" state and the dice
+  // returns to its idle bob immediately.
+  $('body').removeClass('move-selection');
+  rollDiceImage.addClass('idle');
   const newKnightCell = $(this);
   const newKnightCoordinate = [
     Number($(this).data("x")),
     Number($(this).data("y")),
   ];
+
+  // Remember the previous score so we can bump the score element when it
+  // grows in the success callback.
+  const previousScore = Number(score.text()) || 0;
 
   $.post({
     url: "/game/process-move",
@@ -251,9 +301,18 @@ cell.on("click", function () {
 
       renderActivePoisons(eph_config.activePoisons);
 
+      // Bump the score plate if the player scored on this move. Toggling
+      // the .bump class on then off the next frame lets the keyframe
+      // animation replay even when the score goes 0 -> 0 -> 0.
+      if (eph_config.score !== previousScore) {
+        score.removeClass('bump');
+        // Force reflow so the animation restarts on every score change.
+        void score[0].offsetWidth;
+        score.addClass('bump');
+      }
       score.text(eph_config.score);
       updateAura(eph_config.aura);
-      populateScreenLogs(eph_config.screenLogs);
+      appendScreenLogs(eph_config.screenLogs);
     },
 
     error: function (xhr) {
@@ -270,6 +329,14 @@ pauseButton.click(function () {
 function openModal() {
   modalDialog.show();
   modalDialogOverlay.show();
+  // Re-trigger the CSS pop-in animation every time the modal opens, not
+  // just on its first display. Removing the class + bouncing through a
+  // requestAnimationFrame before re-adding it is the most reliable
+  // cross-browser way to "replay" a CSS animation.
+  modalDialog.removeClass('pop-in');
+  requestAnimationFrame(function () {
+    modalDialog.addClass('pop-in');
+  });
   // Move focus into the modal so keyboard users can immediately act on
   // Replay/Exit without first hunting for it via Tab.
   modalButtons.children('#replay-button').focus();
@@ -314,8 +381,15 @@ function renderNewCards(newCardLocations) {
   cell.each(function () {
     const key = $(this).data("x") + " " + $(this).data("y");
     if (newCardLocationsMap.has(key)) {
-      $(this).children('.cell-image').attr("src", "/static/asset/image/" + newCardLocationsMap.get(key).cardId + ".png");
-      $(this).children('.cell-attribute').text(newCardLocationsMap.get(key).cardAttribute);
+      const $cell = $(this);
+      $cell.children('.cell-image').attr("src", "/static/asset/image/" + newCardLocationsMap.get(key).cardId + ".png");
+      $cell.children('.cell-attribute').text(newCardLocationsMap.get(key).cardAttribute);
+      // Pop the new card in. Re-add the class on the next frame so the
+      // keyframe animation re-runs even when the same cell is rewritten
+      // on consecutive turns (e.g. the mage hopping around).
+      $cell.removeClass('card-spawned');
+      void $cell[0].offsetWidth;
+      $cell.addClass('card-spawned');
     }
   });
 }
@@ -369,12 +443,77 @@ function displayEndGamePanel(gameStatus) {
   openModal();
 }
 
-function populateScreenLogs(screenLogs) {
-  screenLogSubPanelText.text('');
+// === Screen log stack ===================================================
+//
+// The screen log is an animated, capped stack of recent events. New entries
+// are PREPENDED into a column-reverse flex container so they appear at the
+// visual BOTTOM and push older entries up. When the entry count exceeds
+// MAX_SCREEN_LOG_ENTRIES the visually-topmost (DOM-last) entry fades out
+// and is removed. This is the same shape as a chat / console feed and
+// keeps a running history across moves -- the server resets its
+// screenLogs each move, so accumulation is the front-end's job.
 
-  screenLogs.forEach(function (screenLog) {
-    screenLogSubPanelText.append(screenLog + '<br>');
-  })
+const MAX_SCREEN_LOG_ENTRIES = 8;
+// Should match the --transition-smooth duration in theme.css; we wait this
+// long before removing the DOM node so the fade-out is visible.
+const SCREEN_LOG_LEAVE_MS = 320;
+
+// Classify a message for colour-coding the left accent bar. The patterns
+// look at the literal wording rather than relying on the server to send a
+// type field -- keeps the server-side touch minimal.
+function classifyScreenLog(message) {
+  const lower = message.toLowerCase();
+  // Gain-side: explicit "+N" delta or any of the helping-verb keywords.
+  // Tested BEFORE damage so "Weapon forged (+N damage)." reads as a gain
+  // even though it contains the word "damage".
+  if (/\+\d/.test(message)
+    || /(healed|picked up|stored|activated|forged|new high|opened|maxed|awakened|slain|slew|obtained)/.test(lower)) {
+    return 'log-gain';
+  }
+  if (/-\d+\s*hp|drained|shattered|exhausted|depleted|erupted|detonated|faded|sealed|bit back/.test(lower)) {
+    return 'log-damage';
+  }
+  return 'log-neutral';
+}
+
+// Reset the stack and seed it with `messages`. Used on initial page load
+// where there's no prior history worth animating out.
+function setScreenLogs(messages) {
+  screenLogStack.empty();
+  appendScreenLogs(messages);
+}
+
+// Add `newMessages` to the stack with the slide-up entry animation and
+// prune anything that pushes us past the cap.
+function appendScreenLogs(newMessages) {
+  if (!newMessages || newMessages.length === 0) return;
+
+  newMessages.forEach(function (message) {
+    const $entry = $('<div></div>')
+      .addClass('screen-log-entry')
+      .addClass(classifyScreenLog(message))
+      .text(message);
+
+    // column-reverse + prepend = visually appears at the bottom.
+    screenLogStack.prepend($entry);
+
+    // Force a reflow so the browser sees the resting state (opacity 0,
+    // translated down) before .entering flips it on -- otherwise the
+    // transition is collapsed and the slide-in doesn't play.
+    void $entry[0].offsetWidth;
+    $entry.addClass('entering');
+  });
+
+  // Cap the stack. With column-reverse the DOM-last child is visually
+  // at the TOP, so anything beyond MAX is the oldest -- fade them out
+  // and remove.
+  const children = screenLogStack.children();
+  for (let i = MAX_SCREEN_LOG_ENTRIES; i < children.length; i++) {
+    const $entry = children.eq(i);
+    if ($entry.hasClass('leaving')) continue;
+    $entry.addClass('leaving');
+    setTimeout(function () { $entry.remove(); }, SCREEN_LOG_LEAVE_MS);
+  }
 }
 
 button.on('mousedown', function () {

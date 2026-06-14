@@ -21,7 +21,45 @@ $(function () {
         weaponStatsTable.children().eq(3).text("-");
 
     backButton.focus();
+
+    // Numeric stat values count up from zero on page load -- a small
+    // touch of game-show drama. Only run on values that are *pure*
+    // numbers (skip names, dashes, things like "Sword of 8 DMG").
+    animateNumericValues();
 });
+
+// All stat values live in the right column of each .table grid -- i.e.
+// every even-indexed <span>. We count the integer ones up from 0 over
+// COUNT_DURATION_MS using a request-animation-frame loop.
+const COUNT_DURATION_MS = 700;
+
+function animateNumericValues() {
+    $('.table span:nth-child(2n)').each(function () {
+        const $el = $(this);
+        const raw = $el.text().trim();
+        if (!/^-?\d+$/.test(raw)) return;
+        const target = parseInt(raw, 10);
+        if (target === 0) return;
+        countUp($el, target, COUNT_DURATION_MS);
+    });
+}
+
+function countUp($el, target, durationMs) {
+    const start = performance.now();
+    function tick(now) {
+        const t = Math.min(1, (now - start) / durationMs);
+        // ease-out cubic: fast at the start, gentle landing.
+        const eased = 1 - Math.pow(1 - t, 3);
+        const current = Math.floor(target * eased);
+        $el.text(current);
+        if (t < 1) {
+            requestAnimationFrame(tick);
+        } else {
+            $el.text(target);
+        }
+    }
+    requestAnimationFrame(tick);
+}
 
 function pressButton($btn) {
     buttonClickAudio.currentTime = 0;
