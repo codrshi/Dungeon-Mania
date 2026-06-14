@@ -69,7 +69,7 @@ export function getGrid() {
 
 export function setGrid(newGrid) {
     grid = newGrid;
-    logger(loggingLevel.INFO, "updated grid : \n" + JSON.stringify(newGrid, null, 2));
+    logger(loggingLevel.DEBUG, "updated grid : \n" + JSON.stringify(newGrid, null, 2));
 }
 
 export function getCardFromGrid(coordinate) {
@@ -84,7 +84,7 @@ export function setCardInGrid(coordinate, card) {
         throw new InvalidCoordinateException("unknown", JSON.stringify(coordinate));
     }
     grid[coordinate.getX()][coordinate.getY()] = card;
-    logger(loggingLevel.INFO, "grid location {0} updated with new card {1}.", JSON.stringify(coordinate), JSON.stringify(card));
+    logger(loggingLevel.DEBUG, "grid location {0} updated with new card {1}.", JSON.stringify(coordinate), JSON.stringify(card));
 }
 
 export function createNewCard(x, y) {

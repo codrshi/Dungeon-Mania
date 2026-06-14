@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/app.js",
   "scripts": {
-    "deploy": "npm install && npm start",
+    "deploy": "npm install && node src/server.js",
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "lint": "eslint \"src/**/*.js\"",

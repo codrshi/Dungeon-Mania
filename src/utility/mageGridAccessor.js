@@ -169,7 +169,7 @@ export function updateMageLocation() {
     eph_config.mageCoordinate.y = mageCoordinate.getY();
     setCardInGrid(new CoordinateDao(eph_config.mageCoordinate.x, eph_config.mageCoordinate.y), new MonsterDao(config.game.attribute.INFINITE, randomElementForMage, config.game.id.monster.MAGE + "_" + randomElementForMage));
 
-    logger(loggingLevel.INFO, "updated mage coordinate = {0}.", JSON.stringify(eph_config.mageCoordinate));
+    logger(loggingLevel.DEBUG, "updated mage coordinate = {0}.", JSON.stringify(eph_config.mageCoordinate));
     eph_config.newCardLocations.push({
         "coordinate": { "x": eph_config.mageCoordinate.x, "y": eph_config.mageCoordinate.y },
         "cardId": config.game.id.monster.MAGE + "_" + randomElementForMage,
@@ -184,7 +184,7 @@ export function getRandomEscapeDoorCoordinate() {
     if (randomEscapeDoorCoordinate.getX() < 0 || randomEscapeDoorCoordinate.getX() >= ROWS || randomEscapeDoorCoordinate.getY() < 0 || randomEscapeDoorCoordinate.getY() >= COLUMNS) {
         throw new InvalidCoordinateException("escape door coordinate", JSON.stringify(randomEscapeDoorCoordinate));
     }
-    logger(loggingLevel.INFO, "new random escape door coordinate = {0}.", JSON.stringify(randomEscapeDoorCoordinate));
+    logger(loggingLevel.DEBUG, "new random escape door coordinate = {0}.", JSON.stringify(randomEscapeDoorCoordinate));
     return randomEscapeDoorCoordinate;
 }
 

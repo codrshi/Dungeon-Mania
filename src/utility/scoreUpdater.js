@@ -19,5 +19,5 @@ export function updateScore(value) {
     }
     eph_config.score += value;
 
-    logger(loggingLevel.INFO, "score updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.score, value);
+    logger(loggingLevel.DEBUG, "score updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.score, value);
 }

@@ -33,7 +33,7 @@ import { dealWeapon } from "../utility/weaponInteractionManager.js";
 import { dealArtifact } from "../utility/artifactInteractionManager.js";
 import { dealMonster } from "../utility/monsterInteractionManager.js";
 import { computeBombDamage } from "../utility/bombFormula.js";
-import { buildEphConfigDto } from "./ephConfigDto.js";
+import { buildEphConfigDto } from "../utility/ephConfigDto.js";
 
 const loggingLevel = config.app.loggingLevel;
 const movements = [
@@ -66,10 +66,10 @@ const COLUMNS = config.game.grid.COLUMNS;
 
 // === Dice Roll Section ===
 export function rollDiceExecute() {
-    logger(loggingLevel.INFO, "rolling dice...");
+    logger(loggingLevel.DEBUG, "rolling dice...");
 
     const diceNumber = getRandom(1, 6);
-    logger(loggingLevel.INFO, "dice number obtained = {0}.", diceNumber);
+    logger(loggingLevel.DEBUG, "dice number obtained = {0}.", diceNumber);
 
     // Decide the allowed direction set BEFORE filtering for walls/doors,
     // so blocked cardinals can never get replaced by diagonals.
@@ -93,7 +93,7 @@ export function rollDiceExecute() {
     }));
     eph_config.lastDiceNumber = diceNumber;
 
-    logger(loggingLevel.INFO, "valid next position(s) = {0}.", JSON.stringify(validNextPositions));
+    logger(loggingLevel.DEBUG, "valid next position(s) = {0}.", JSON.stringify(validNextPositions));
     temp_stats_config.basicStats.totalGamesMoves += 1;
 
     const rollDiceResData = {
@@ -101,13 +101,13 @@ export function rollDiceExecute() {
         validNextPositions: validNextPositions,
     };
 
-    logger(loggingLevel.INFO, "dice roll successful.");
+    logger(loggingLevel.DEBUG, "dice roll successful.");
     return rollDiceResData;
 }
 
 // === Move Processing Section ===
 export function processMove(newKnightCoordinate, diceNumber) {
-    logger(loggingLevel.INFO, "processing move with data :\nnewKnightCoordinate = {0}\ndice number = {1}.", newKnightCoordinate, diceNumber);
+    logger(loggingLevel.DEBUG, "processing move with data :\nnewKnightCoordinate = {0}\ndice number = {1}.", newKnightCoordinate, diceNumber);
 
     // Validate request shape before mutating anything.
     if (!Array.isArray(newKnightCoordinate) || newKnightCoordinate.length !== 2
@@ -167,13 +167,13 @@ export function processMove(newKnightCoordinate, diceNumber) {
         );
     }
 
-    logger(loggingLevel.INFO, "for previous knight coordinate = {0}, new card created with ID = {1} and attribute = {2}.", JSON.stringify(eph_config.coordinate), prevPosCardId, prevPosNewAttribute);
+    logger(loggingLevel.DEBUG, "for previous knight coordinate = {0}, new card created with ID = {1} and attribute = {2}.", JSON.stringify(eph_config.coordinate), prevPosCardId, prevPosNewAttribute);
 
     setCardInGrid(newKnightCoordinate, new KnightDao());
     eph_config.coordinate.x = newKnightCoordinate.getX();
     eph_config.coordinate.y = newKnightCoordinate.getY();
 
-    logger(loggingLevel.INFO, "current knight coordinate = {0}, interacting with the card = {1}.", JSON.stringify(eph_config.coordinate), JSON.stringify(currCard));
+    logger(loggingLevel.DEBUG, "current knight coordinate = {0}, interacting with the card = {1}.", JSON.stringify(eph_config.coordinate), JSON.stringify(currCard));
 
     if (currCard instanceof WeaponDao) {
         isMonsterCard = false;
@@ -199,7 +199,7 @@ export function processMove(newKnightCoordinate, diceNumber) {
 
 // === Pre Processing Section ===
 function preProcessMove() {
-    logger(loggingLevel.INFO, "preprocessing moves...");
+    logger(loggingLevel.DEBUG, "preprocessing moves...");
 
     eph_config.newGrid = [];
     eph_config.newCardLocations = [];
@@ -209,10 +209,10 @@ function preProcessMove() {
 
     if (isMonsterCard === false) {
         monsterKillingStreakMoves = 0;
-        logger(loggingLevel.INFO, "resetted monster killing streak moves to 0.");
+        logger(loggingLevel.DEBUG, "resetted monster killing streak moves to 0.");
     }
 
-    logger(loggingLevel.INFO, "currently active poisons = {0}.", JSON.stringify(eph_config.activePoisons));
+    logger(loggingLevel.DEBUG, "currently active poisons = {0}.", JSON.stringify(eph_config.activePoisons));
 
     if (eph_config.activePoisons.length > config.game.activePoison.MAX_COUNT_OF_ACTIVE_POISON) {
         throw new ExcessActivePoisonException(eph_config.activePoisons.length);
@@ -234,7 +234,7 @@ function preProcessMove() {
         eph_config.activePoisons.length != 0 &&
         eph_config.activePoisons[0].getDuration() === 0
     ) {
-        logger(loggingLevel.INFO, "removing the expired poison = {0}.", JSON.stringify(eph_config.activePoisons[0]));
+        logger(loggingLevel.DEBUG, "removing the expired poison = {0}.", JSON.stringify(eph_config.activePoisons[0]));
         eph_config.activePoisons.splice(0, 1);
     }
 
@@ -242,7 +242,7 @@ function preProcessMove() {
         eph_config.activeEnigma.setDuration(
             eph_config.activeEnigma.getDuration() - 1
         );
-        logger(loggingLevel.INFO, "decremented enigma elixir duration by 1, current duration = {0}.", eph_config.activeEnigma.getDuration());
+        logger(loggingLevel.DEBUG, "decremented enigma elixir duration by 1, current duration = {0}.", eph_config.activeEnigma.getDuration());
 
         if (eph_config.activeEnigma.getDuration() === 0) {
             eph_config.activeEnigma = null;
@@ -251,12 +251,12 @@ function preProcessMove() {
         }
     }
 
-    logger(loggingLevel.INFO, "preprocessing moves completed.");
+    logger(loggingLevel.DEBUG, "preprocessing moves completed.");
 }
 
 // === Post Processing Section ===
 function postProcessMove(diceNumber) {
-    logger(loggingLevel.INFO, "postprocessing moves...");
+    logger(loggingLevel.DEBUG, "postprocessing moves...");
 
     let bombDamage = 0;
 
@@ -274,7 +274,7 @@ function postProcessMove(diceNumber) {
         )
         .forEach(pos => {
             logger(
-                loggingLevel.INFO,
+                loggingLevel.DEBUG,
                 "bomb in vicinity found:\nknight location = {0}, bomb location = {1}",
                 JSON.stringify(eph_config.coordinate),
                 JSON.stringify(pos)
@@ -296,7 +296,7 @@ function postProcessMove(diceNumber) {
             });
 
             logger(
-                loggingLevel.INFO,
+                loggingLevel.DEBUG,
                 "for location = {0}, created new card with ID = {1} and attribute = {2}.",
                 JSON.stringify(pos),
                 newCardId,
@@ -323,7 +323,7 @@ function postProcessMove(diceNumber) {
                 0,
                 eph_config.escapeDoorCountdown - 1
             );
-            logger(loggingLevel.INFO, "decremented escape door countdown by 1, current value = {0}.", eph_config.escapeDoorCountdown);
+            logger(loggingLevel.DEBUG, "decremented escape door countdown by 1, current value = {0}.", eph_config.escapeDoorCountdown);
 
             if (eph_config.escapeDoorCountdown == 0) {
                 const escapeDoorCoordinate = getEscapeDoorCoordinate();
@@ -338,6 +338,7 @@ function postProcessMove(diceNumber) {
                 });
                 eph_config.audioList.push(config.game.id.artifact.CLOSE_DOOR);
                 eph_config.screenLogs.push("- escape door closed.");
+                logger(loggingLevel.INFO, "escape door countdown reached zero; door closed at {0}.", JSON.stringify(escapeDoorCoordinate));
             }
         }
 
@@ -347,5 +348,5 @@ function postProcessMove(diceNumber) {
         );
     }
 
-    logger(loggingLevel.INFO, "postprocessing moves completed.");
+    logger(loggingLevel.DEBUG, "postprocessing moves completed.");
 }

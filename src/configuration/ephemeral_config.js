@@ -31,7 +31,6 @@ const eph_config = {
   audioList: [],
   isGameCrash: false,
   screenLogs: ["- click on the dice icon to start the game."],
-  // Server-tracked dice roll so process-move can't be replayed or spoofed.
   lastValidPositions: [],
   lastDiceNumber: null,
 };

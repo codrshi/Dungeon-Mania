@@ -26,10 +26,12 @@ const config = {
       GUIDE: "/guide",
     },
     loggingLevel: {
-      INFO: "INFO",
+      ERROR: "ERROR",
       WARN: "WARN",
-      ERROR: "ERROR"
+      INFO: "INFO",
+      DEBUG: "DEBUG",
     },
+    DEFAULT_LOGGING_LEVEL: "INFO",
     errorCode: {
       1001: `an error occured while rendering {0} page : {1}`,
       1002: `obtained an invalid value of coordinate.\ncoordinate type = {0}, coordinate value = {1}`,

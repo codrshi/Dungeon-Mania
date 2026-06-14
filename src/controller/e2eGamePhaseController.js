@@ -21,15 +21,13 @@ const loggingLevel = config.app.loggingLevel;
 export function setInit(isSurvivalMode) {
     logger(loggingLevel.INFO, "setting up the game.");
 
-    // If the previous game crashed/ended (or the client never made it back to
-    // /game/exit), wipe stale state so the new visit starts clean.
     if (eph_config.currentGameStatus !== config.game.gameStatus.ONGOING) {
         logger(loggingLevel.INFO, "previous game status = {0}, clearing stale state.", eph_config.currentGameStatus);
         clearEphConfig();
     }
 
     eph_config.isSurvivalMode = isSurvivalMode === "true";
-    logger(loggingLevel.INFO, "isSurvivalMode = {0}", eph_config.isSurvivalMode);
+    logger(loggingLevel.DEBUG, "isSurvivalMode = {0}", eph_config.isSurvivalMode);
 
     if (isSurvivalMode !== "true" && isSurvivalMode !== "false") {
         logger(loggingLevel.WARN, "isSurvivalMode is having an undefined value. So game will proceed in a non-survival mode.");
@@ -76,7 +74,7 @@ function restoreDefaultEphConfig() {
 }
 
 function clearTempStatsConfig() {
-    logger(loggingLevel.INFO, "clearing temp stats configurations.");
+    logger(loggingLevel.DEBUG, "clearing temp stats configurations.");
 
     temp_stats_config.basicStats.totalGamesMoves = 0;
 

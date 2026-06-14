@@ -3,27 +3,42 @@
  *
  * Entry Point for the Express Application Server
  *
- * Description:
- * - This file initializes and starts the Express server for the application.
- * - It imports the configured Express app and relevant configuration settings.
+ * Parses command-line flags and starts the HTTP listener.
  *
- * Server Configuration:
- * - Retrieves the port number from the application configuration (config.app.PORT).
+ * Supported flags:
+ *   --log-level=<LEVEL>   Set runtime log threshold (DEBUG | INFO | WARN | ERROR)
+ *   --log-level <LEVEL>   Same as above, space-separated form
+ *   -l <LEVEL>            Short alias
  *
- * Server Initialization:
- * - Listens for incoming connections on the specified port.
- * - Logs a message indicating that the game has started and provides the URL for access.
+ * If no flag is supplied the default level is INFO. Invalid values are
+ * ignored with a warning and the default is kept.
  *
- * Exports:
- * - This file does not export any modules; it serves solely to start the server.
+ * Examples:
+ *   node src/server.js
+ *   node src/server.js --log-level=DEBUG
+ *   node src/server.js -l warn
  */
 
-import app from "./app.js";
 import config from "./configuration/config.js";
-import { logger } from "./utility/loggerService.js";
+import {
+    logger,
+    parseLogLevelFromArgs,
+    setLoggingLevel,
+    getLoggingLevel,
+} from "./utility/loggerService.js";
+
+const requestedLevel = parseLogLevelFromArgs(process.argv);
+if (requestedLevel) {
+    setLoggingLevel(requestedLevel);
+}
+
+const { default: app } = await import("./app.js");
 
 const PORT = config.app.PORT;
 
 app.listen(PORT, () => {
-  logger(config.app.loggingLevel.INFO, `game started and running in http://localhost:${PORT}/`);
+    logger(
+        config.app.loggingLevel.INFO,
+        `game started on http://localhost:${PORT}/ (log level = ${getLoggingLevel()})`
+    );
 });

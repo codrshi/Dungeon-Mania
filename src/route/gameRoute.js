@@ -44,13 +44,14 @@ import eph_config from "../configuration/ephemeral_config.js";
 import stats_config from "../configuration/stats_config.js";
 import RenderPageException from "../exception/renderPageException.js";
 import { logger } from "../utility/loggerService.js";
-import { buildEphConfigDto } from "../controller/ephConfigDto.js";
+import { buildEphConfigDto } from "../utility/ephConfigDto.js";
 
 const router = express.Router();
 const loggingLevel = config.app.loggingLevel;
 
 router.get(config.app.url.ONGOING_GAME, (req, res, next) => {
     logger(loggingLevel.INFO, "rendering game page...");
+    logger(loggingLevel.DEBUG, "game page query = {0}.", JSON.stringify(req.query));
 
     let renderData;
     try {
@@ -77,11 +78,13 @@ router.get(config.app.url.ONGOING_GAME_ROLL_DICE, (req, res) => {
 });
 
 router.post(config.app.url.ONGOING_GAME_PROCESS_MOVE, (req, res, next) => {
+    logger(loggingLevel.DEBUG, "process-move request body = {0}.", JSON.stringify(req.body));
     try {
         res.json(processMove(req.body.newKnightCoordinate, req.body.diceNumber));
     }
     catch (err) {
         eph_config.currentGameStatus = config.game.gameStatus.CRASHED;
+        logger(loggingLevel.ERROR, "process-move failed; marking game as CRASHED. error = {0}.", err.message);
         next(err);
     }
 });

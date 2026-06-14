@@ -1,37 +1,121 @@
 /*
  * loggerService.js
  *
- * This file provides a generic logging utility that formats and outputs log messages with
- * timestamps, log levels, and formatted parameters for improved readability.
- * 
- * Functions:
- * - logger: Logs messages based on specified log levels (INFO, WARN, ERROR), using timestamped entries.
- * 
- * Usage:
- * - The logger function accepts a log level, a message string, and optional parameters to format
- *   the message. Parameters are injected into placeholders ({0}, {1}, ...) in the message string.
- * - Log levels are defined in the configuration file and mapped to the appropriate console method:
- *   - INFO: Displays informational messages in the console.
- *   - WARN: Displays warning messages in the console.
- *   - ERROR: Displays error messages in the console.
- *   - DEFAULT: If an unrecognized level is passed, logs with a default label.
+ * Generic, level-filtered logging utility.
+ *
+ * Public API
+ * ----------
+ *   logger(level, message, ...params)
+ *       Logs a message at the given level. Placeholders {0}, {1}, ... in
+ *       `message` are replaced positionally with `params`.
+ *
+ *   setLoggingLevel(level)
+ *       Set the runtime threshold. Messages strictly more verbose than this
+ *       level are dropped. Unknown levels are ignored with a warning.
+ *
+ *   getLoggingLevel()
+ *       Returns the current threshold as a string.
+ *
+ *   parseLogLevelFromArgs(argv)
+ *       Parses `--log-level=<L>`, `--log-level <L>` or `-l <L>` from argv
+ *       and returns the normalized (upper-cased) level, or null when no
+ *       flag is provided.
+ *
+ * Levels (least -> most verbose):
+ *   ERROR  -> always shown unless explicitly silenced
+ *   WARN   -> ERROR + WARN
+ *   INFO   -> ERROR + WARN + INFO        (default)
+ *   DEBUG  -> everything
  */
 
 import config from "../configuration/config.js";
 
-export const logger = (level, message, ...params) => {
-    const timestamp = new Date().toISOString();
-    message = params.reduce((message, param, index) => message.replace(`{${index}}`, param), message);
-    const loggerfinalMessage = `[${timestamp}] [${level}] : ${message}`;
+const LEVELS = config.app.loggingLevel;
 
-    switch (level) {
-        case config.app.loggingLevel.INFO: console.info(loggerfinalMessage);
+const SEVERITY = Object.freeze({
+    [LEVELS.ERROR]: 0,
+    [LEVELS.WARN]: 1,
+    [LEVELS.INFO]: 2,
+    [LEVELS.DEBUG]: 3,
+});
+
+const VALID_LEVEL_NAMES = Object.keys(SEVERITY);
+
+let currentLevel = config.app.DEFAULT_LOGGING_LEVEL;
+let currentSeverity = SEVERITY[currentLevel];
+
+export function getLoggingLevel() {
+    return currentLevel;
+}
+
+export function setLoggingLevel(level) {
+    if (level == null) return;
+
+    const normalized = String(level).toUpperCase();
+    if (!(normalized in SEVERITY)) {
+        console.warn(
+            `[loggerService] ignoring invalid log level "${level}". ` +
+            `Valid levels: ${VALID_LEVEL_NAMES.join(", ")}. ` +
+            `Keeping current level "${currentLevel}".`
+        );
+        return;
+    }
+
+    currentLevel = normalized;
+    currentSeverity = SEVERITY[normalized];
+}
+
+export function parseLogLevelFromArgs(argv) {
+    if (!Array.isArray(argv)) return null;
+
+    for (let i = 2; i < argv.length; i++) {
+        const arg = argv[i];
+
+        if (arg === "--log-level" || arg === "-l") {
+            const next = argv[i + 1];
+            return next ? String(next).toUpperCase() : null;
+        }
+        if (typeof arg === "string" && arg.startsWith("--log-level=")) {
+            return arg.slice("--log-level=".length).toUpperCase();
+        }
+    }
+    return null;
+}
+
+function format(level, message, params) {
+    const timestamp = new Date().toISOString();
+    const interpolated = params.reduce(
+        (acc, param, idx) => acc.replace(`{${idx}}`, param),
+        message
+    );
+    return `[${timestamp}] [${level}] : ${interpolated}`;
+}
+
+export const logger = (level, message, ...params) => {
+    const normalized = typeof level === "string" ? level.toUpperCase() : level;
+    const severity = SEVERITY[normalized];
+
+    if (severity === undefined) {
+        const timestamp = new Date().toISOString();
+        console.log(`[${timestamp}] [DEFAULT] : ${message}`);
+        return;
+    }
+
+    if (severity > currentSeverity) return;
+
+    const finalMessage = format(normalized, message, params);
+    switch (normalized) {
+        case LEVELS.ERROR:
+            console.error(finalMessage);
             break;
-        case config.app.loggingLevel.WARN: console.warn(loggerfinalMessage);
+        case LEVELS.WARN:
+            console.warn(finalMessage);
             break;
-        case config.app.loggingLevel.ERROR: console.error(loggerfinalMessage);
+        case LEVELS.INFO:
+            console.info(finalMessage);
             break;
-        default:
-            console.log(`[${timestamp}] [DEFAULT] : ${message}`);
+        case LEVELS.DEBUG:
+            console.debug(finalMessage);
+            break;
     }
 };

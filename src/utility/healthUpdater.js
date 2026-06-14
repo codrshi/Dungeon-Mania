@@ -43,5 +43,5 @@ export function updateHealth(healthStatus, amount) {
         return;
     }
 
-    logger(loggingLevel.INFO, "health updated:\nprevious value: {0}, new value: {1}, difference = {2}.", tempVar, eph_config.knightHealth, eph_config.knightHealth - tempVar);
+    logger(loggingLevel.DEBUG, "health updated:\nprevious value: {0}, new value: {1}, difference = {2}.", tempVar, eph_config.knightHealth, eph_config.knightHealth - tempVar);
 }

@@ -30,4 +30,8 @@ COPY --chown=node:node src ./src
 USER node
 EXPOSE 3030
 
-CMD ["node", "src/server.js"]
+#   docker run -p 3030:3030 codrshi/dungeon-mania:latest --log-level=DEBUG
+# to be equivalent to `node src/server.js --log-level=DEBUG` inside the
+# container.
+ENTRYPOINT ["node", "src/server.js"]
+CMD []

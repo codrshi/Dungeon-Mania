@@ -98,7 +98,7 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
         }
     }
 
-    logger(loggingLevel.INFO, "effective monster health = {0}.", monsterHealth);
+    logger(loggingLevel.DEBUG, "effective monster health = {0}.", monsterHealth);
 
     let scoreSpan = Math.min(
         monsterHealth,
@@ -117,7 +117,7 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
 
     if (eph_config.knightWeapon != null) {
         eph_config.knightWeapon.setDamage(knightWeaponDamage);
-        logger(loggingLevel.INFO, "updated knight weapon damage = {0}.", knightWeaponDamage);
+        logger(loggingLevel.DEBUG, "updated knight weapon damage = {0}.", knightWeaponDamage);
     }
 
     if (eph_config.knightHealth > 0) {
@@ -171,7 +171,7 @@ function dealMageMonster(monsterElement) {
     )
         keyDropChance = 0;
 
-    logger(loggingLevel.INFO, "key drop chance = {0}.", keyDropChance);
+    logger(loggingLevel.DEBUG, "key drop chance = {0}.", keyDropChance);
 
     if (
         eph_config.escapeDoorCountdown == 0 &&
@@ -196,7 +196,7 @@ function dealMageMonster(monsterElement) {
         eph_config.screenLogs.push("- escape door opened for next 5 turns.");
     }
     else {
-        logger(loggingLevel.INFO, "knight failed to obtain key because escape door countdown is non-zero.\nescape door countdown = {0}.", eph_config.escapeDoorCountdown);
+        logger(loggingLevel.DEBUG, "knight failed to obtain key because escape door countdown is non-zero.\nescape door countdown = {0}.", eph_config.escapeDoorCountdown);
     }
 
     updateScore(eph_config.aura);

@@ -31,7 +31,7 @@ export function appreciateAura(auraStatus, amount) {
         eph_config.aura -= Math.ceil(eph_config.aura * amount / 100);
         eph_config.aura = Math.max(0, eph_config.aura);
 
-        logger(loggingLevel.INFO, "aura updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.aura, tempVar - eph_config.aura);
+        logger(loggingLevel.DEBUG, "aura updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.aura, tempVar - eph_config.aura);
 
         if (eph_config.aura === 0) {
             terminateGame(config.game.gameStatus.LOST);
@@ -46,7 +46,7 @@ export function appreciateAura(auraStatus, amount) {
     eph_config.aura += Math.ceil(Math.pow(Math.PI, Math.log10(amount)) + Math.sqrt(amount));
     eph_config.aura = Math.min(config.game.aura.AURA_THRESHOLD_3, eph_config.aura);
 
-    logger(loggingLevel.INFO, "aura updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.aura, eph_config.aura - tempVar);
+    logger(loggingLevel.DEBUG, "aura updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.aura, eph_config.aura - tempVar);
 
     if (eph_config.aura == config.game.aura.AURA_THRESHOLD_3 && eph_config.isSurvivalMode === false && eph_config.isAuraThresholdThreeCrossed === false) {
         eph_config.newCardLocations = [];

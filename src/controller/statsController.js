@@ -10,6 +10,7 @@ export function getStats() {
         stats_config: stats_config,
     };
 
-    logger(config.app.loggingLevel.INFO, "loading player stats:\n{0}", JSON.stringify(stats_config, null, 2));
+    logger(config.app.loggingLevel.INFO, "loading player stats.");
+    logger(config.app.loggingLevel.DEBUG, "stats payload:\n{0}", JSON.stringify(stats_config, null, 2));
     return statsResData;
 }

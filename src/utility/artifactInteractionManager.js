@@ -37,6 +37,8 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
     let tempVar = eph_config.knightHealth;
     temp_stats_config.artifactStats.totalArtifactsPicked += 1;
 
+    logger(loggingLevel.DEBUG, "dealing artifact id = {0}, diceNumber = {1}.", artifactCard.getId(), diceNumber);
+
     if (artifactCard.getId() !== config.game.id.artifact.OPEN_DOOR)
         temp_stats_config.artifactStats.artifactUsage[
             biMaps.artifactIndexBiMap.getIndex(artifactCard.getId())
@@ -75,7 +77,7 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
                     5 / diceNumber
                 );
                 eph_config.activeEnigma = new ActiveEnigmaDao(enigmaBuff);
-                logger(loggingLevel.INFO, "updated active enigma = {0}.", JSON.stringify(eph_config.activeEnigma));
+                logger(loggingLevel.DEBUG, "updated active enigma = {0}.", JSON.stringify(eph_config.activeEnigma));
                 appreciateAura(config.game.aura.INCREASE, enigmaBuff);
             }
             eph_config.screenLogs.push("- obtained enigma elixir.");
@@ -116,7 +118,7 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
                 );
                 appreciateAura(config.game.aura.INCREASE, forgedAmount);
                 eph_config.screenLogs.push("- weapon forged.");
-                logger(loggingLevel.INFO, "weapon forger effective value = {0}, updated weapon damage = {1}.", forgedAmount, eph_config.knightWeapon.getDamage());
+                logger(loggingLevel.DEBUG, "weapon forger effective value = {0}, updated weapon damage = {1}.", forgedAmount, eph_config.knightWeapon.getDamage());
             } else eph_config.audioList.pop();
             break;
 
@@ -163,7 +165,7 @@ function dealPoisonPotion(diceNumber) {
     eph_config.activePoisons.push(new ActivePoisonDao(poisonDamage));
     appreciateAura(config.game.aura.INCREASE, poisonDamage);
     eph_config.screenLogs.push("- gained poison potion.");
-    logger(loggingLevel.INFO, "active poison added = {0}.", JSON.stringify(eph_config.activePoisons[eph_config.activePoisons.length - 1]));
+    logger(loggingLevel.DEBUG, "active poison added = {0}.", JSON.stringify(eph_config.activePoisons[eph_config.activePoisons.length - 1]));
 }
 
 function dealManaStone(movements) {

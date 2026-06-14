@@ -40,7 +40,9 @@ router.get(config.app.url.HOME_PAGE, (req, res, next) => {
 });
 
 router.get(config.app.url.HOME_PAGE_USERNAME_HIGHSCORE, (req, res) => {
-    res.json(getusernameAndHighScore());
+    const data = getusernameAndHighScore();
+    logger(loggingLevel.DEBUG, "username-highscore response = {0}.", JSON.stringify(data));
+    res.json(data);
 });
 
 export default router;
