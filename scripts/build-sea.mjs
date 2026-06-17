@@ -81,7 +81,7 @@ async function main() {
     log("0/9", `target = ${PLATFORM_TAG}/${ARCH}, host node = ${process.version}`);
 
     log("1/9", "wiping build/");
-    rmSync(BUILD_DIR, { recursive: true, force: true });
+    await wipeBuildDir();
     mkdirSync(BUILD_DIR, { recursive: true });
     mkdirSync(STAGING_DIR, { recursive: true });
 
@@ -166,6 +166,47 @@ async function main() {
 
     const sizeMb = (statSync(ZIP_PATH).size / (1024 * 1024)).toFixed(2);
     log("ok", `built ${path.relative(REPO_ROOT, ZIP_PATH)} (${sizeMb} MB).`);
+}
+
+/**
+ * Wipes the build directory with EPERM-resilient retries.
+ *
+ * On Windows, if a previous `dungeon-mania.exe` from an earlier build
+ * is still running, the OS holds an exclusive lock on the file and
+ * `rmSync` fails with EPERM / EBUSY. We retry a handful of times with a
+ * short backoff to ride out file-handle release on a clean shutdown,
+ * then surface a clear, actionable error pointing the user at the
+ * culprit instead of dumping a stack trace.
+ */
+async function wipeBuildDir() {
+    if (!existsSync(BUILD_DIR)) return;
+
+    const MAX_ATTEMPTS = 5;
+    const BACKOFF_MS = 400;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        try {
+            rmSync(BUILD_DIR, { recursive: true, force: true });
+            return;
+        } catch (err) {
+            const isLockError = err && (err.code === "EPERM" || err.code === "EBUSY" || err.code === "ENOTEMPTY");
+            if (!isLockError || attempt === MAX_ATTEMPTS) {
+                if (isLockError) {
+                    const hint = PLATFORM === "win32"
+                        ? `Hint: an old ${BINARY_NAME} is probably still running. Run\n` +
+                          `       Get-Process | Where-Object { $_.ProcessName -like "dungeon-mania*" } | Stop-Process -Force\n` +
+                          `       and retry 'npm run build:sea'.`
+                        : `Hint: an old ${BINARY_NAME} may still be running. Run 'pkill -f dungeon-mania' and retry.`;
+                    throw new Error(
+                        `could not wipe ${BUILD_DIR} (code=${err.code}); a build artifact is locked.\n${hint}`
+                    );
+                }
+                throw err;
+            }
+            log("1/9", `wipe attempt ${attempt}/${MAX_ATTEMPTS} hit ${err.code}; retrying in ${BACKOFF_MS}ms`);
+            await new Promise((resolve) => setTimeout(resolve, BACKOFF_MS));
+        }
+    }
 }
 
 function zipDirectory(dir, outZip, dirNameInsideZip) {
