@@ -7,8 +7,14 @@
 
 import sillyname from "sillyname";
 import stats_config from "../configuration/stats_config.js";
+import { saveStats } from "../utility/statsPersistence.js";
 
-stats_config.basicStats.username = sillyname();
+export function ensureUsername() {
+    if (!stats_config.basicStats.username) {
+        stats_config.basicStats.username = sillyname();
+        saveStats();
+    }
+}
 
 export function getusernameAndHighScore() {
 

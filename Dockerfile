@@ -31,7 +31,8 @@ USER node
 EXPOSE 3030
 
 #   docker run -p 3030:3030 codrshi/dungeon-mania:latest --log-level=DEBUG
-# to be equivalent to `node src/server.js --log-level=DEBUG` inside the
-# container.
-ENTRYPOINT ["node", "src/server.js"]
+# to be equivalent to `node src/server.js --no-browser --log-level=DEBUG`
+# inside the container. --no-browser is baked in because the container
+# has no display; it would only emit a noisy WARN otherwise.
+ENTRYPOINT ["node", "src/server.js", "--no-browser"]
 CMD []

@@ -7,6 +7,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "lint": "eslint \"src/**/*.js\"",
+    "clean:build": "node -e \"require('fs').rmSync('build',{recursive:true,force:true})\"",
+    "build:sea": "node scripts/build-sea.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "type": "module",
@@ -15,12 +17,17 @@
   "description": "",
   "dependencies": {
     "ejs": "^3.1.10",
+    "env-paths": "^4.0.0",
     "express": "^4.19.2",
     "jquery": "^3.7.1",
+    "open": "^11.0.0",
     "sillyname": "^0.1.0"
   },
   "devDependencies": {
+    "archiver": "^8.0.0",
+    "esbuild": "^0.28.1",
     "eslint": "^8.57.0",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "postject": "^1.0.0-alpha.6"
   }
 }

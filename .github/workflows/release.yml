@@ -1,0 +1,79 @@
+name: Release
+
+# Builds the three per-OS SEA zips and publishes them as GitHub Release
+# assets whenever a tag matching `v*` is pushed (e.g. `v1.0.0`,
+# `v0.5.0-rc1`). Tag and release titles are kept in sync via the workflow
+# below -- no manual asset upload is required.
+#
+# Local equivalent (for one OS only) is `npm run build:sea`, which
+# produces `build/DungeonMania-<os>-<arch>.zip`.
+
+on:
+  push:
+    tags:
+      - "v*"
+  # Allow ad-hoc dry runs from the Actions tab without cutting a release.
+  workflow_dispatch: {}
+
+permissions:
+  # Required for softprops/action-gh-release to create/update the release
+  # and upload assets.
+  contents: write
+
+jobs:
+  build:
+    name: Build SEA (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Don't abandon other OS builds if one fails -- we want partial
+      # releases over nothing.
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset-glob: build/DungeonMania-linux-*.zip
+          - os: macos-latest
+            asset-glob: build/DungeonMania-macos-*.zip
+          - os: windows-latest
+            asset-glob: build/DungeonMania-win-*.zip
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          # Cache npm to keep wall-time low across runs.
+          cache: "npm"
+
+      - name: Install dependencies
+        # `npm ci` for reproducibility; `--omit=optional` to skip any
+        # platform-specific optional deps we don't actually use.
+        run: npm ci --omit=optional
+
+      - name: Build SEA binary
+        run: npm run build:sea
+
+      - name: Upload zip as workflow artifact
+        # Always keep a copy attached to the workflow run, even when the
+        # release upload step is skipped (e.g. workflow_dispatch runs).
+        uses: actions/upload-artifact@v4
+        with:
+          name: dungeon-mania-${{ matrix.os }}
+          path: ${{ matrix.asset-glob }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Attach to GitHub Release
+        # Only when this run was triggered by a tag push; skipped on
+        # workflow_dispatch.
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.asset-glob }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

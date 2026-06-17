@@ -10,3 +10,7 @@ Dockerfile
 .dockerignore
 README.md
 .eslintrc.json
+build
+scripts
+sea-config.json
+.github

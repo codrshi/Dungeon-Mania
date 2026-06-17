@@ -30,14 +30,15 @@
  */
 
 import express from "express";
+import ejs from "ejs";
 import indexRouter from "./route/indexRoute.js";
 import gameRouter from "./route/gameRoute.js";
 import statsRouter from "./route/statsRoute.js";
 import guideRouter from "./route/guideRoute.js";
-import { fileURLToPath } from 'url';
 import path from 'path';
 import { logger } from "./utility/loggerService.js";
 import config from "./configuration/config.js";
+import ASSET_ROOT from "./utility/assetRoot.js";
 import RenderPageException from "./exception/renderPageException.js";
 import InvalidCoordinateException from "./exception/invalidCoordinateException.js";
 import ExcessActivePoisonException from "./exception/excessActivePoisonException.js";
@@ -45,13 +46,13 @@ import UndefinedCardException from "./exception/undefinedCardException.js";
 import UnhandledPromiseRejectionException from "./exception/unhandledRejectionException.js";
 
 const app = express();
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.use(express.json());
-app.use("/static", express.static(path.join(__dirname, "public")));
+app.use("/static", express.static(path.join(ASSET_ROOT, "public")));
 
+app.engine('ejs', ejs.__express);
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'template'));
+app.set('views', path.join(ASSET_ROOT, 'template'));
 
 app.use("/", indexRouter);
 app.use("/", gameRouter);

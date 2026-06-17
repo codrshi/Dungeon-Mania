@@ -6,6 +6,7 @@
 import config from "../configuration/config.js";
 import eph_config from "../configuration/ephemeral_config.js";
 import { updateStats } from "./statsUpdateUtility.js";
+import { saveStats } from "./statsPersistence.js";
 import { logger } from "./loggerService.js";
 
 const loggingLevel = config.app.loggingLevel;
@@ -22,6 +23,8 @@ export function terminateGame(gameStatus) {
     eph_config.currentGameStatus = gameStatus;
     updateStats(gameStatus);
     eph_config.audioList.push(gameStatus);
+
+    saveStats();
 
     logger(loggingLevel.INFO, "game terminated with status = {0}, final score = {1}.", gameStatus, eph_config.score);
 }
