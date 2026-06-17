@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+*.log
+Dockerfile
+.dockerignore
+README.md
+.eslintrc.json
+build
+scripts
+sea-config.json
+.github

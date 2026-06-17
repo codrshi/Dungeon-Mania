@@ -21,7 +21,7 @@ import { ArtifactDao } from "../dao/artifactDao.js";
 import { shuffleGrid } from "../utility/gridShuffler.js";
 import { CoordinateDao } from "../dao/coordinateDao.js";
 import { ActivePoisonDao } from "../dao/activePoisonDao.js";
-import { ActiveEnemaDao } from "../dao/activeEnemaDao.js";
+import { ActiveEnigmaDao } from "../dao/activeEnigmaDao.js";
 import { updateHealth } from "../utility/healthUpdater.js";
 import { appreciateAura } from "../utility/auraAppreciator.js";
 import { terminateGame } from "../utility/terminateGameUtility.js";
@@ -29,6 +29,7 @@ import temp_stats_config from "../configuration/temp_stats_config.js";
 import { biMaps } from "../utility/keyIndexBiMap.js";
 import { logger } from "../utility/loggerService.js";
 import UndefinedCardException from "../exception/undefinedCardException.js";
+import { computeBombDamage } from "../utility/bombFormula.js";
 
 const loggingLevel = config.app.loggingLevel;
 
@@ -36,27 +37,32 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
     let tempVar = eph_config.knightHealth;
     temp_stats_config.artifactStats.totalArtifactsPicked += 1;
 
+    logger(loggingLevel.DEBUG, "dealing artifact id = {0}, diceNumber = {1}.", artifactCard.getId(), diceNumber);
+
     if (artifactCard.getId() !== config.game.id.artifact.OPEN_DOOR)
         temp_stats_config.artifactStats.artifactUsage[
             biMaps.artifactIndexBiMap.getIndex(artifactCard.getId())
         ] += 1;
 
-    eph_config.audioList.push(artifactCard.getId());
+    // For Mystery Chest we let the rolled artifact push its own sound, so we
+    // don't double up. All other artifacts push their own pickup sound here.
+    if (artifactCard.getId() !== config.game.id.artifact.MYSTERY_CHEST) {
+        eph_config.audioList.push(artifactCard.getId());
+    }
 
     switch (artifactCard.getId()) {
         case config.game.id.artifact.BOMB:
-            const damage = Math.ceil(
-                (10 *
-                    (Math.log(Math.pow(2, diceNumber)) +
-                        Math.log(Math.pow(1.5, diceNumber)))) /
-                Math.pow(Math.E, 1 / diceNumber) +
-                10 / diceNumber
-            );
+            const damage = computeBombDamage(diceNumber);
             updateHealth(config.game.health.DECREASE, damage);
             appreciateAura(config.game.aura.INCREASE, damage);
-            eph_config.screenLogs.push(
-                "- dealt " + (tempVar - eph_config.knightHealth) + " DMG from bomb."
-            );
+            // Only push the explosion line when the knight survived; if HP
+            // hit 0, updateHealth already pushed "HP depleted." and a
+            // detonation line under it would be noise.
+            if (eph_config.knightHealth > 0 && tempVar - eph_config.knightHealth > 0) {
+                eph_config.screenLogs.push(
+                    "Bomb detonated: -" + (tempVar - eph_config.knightHealth) + " HP."
+                );
+            }
             break;
 
         case config.game.id.artifact.CHAOS_ORB:
@@ -66,20 +72,20 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
                 config.game.aura.INCREASE,
                 config.game.grid.ROWS * config.game.grid.COLUMNS
             );
-            eph_config.screenLogs.push("- grid shuffled.");
+            eph_config.screenLogs.push("Chaos Orb shuffled the grid.");
             break;
-        case config.game.id.artifact.ENEMA_ELIXIR:
-            if (eph_config.activeEnema == null) {
-                const enemaBuff = Math.ceil(
+        case config.game.id.artifact.ENIGMA_ELIXIR:
+            if (eph_config.activeEnigma == null) {
+                const enigmaBuff = Math.ceil(
                     (10 * Math.log(Math.pow(2, diceNumber))) /
                     Math.pow(Math.E, 1 / diceNumber) +
                     5 / diceNumber
                 );
-                eph_config.activeEnema = new ActiveEnemaDao(enemaBuff);
-                logger(loggingLevel.INFO, "updated active enema = {0}.", JSON.stringify(eph_config.activeEnema));
-                appreciateAura(config.game.aura.INCREASE, enemaBuff);
+                eph_config.activeEnigma = new ActiveEnigmaDao(enigmaBuff);
+                logger(loggingLevel.DEBUG, "updated active enigma = {0}.", JSON.stringify(eph_config.activeEnigma));
+                appreciateAura(config.game.aura.INCREASE, enigmaBuff);
             }
-            eph_config.screenLogs.push("- obtained enema elixir.");
+            eph_config.screenLogs.push("Enigma Elixir activated.");
             break;
         case config.game.id.artifact.MIXED_POTION:
             if (
@@ -116,38 +122,40 @@ export function dealArtifact(artifactCard, diceNumber, movements) {
                     eph_config.knightWeapon.getDamage() + forgedAmount
                 );
                 appreciateAura(config.game.aura.INCREASE, forgedAmount);
-                eph_config.screenLogs.push("- weapon forged.");
-                logger(loggingLevel.INFO, "weapon forger effective value = {0}, updated weapon damage = {1}.", forgedAmount, eph_config.knightWeapon.getDamage());
+                eph_config.screenLogs.push("Weapon forged (+" + forgedAmount + " damage).");
+                logger(loggingLevel.DEBUG, "weapon forger effective value = {0}, updated weapon damage = {1}.", forgedAmount, eph_config.knightWeapon.getDamage());
             } else eph_config.audioList.pop();
             break;
 
         case config.game.id.artifact.MYSTERY_CHEST:
             logger(loggingLevel.INFO, "mystery chest obtained.");
-            dealArtifact(new ArtifactDao(getRandomArtifact()), diceNumber);
+            // Re-roll while a Mystery Chest is drawn so we never recurse into
+            // another chest; cap the attempts as a paranoid safety net.
+            let nestedArtifactId = getRandomArtifact();
+            for (let i = 0; i < 16 && nestedArtifactId === config.game.id.artifact.MYSTERY_CHEST; i++) {
+                nestedArtifactId = getRandomArtifact();
+            }
+            dealArtifact(new ArtifactDao(nestedArtifactId), diceNumber, movements);
 
             break;
         case config.game.id.artifact.OPEN_DOOR:
             logger(loggingLevel.INFO, "knight stepped on open door.");
             terminateGame(config.game.gameStatus.WON);
+            break;
         default:
             throw new UndefinedCardException(artifactCard.constructor.name, artifactCard.getId());
     }
 }
 
 function dealHealthPotion(diceNumber) {
-    let tempVar = eph_config.knightHealth;
     const healAmount = Math.ceil(
         (10 * Math.log(Math.pow(2, diceNumber))) / Math.pow(Math.E, 1 / diceNumber)
     );
 
+    // updateHealth itself pushes the "- gained X health." screen log,
+    // so we don't add a second "from health potion" message here.
     updateHealth(config.game.health.INCREASE, healAmount);
     appreciateAura(config.game.aura.INCREASE, healAmount);
-    if (eph_config.knightHealth - tempVar != 0)
-        eph_config.screenLogs.push(
-            "- gained " +
-            (eph_config.knightHealth - tempVar) +
-            " heal from health potion"
-        );
 }
 
 function dealPoisonPotion(diceNumber) {
@@ -157,23 +165,18 @@ function dealPoisonPotion(diceNumber) {
         5 / diceNumber
     );
 
-    if (
-        eph_config.activePoisons.length >
-        config.game.activePoison.MAX_COUNT_OF_ACTIVE_POISON
-    ) {
-        console.log("print error");
-    }
-
+    // The hard cap on active poisons is enforced in preProcessMove via
+    // ExcessActivePoisonException; no per-call check is needed here.
     eph_config.activePoisons.push(new ActivePoisonDao(poisonDamage));
     appreciateAura(config.game.aura.INCREASE, poisonDamage);
-    eph_config.screenLogs.push("- gained poison potion.");
-    logger(loggingLevel.INFO, "active poison added = {0}.", JSON.stringify(eph_config.activePoisons[eph_config.activePoisons.length - 1]));
+    eph_config.screenLogs.push("Poison Potion stored.");
+    logger(loggingLevel.DEBUG, "active poison added = {0}.", JSON.stringify(eph_config.activePoisons[eph_config.activePoisons.length - 1]));
 }
 
 function dealManaStone(movements) {
-    let monstersNames = "";
+    const slainNames = [];
 
-    movements
+    const targets = movements
         .map(movement => new CoordinateDao(
             movement[0] + eph_config.coordinate.x,
             movement[1] + eph_config.coordinate.y
@@ -188,31 +191,55 @@ function dealManaStone(movements) {
             pos,
             monsterCard: getCardFromGrid(pos)
         }))
-        .filter(({ monsterCard }) => monsterCard instanceof MonsterDao)
-        .forEach(({ pos, monsterCard }) => {
+        .filter(({ monsterCard }) => monsterCard instanceof MonsterDao);
+
+    // `.some` lets us short-circuit the moment a kill pushes the aura past
+    // threshold 3. Without this guard, `appreciateAura` would flip the game
+    // into the mage realm (replacing the entire grid with the mage prototype)
+    // and subsequent iterations would happily call `createNewCard` on the
+    // *mage* grid using pre-boss coordinates, sprinkling random monsters /
+    // weapons / artifacts onto walls, doors, corner weapons, perimeter
+    // poisons, etc. That's the source of the rare "wrong tiles" sightings in
+    // the mage realm.
+    targets.some(({ pos, monsterCard }) => {
+        logger(
+            loggingLevel.INFO,
+            "monster {0} at location {1} defeated by mana stone.",
+            JSON.stringify(monsterCard),
+            JSON.stringify(pos)
+        );
+
+        updateScore(monsterCard.getHealth());
+        appreciateAura(config.game.aura.INCREASE, monsterCard.getHealth());
+
+        slainNames.push(monsterCard.getId().substring(8));
+
+        if (eph_config.isAuraThresholdThreeCrossed) {
             logger(
                 loggingLevel.INFO,
-                "monster {0} at location {1} defeated by mana stone.",
-                JSON.stringify(monsterCard),
+                "mana stone scan aborted because the kill at {0} triggered the mage realm transition.",
                 JSON.stringify(pos)
             );
+            return true;
+        }
 
-            updateScore(monsterCard.getHealth());
-            appreciateAura(config.game.aura.INCREASE, monsterCard.getHealth());
-
-            monstersNames += monsterCard.getId().substring(8) + ",";
-
-            let [newCardId, newAttribute] = createNewCard(pos.getX(), pos.getY());
-            eph_config.newCardLocations.push({
-                "coordinate": { "x": pos.getX(), "y": pos.getY() },
-                "cardId": newCardId,
-                "cardAttribute": newAttribute
-            });
+        const [newCardId, newAttribute] = createNewCard(pos.getX(), pos.getY());
+        eph_config.newCardLocations.push({
+            "coordinate": { "x": pos.getX(), "y": pos.getY() },
+            "cardId": newCardId,
+            "cardAttribute": newAttribute
         });
+        return false;
+    });
 
-    eph_config.screenLogs.push(
-        "- slayed monster(s) " +
-        monstersNames.substring(0, monstersNames.length - 1) +
-        " from mana stone."
-    );
+    if (slainNames.length > 0) {
+        const capitalized = slainNames.map(function (name) {
+            return name.charAt(0).toUpperCase() + name.slice(1);
+        });
+        eph_config.screenLogs.push(
+            "Mana Stone slew " + capitalized.join(", ") + "."
+        );
+    } else {
+        eph_config.screenLogs.push("Mana Stone fizzled.");
+    }
 }

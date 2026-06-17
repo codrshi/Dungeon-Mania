@@ -1,0 +1,249 @@
+/* theme.css
+ *
+ * Shared design system for Dungeon Mania. Loaded BEFORE any page-specific
+ * stylesheet (see partials/head.ejs) so every page draws from the same
+ * palette, typography, spacing, motion and utility primitives.
+ *
+ * Goals:
+ *   - "Authentic pixel art" feel: chunky borders, hard edges, stepped
+ *     micro-animations, no smudging of pixel-art sprites.
+ *   - Consistency across home / stats / guide / game.
+ *   - One place to retune the look of the whole app.
+ *
+ * Naming follows a loose token convention: --<group>-<role>.
+ */
+
+/* === Design Tokens ====================================================== */
+
+:root {
+    /* Palette (in order from darkest to lightest, plus accents).        */
+    --color-deep-brown:    #4E3328;
+    --color-brown:         #7E5543;
+    --color-bronze:        #C29500;
+    --color-gold:          #FCC510;
+    --color-cream:         #FFE181;
+    --color-cream-soft:    #FFEDB6;
+    --color-highlight:     #FF9100;
+    --color-shadow:        rgba(0, 0, 0, 0.40);
+    --color-deep-shadow:   rgba(0, 0, 0, 0.65);
+    --color-gold-glow:     rgba(252, 197, 16, 0.65);
+    --color-highlight-glow: rgba(255, 145, 0, 0.55);
+
+    /* Typography. Three deliberately distinct families:
+     *   - heading  -> blocky pixel font for section banners
+     *   - body     -> "VT323" monospace for in-game readability
+     *   - button   -> "Bowlby One" for the wooden CTA buttons         */
+    --font-heading: "Press Start 2P", monospace;
+    --font-body:    "VT323", monospace;
+    --font-button:  "Bowlby One", sans-serif;
+
+    /* Spacing scale, in vh so it scales with the viewport (the game UI
+     * targets a single-screen experience).                              */
+    --space-xs: 0.4vh;
+    --space-sm: 1vh;
+    --space-md: 2vh;
+    --space-lg: 4vh;
+    --space-xl: 6vh;
+
+    /* Chunky "pixel" borders. The double-inset + drop-shadow recipe is
+     * applied via the .pixel-panel / .pixel-bordered utilities below
+     * (and reused inline in the page-specific stylesheets).            */
+    --pixel-border-thin: 2px solid var(--color-deep-brown);
+    --pixel-border:      3px solid var(--color-deep-brown);
+    --pixel-border-thick:5px solid var(--color-deep-brown);
+
+    /* Motion. "snap" is intentionally stepped for that 8-bit feel;
+     * "quick" / "smooth" are smooth easings for physical motion.       */
+    --transition-snap:   0.15s steps(4);
+    --transition-quick:  0.18s ease-out;
+    --transition-smooth: 0.30s ease-out;
+}
+
+/* === Global resets ===================================================== */
+
+/* All raster assets in this game are 16-32px sprite art. Without this
+ * the browser blurs them when upscaling, which breaks the pixel look.  */
+img {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Avoid the rubber-banding flash of an unstyled text-selection on
+ * decorative UI surfaces.                                              */
+.no-select,
+.panel,
+.button,
+.cell,
+.card,
+.dice-face,
+.monster-thumb,
+.mage-thumb,
+.threshold-marker,
+.kbd-table {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* === Reusable utilities ================================================ */
+
+/* A wooden panel: cream fill, deep-brown border, with a 2px highlight on
+ * the inside top-left and a 2px shadow on the inside bottom-right so the
+ * panel reads as physically raised.                                    */
+.pixel-panel {
+    background-color: var(--color-cream);
+    border: var(--pixel-border);
+    box-shadow:
+        inset 2px 2px 0 0 rgba(255, 255, 255, 0.45),
+        inset -2px -2px 0 0 rgba(78, 51, 40, 0.45),
+        4px 4px 0 0 var(--color-shadow);
+}
+
+/* Like .pixel-panel but transparent fill -- for using on top of an
+ * existing background image (e.g. the menu-panel-background art).     */
+.pixel-bordered {
+    border: var(--pixel-border);
+    box-shadow:
+        inset 2px 2px 0 0 rgba(255, 225, 129, 0.40),
+        inset -2px -2px 0 0 rgba(0, 0, 0, 0.35),
+        4px 4px 0 0 var(--color-shadow);
+}
+
+/* Gold-on-deep-brown text label -- used for tags / counters / mini
+ * heading strips.                                                      */
+.pixel-chip {
+    display: inline-block;
+    padding: 0.3vh 1vh;
+    background-color: var(--color-brown);
+    color: var(--color-gold);
+    border: var(--pixel-border-thin);
+    font-family: var(--font-body);
+    font-weight: bold;
+    line-height: 1.3;
+}
+
+/* Subtle pulsing gold halo. Pair with elements that the player should
+ * pay attention to (active poison, low aura, valid tiles, etc).        */
+.glow-gold {
+    animation: glow-gold 1.6s ease-in-out infinite;
+}
+
+/* === Keyframe library ================================================== */
+
+/* Page-level entry: fade up. Trigger by adding a class with
+ * `animation: page-enter 0.4s ease-out both;`.                         */
+@keyframes page-enter {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Gentle vertical float. For the home-page logo / hero artwork.       */
+@keyframes float-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+}
+
+/* Tiny vertical bob -- snappier than float-bob. For the dice button
+ * waiting for a roll.                                                  */
+@keyframes dice-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+}
+
+/* Pulsing gold drop-shadow halo.                                      */
+@keyframes glow-gold {
+    0%, 100% { filter: drop-shadow(0 0 3px var(--color-gold-glow)); }
+    50%      { filter: drop-shadow(0 0 11px var(--color-gold-glow)); }
+}
+
+/* Pulsing orange (highlight) halo -- more urgent than gold.           */
+@keyframes glow-highlight {
+    0%, 100% { filter: drop-shadow(0 0 3px var(--color-highlight-glow)); }
+    50%      { filter: drop-shadow(0 0 12px var(--color-highlight-glow)); }
+}
+
+/* Modal entry: scale up from 60% with a small overshoot.              */
+@keyframes pop-in {
+    0%   { opacity: 0; transform: scale(0.55); }
+    65%  { opacity: 1; transform: scale(1.06); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Modal overlay fade-in.                                              */
+@keyframes overlay-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* New-card / spawn pop. Used when a tile gets replaced mid-game.      */
+@keyframes spawn-in {
+    0%   { transform: scale(0.4) rotate(-8deg); opacity: 0; }
+    60%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* Score / aura bump. Brief scale-up so the user notices the delta.   */
+@keyframes value-bump {
+    0%   { transform: scale(1);   color: var(--color-gold); }
+    40%  { transform: scale(1.25); color: var(--color-highlight); }
+    100% { transform: scale(1);   color: var(--color-gold); }
+}
+
+/* Pulsing tile glow for valid moves on the game grid.                */
+@keyframes tile-pulse {
+    0%, 100% {
+        box-shadow:
+            inset 0 0 0 3px var(--color-gold-glow),
+            0 0 6px var(--color-gold-glow);
+    }
+    50% {
+        box-shadow:
+            inset 0 0 0 3px var(--color-gold),
+            0 0 14px var(--color-gold);
+    }
+}
+
+/* Quick screen-shake for game-lost / damage emphasis.                */
+@keyframes screen-shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-5px, 0, 0); }
+    40%, 60% { transform: translate3d(5px, 0, 0); }
+}
+
+/* Slow infinite spin -- decorative.                                  */
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Page-level / scroll-reveal helper. Sections start hidden and slide
+ * up + fade in once JS toggles the .visible class.                   */
+.reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+        opacity   var(--transition-smooth),
+        transform var(--transition-smooth);
+}
+
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Honour the user's reduce-motion preference -- mandatory for any UI
+ * that animates. Strips all keyframe animations and transitions to
+ * tasteful no-ops.                                                   */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+    .reveal {
+        opacity: 1;
+        transform: none;
+    }
+}

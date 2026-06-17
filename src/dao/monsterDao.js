@@ -19,7 +19,7 @@ export class MonsterDao {
         return this.monster.health;
     }
 
-    setId(health) {
+    setHealth(health) {
         this.monster.health = health;
     }
 
@@ -29,5 +29,13 @@ export class MonsterDao {
 
     setElement(element) {
         this.monster.element = element;
+    }
+
+    toJSON() {
+        return {
+            id: this.monster.id,
+            health: this.monster.health,
+            element: this.monster.element,
+        };
     }
 }

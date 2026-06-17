@@ -15,4 +15,8 @@ export class KnightDao {
     setId(id) {
         this.knight.id = id;
     }
+
+    toJSON() {
+        return { id: this.knight.id };
+    }
 }

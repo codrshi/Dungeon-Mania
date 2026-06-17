@@ -21,8 +21,24 @@ const loggingLevel = config.app.loggingLevel;
 export function setInit(isSurvivalMode) {
     logger(loggingLevel.INFO, "setting up the game.");
 
+    // Always reset state on a fresh /game request. Hitting this route
+    // means "start a new game", and there is no resume-on-refresh
+    // feature (beforeunload already kills the game on every navigation).
+    //
+    // The previous "if status !== ONGOING" guard only reset when the
+    // server still believed a game was in progress -- which is exactly
+    // the state during a mid-game Replay/F5 race against the async
+    // sendBeacon('/game/exit'). When GET /game won that race, setInit
+    // rendered the *old* grid while the exit beacon was still in
+    // flight, then the beacon landed and wiped the grid -- leaving the
+    // browser displaying cards the server had no backing data for, so
+    // every subsequent /game/roll-dice 500'd silently and the player
+    // was stranded on a frozen, faded board.
+    logger(loggingLevel.INFO, "previous game status = {0}, clearing state for the new game.", eph_config.currentGameStatus);
+    clearEphConfig();
+
     eph_config.isSurvivalMode = isSurvivalMode === "true";
-    logger(loggingLevel.INFO, "isSurvivalMode = {0}", eph_config.isSurvivalMode);
+    logger(loggingLevel.DEBUG, "isSurvivalMode = {0}", eph_config.isSurvivalMode);
 
     if (isSurvivalMode !== "true" && isSurvivalMode !== "false") {
         logger(loggingLevel.WARN, "isSurvivalMode is having an undefined value. So game will proceed in a non-survival mode.");
@@ -53,7 +69,7 @@ function restoreDefaultEphConfig() {
     eph_config.newGrid = [];
     eph_config.newCardLocations = [];
     eph_config.activePoisons = [];
-    eph_config.activeEnema = null;
+    eph_config.activeEnigma = null;
     eph_config.aura = 0;
     eph_config.isAuraThresholdThreeCrossed = false;
     eph_config.escapeDoorCountdown = 0;
@@ -63,16 +79,18 @@ function restoreDefaultEphConfig() {
     eph_config.mageCoordinate.x = 2;
     eph_config.mageCoordinate.y = 2;
     eph_config.audioList = [];
-    eph_config.screenLogs = ["- click on the dice icon to start the game."];
+    eph_config.screenLogs = ["Click the dice to begin."];
+    eph_config.lastValidPositions = [];
+    eph_config.lastDiceNumber = null;
 }
 
 function clearTempStatsConfig() {
-    logger(loggingLevel.INFO, "clearing temp stats configurations.");
+    logger(loggingLevel.DEBUG, "clearing temp stats configurations.");
 
     temp_stats_config.basicStats.totalGamesMoves = 0;
 
     temp_stats_config.monsterStats.totalMonstersKilled = 0;
-    temp_stats_config.monsterStats.totalMonstersKilled = 0;
+    temp_stats_config.monsterStats.elementalMonstersKilled = 0;
     temp_stats_config.monsterStats.monsterKillingStreakMoves = 0;
     temp_stats_config.monsterStats.strongestMonsterKilledHealth = "-";
     temp_stats_config.monsterStats.strongestMonsterKilledName = "-";
@@ -82,6 +100,6 @@ function clearTempStatsConfig() {
     temp_stats_config.weaponStats.strongestWeaponAttribute = "-";
     temp_stats_config.weaponStats.weaponUsage = new Array(4).fill(0);
 
-    temp_stats_config.weaponStats.totalArtifactsPicked = 0;
-    temp_stats_config.weaponStats.artifactUsage = new Array(9).fill(0);
+    temp_stats_config.artifactStats.totalArtifactsPicked = 0;
+    temp_stats_config.artifactStats.artifactUsage = new Array(9).fill(0);
 }

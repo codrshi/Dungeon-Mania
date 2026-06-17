@@ -15,6 +15,7 @@ import { appreciateAura } from "../utility/auraAppreciator.js";
 import {
     getRandomEscapeDoorCoordinate,
 } from "../utility/mageGridAccessor.js";
+import { setCardInGrid } from "../utility/gridAccessor.js";
 import temp_stats_config from "../configuration/temp_stats_config.js";
 import { logger } from "../utility/loggerService.js";
 
@@ -33,22 +34,43 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
 
     if (monsterCard.getId() === config.game.id.monster.WRAITH) {
         eph_config.knightWeapon = null;
-        eph_config.activeEnema = null;
+        eph_config.activeEnigma = null;
         eph_config.activePoisons = [];
 
-        logger(loggingLevel.INFO, "knight weapon, active enema and acitve poison(s) is reset.");
+        logger(loggingLevel.INFO, "knight weapon, active enigma and active poison(s) is reset.");
 
-        if (eph_config.aura >= monsterHealth) {
+        const wraithSlain = eph_config.aura >= monsterHealth;
+        if (wraithSlain) {
             appreciateAura(
                 config.game.aura.DECREASE,
                 config.game.aura.wraith_absorption_rate.MIN_VALUE
             );
             updateScore(monsterHealth);
-        } else
+
+            // Wraith counts as a slain monster for stats purposes.
+            temp_stats_config.monsterStats.totalMonstersKilled += 1;
+            if (
+                temp_stats_config.monsterStats.strongestMonsterKilledHealth === "-" ||
+                monsterCard.getHealth() > temp_stats_config.monsterStats.strongestMonsterKilledHealth
+            ) {
+                temp_stats_config.monsterStats.strongestMonsterKilledHealth = monsterCard.getHealth();
+                temp_stats_config.monsterStats.strongestMonsterKilledName = monsterCard.getId().substring(8);
+            }
+            monsterKillingStreakMoves += 1;
+            temp_stats_config.monsterStats.monsterKillingStreakMoves = Math.max(
+                temp_stats_config.monsterStats.monsterKillingStreakMoves,
+                monsterKillingStreakMoves
+            );
+
+            eph_config.audioList.push(monsterCard.getId());
+            eph_config.screenLogs.push("Wraith slain.");
+        } else {
             appreciateAura(
                 config.game.aura.DECREASE,
                 config.game.aura.wraith_absorption_rate.MAX_VALUE
             );
+            eph_config.screenLogs.push("Wraith drained your aura.");
+        }
         return;
     }
 
@@ -76,7 +98,7 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
         }
     }
 
-    logger(loggingLevel.INFO, "effective monster health = {0}.", monsterHealth);
+    logger(loggingLevel.DEBUG, "effective monster health = {0}.", monsterHealth);
 
     let scoreSpan = Math.min(
         monsterHealth,
@@ -85,17 +107,25 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
     knightWeaponDamage -= monsterHealth;
 
     if (knightWeaponDamage <= 0) {
+        const healthBeforeResidue = eph_config.knightHealth;
         updateHealth(config.game.health.DECREASE, Math.abs(knightWeaponDamage));
+        const residueDealt = healthBeforeResidue - eph_config.knightHealth;
+        // Only push the bite-back line if the monster did not finish the
+        // knight (otherwise updateHealth already pushed "HP depleted.").
+        if (eph_config.knightHealth > 0 && residueDealt > 0) {
+            const monsterName = capitalize(monsterCard.getId().substring(8));
+            eph_config.screenLogs.push(monsterName + " bit back: -" + residueDealt + " HP.");
+        }
         if (eph_config.knightWeapon != null) {
             eph_config.knightWeapon = null;
-            eph_config.screenLogs.push("- weapon expired.");
+            eph_config.screenLogs.push("Weapon shattered.");
             logger(loggingLevel.INFO, "knight weapon expired.");
         }
     }
 
     if (eph_config.knightWeapon != null) {
         eph_config.knightWeapon.setDamage(knightWeaponDamage);
-        logger(loggingLevel.INFO, "updated knight weapon damage = {0}.", knightWeaponDamage);
+        logger(loggingLevel.DEBUG, "updated knight weapon damage = {0}.", knightWeaponDamage);
     }
 
     if (eph_config.knightHealth > 0) {
@@ -105,13 +135,15 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
         temp_stats_config.monsterStats.totalMonstersKilled += 1;
         if (monsterCard.getElement() != null)
             temp_stats_config.monsterStats.elementalMonstersKilled += 1;
+        // Compare against the monster's RAW health (not the post-element-multiplier
+        // value used for the damage calculation), so the stat reflects the true
+        // strength of the monster slain.
+        const rawMonsterHealth = monsterCard.getHealth();
         if (
             temp_stats_config.monsterStats.strongestMonsterKilledHealth === "-" ||
-            monsterHealth >
-            temp_stats_config.monsterStats.strongestMonsterKilledHealth
+            rawMonsterHealth > temp_stats_config.monsterStats.strongestMonsterKilledHealth
         ) {
-            temp_stats_config.monsterStats.strongestMonsterKilledHealth =
-                monsterHealth;
+            temp_stats_config.monsterStats.strongestMonsterKilledHealth = rawMonsterHealth;
             temp_stats_config.monsterStats.strongestMonsterKilledName = monsterCard
                 .getId()
                 .substring(8);
@@ -124,9 +156,17 @@ export function dealMonster(monsterCard, monsterKillingStreakMoves) {
 
         eph_config.audioList.push(monsterCard.getId());
         eph_config.screenLogs.push(
-            "- monster " + monsterCard.getId().substring(8) + " slayed."
+            capitalize(monsterCard.getId().substring(8)) + " slain."
         );
     }
+}
+
+// Local title-case helper. The DAO ids are stored lowercase (e.g.
+// "monster_skeleton" -> "skeleton"); the screen log displays them as
+// proper nouns ("Skeleton") to match the new sentence-case message style.
+function capitalize(name) {
+    if (!name || name.length === 0) return name;
+    return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 function dealMageMonster(monsterElement) {
@@ -147,7 +187,7 @@ function dealMageMonster(monsterElement) {
     )
         keyDropChance = 0;
 
-    logger(loggingLevel.INFO, "key drop chance = {0}.", keyDropChance);
+    logger(loggingLevel.DEBUG, "key drop chance = {0}.", keyDropChance);
 
     if (
         eph_config.escapeDoorCountdown == 0 &&
@@ -169,10 +209,10 @@ function dealMageMonster(monsterElement) {
 
         eph_config.escapeDoorCountdown = config.game.mage.DOOR_CLOSE_COUNTDOWN + 1;
         eph_config.audioList.push(config.game.id.artifact.OPEN_DOOR);
-        eph_config.screenLogs.push("- escape door opened for next 5 turns.");
+        eph_config.screenLogs.push("Escape door opened (5 turns).");
     }
     else {
-        logger(loggingLevel.INFO, "knight failed to obtain key because escape door countdown is non-zero.\nescape door countdown = {0}.", eph_config.escapeDoorCountdown);
+        logger(loggingLevel.DEBUG, "knight failed to obtain key because escape door countdown is non-zero.\nescape door countdown = {0}.", eph_config.escapeDoorCountdown);
     }
 
     updateScore(eph_config.aura);

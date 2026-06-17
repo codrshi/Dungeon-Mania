@@ -30,4 +30,14 @@ export class WeaponDao {
     setElement(element) {
         this.weapon.element = element;
     }
+
+    // Flatten over the wire so the client sees { id, damage, element }
+    // instead of { weapon: { id, damage, element } }.
+    toJSON() {
+        return {
+            id: this.weapon.id,
+            damage: this.weapon.damage,
+            element: this.weapon.element,
+        };
+    }
 }

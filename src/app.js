@@ -30,56 +30,63 @@
  */
 
 import express from "express";
+import ejs from "ejs";
 import indexRouter from "./route/indexRoute.js";
 import gameRouter from "./route/gameRoute.js";
 import statsRouter from "./route/statsRoute.js";
 import guideRouter from "./route/guideRoute.js";
-import { fileURLToPath } from 'url';
 import path from 'path';
 import { logger } from "./utility/loggerService.js";
 import config from "./configuration/config.js";
+import ASSET_ROOT from "./utility/assetRoot.js";
 import RenderPageException from "./exception/renderPageException.js";
 import InvalidCoordinateException from "./exception/invalidCoordinateException.js";
 import ExcessActivePoisonException from "./exception/excessActivePoisonException.js";
 import UndefinedCardException from "./exception/undefinedCardException.js";
+import UnhandledPromiseRejectionException from "./exception/unhandledRejectionException.js";
 
 const app = express();
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.use(express.json());
-app.use("/static", express.static(path.join(__dirname, "public")));
+app.use("/static", express.static(path.join(ASSET_ROOT, "public")));
 
+app.engine('ejs', ejs.__express);
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'template'));
+app.set('views', path.join(ASSET_ROOT, 'template'));
 
 app.use("/", indexRouter);
 app.use("/", gameRouter);
 app.use("/", statsRouter);
 app.use("/", guideRouter);
 
+const loggingLevel = config.app.loggingLevel;
+
 app.use((err, req, res, next) => {
+    logger(loggingLevel.DEBUG, "error middleware caught {0} for {1} {2}.", err.name, req.method, req.originalUrl);
+
     if (err instanceof RenderPageException) {
-        logger(config.app.loggingLevel.ERROR, err.stack);
+        logger(loggingLevel.ERROR, err.stack);
         res.status(500).json({ error: err.message });
     }
     else if (err instanceof InvalidCoordinateException || err instanceof ExcessActivePoisonException || err instanceof UndefinedCardException) {
-        logger(config.app.loggingLevel.ERROR, err.stack);
+        logger(loggingLevel.ERROR, err.stack);
         res.status(500).json({ error: "an unexpected error occured." });
     }
     else {
-        logger(config.app.loggingLevel.ERROR, `Unknown error occured: ${err.name}: ${err.message}`);
-        logger(config.app.loggingLevel.ERROR, err.stack);
+        logger(loggingLevel.ERROR, `Unknown error occured: ${err.name}: ${err.message}`);
+        logger(loggingLevel.ERROR, err.stack);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
 
 process.on('SIGINT', () => {
-    logger(config.app.loggingLevel.INFO, "gracefully shutting down the game.");
+    logger(loggingLevel.INFO, "gracefully shutting down the game.");
     process.exit(0);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
+    logger(loggingLevel.ERROR, "unhandled promise rejection caught at process level.");
     const error = new UnhandledPromiseRejectionException(
         `Unhandled promise rejection: ${reason.message || reason}`,
         promise

@@ -21,7 +21,8 @@ export function dealWeapon(weaponCard) {
         weaponCard.getId()
     );
 
-    logger(loggingLevel.INFO, "knight obtained a new weapon = {0}.", JSON.stringify(weaponCard));
+    logger(loggingLevel.INFO, "knight obtained a new weapon: id = {0}, damage = {1}, element = {2}.", weaponCard.getId(), weaponCard.getDamage(), weaponCard.getElement());
+    logger(loggingLevel.DEBUG, "raw weapon card = {0}.", JSON.stringify(weaponCard));
     appreciateAura(config.game.aura.INCREASE, weaponCard.getDamage());
 
     temp_stats_config.weaponStats.totalweaponsGrabbed += 1;
@@ -41,7 +42,8 @@ export function dealWeapon(weaponCard) {
     ] += 1;
 
     eph_config.audioList.push(weaponCard.getId());
+    const weaponName = weaponCard.getId().substring(7);
     eph_config.screenLogs.push(
-        "- obtained weapon " + weaponCard.getId().substring(7) + "."
+        "Picked up " + weaponName.charAt(0).toUpperCase() + weaponName.slice(1) + "."
     );
 }

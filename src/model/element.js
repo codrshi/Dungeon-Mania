@@ -21,25 +21,25 @@ const Element = Object.freeze({
     AERO: 'aero',
 
     getEffectiveCounterElement: function (elementType) {
-        if (elementType === this.PYRO)
-            return this.AERO;
-        if (elementType === this.HYDRO)
-            return this.PYRO
-        if (elementType === this.ELECTRO)
-            return this.HYDRO
-        if (elementType === this.AERO)
-            return this.ELECTRO
+        switch (elementType) {
+            case this.PYRO: return this.AERO;
+            case this.HYDRO: return this.PYRO;
+            case this.ELECTRO: return this.HYDRO;
+            case this.AERO: return this.ELECTRO;
+            default:
+                throw new Error(`Element.getEffectiveCounterElement: unknown element type "${elementType}"`);
+        }
     },
 
     getIneffectiveCounterElement: function (elementType) {
-        if (elementType === this.PYRO)
-            return this.HYDRO;
-        if (elementType === this.HYDRO)
-            return this.ELECTRO
-        if (elementType === this.ELECTRO)
-            return this.AERO
-        if (elementType === this.AERO)
-            return this.PYRO
+        switch (elementType) {
+            case this.PYRO: return this.HYDRO;
+            case this.HYDRO: return this.ELECTRO;
+            case this.ELECTRO: return this.AERO;
+            case this.AERO: return this.PYRO;
+            default:
+                throw new Error(`Element.getIneffectiveCounterElement: unknown element type "${elementType}"`);
+        }
     }
 });
 

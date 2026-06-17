@@ -27,19 +27,12 @@ import RenderPageException from "../exception/renderPageException.js";
 const router = express.Router();
 
 router.get(config.app.url.STATS, (req, res, next) => {
-    logger(config.app.loggingLevel.INFO, "redering stats page...");
+    logger(config.app.loggingLevel.INFO, "rendering stats page...");
 
-    try {
-        res.render('stats', getStats(), (err, html) => {
-            if (err) {
-                throw new RenderPageException("stats", err.message);
-            }
-            res.send(html);
-        });
-    }
-    catch (err) {
-        next(err);
-    }
+    res.render('stats', getStats(), (err, html) => {
+        if (err) return next(new RenderPageException("stats", err.message));
+        res.send(html);
+    });
 });
 
 export default router;

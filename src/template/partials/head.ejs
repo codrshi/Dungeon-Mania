@@ -1,5 +1,5 @@
 <head>
-    </head><meta charset="UTF-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>Dungeon Mania</title>
     <link rel="icon" href="/static/asset/image/dungeon_mania_favicon.ico" type="image/x-icon">
@@ -10,8 +10,10 @@
 
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nerko+One&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap" rel="stylesheet">
 
+    <!-- theme.css must load BEFORE the page-specific stylesheet so the
+         page can use the CSS custom properties / utility classes it defines. -->
+    <link rel="stylesheet" href="/static/style/theme.css">
     <link rel="stylesheet" href="/static/style/<%= style %>">
 </head>

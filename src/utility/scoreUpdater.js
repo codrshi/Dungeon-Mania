@@ -14,10 +14,10 @@ export function updateScore(value) {
 
     if (eph_config.knightHealth === 0)
         return;
-    if (eph_config.activeEnema != null) {
-        value += Math.ceil(value * eph_config.activeEnema.getBuff() / 100);
+    if (eph_config.activeEnigma != null) {
+        value += Math.ceil(value * eph_config.activeEnigma.getBuff() / 100);
     }
     eph_config.score += value;
 
-    logger(loggingLevel.INFO, "score updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.score, value);
+    logger(loggingLevel.DEBUG, "score updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.score, value);
 }

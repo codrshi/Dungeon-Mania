@@ -26,10 +26,12 @@ const config = {
       GUIDE: "/guide",
     },
     loggingLevel: {
-      INFO: "INFO",
+      ERROR: "ERROR",
       WARN: "WARN",
-      ERROR: "ERROR"
+      INFO: "INFO",
+      DEBUG: "DEBUG",
     },
+    DEFAULT_LOGGING_LEVEL: "INFO",
     errorCode: {
       1001: `an error occured while rendering {0} page : {1}`,
       1002: `obtained an invalid value of coordinate.\ncoordinate type = {0}, coordinate value = {1}`,
@@ -146,7 +148,7 @@ const config = {
         MIN_VALUE: 15,
         MAX_VALUE: 25,
       },
-      INFINTE: "∞",
+      INFINITE: "∞",
       EMPTY: "",
     },
     // Game spawn rates, setting probability for different monsters, weapons and artifacts to appear
@@ -200,7 +202,7 @@ const config = {
       artifact: {
         BOMB: "artifact_bomb",
         CHAOS_ORB: "artifact_chaos_orb",
-        ENEMA_ELIXIR: "artifact_enema_elixir",
+        ENIGMA_ELIXIR: "artifact_enigma_elixir",
         HEALTH_POTION: "artifact_health_potion",
         MANA_STONE: "artifact_mana_stone",
         POISON_POTION: "artifact_poison_potion",
@@ -229,7 +231,7 @@ const config = {
       POISON_DURATION: 3,
       MAX_COUNT_OF_ACTIVE_POISON: 3,
     },
-    ACTIVE_ENEMA_DURATION: 5,
+    ACTIVE_ENIGMA_DURATION: 5,
     health: {
       INCREASE: "increase health",
       DECREASE: "decrease health",

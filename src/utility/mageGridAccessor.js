@@ -26,6 +26,7 @@ import { CoordinateDao } from "../dao/coordinateDao.js";
 import eph_config from "../configuration/ephemeral_config.js";
 import { getCardFromGrid, setCardInGrid, setGrid } from "./gridAccessor.js";
 import { logger } from "../utility/loggerService.js";
+import InvalidCoordinateException from "../exception/invalidCoordinateException.js";
 
 const loggingLevel = config.app.loggingLevel;
 const ROWS = config.game.grid.ROWS;
@@ -51,15 +52,16 @@ function createMageGridPrototype() {
 
             if (weaponCoordinateSet.has(key)) {
                 switch (key) {
-                    case '00': grid[i][j] = new WeaponDao(config.game.attribute.INFINTE, Element.AERO, config.game.id.weapon.CROSSBOW);
+                    case '00': grid[i][j] = new WeaponDao(config.game.attribute.INFINITE, Element.AERO, config.game.id.weapon.CROSSBOW);
                         break;
-                    case '06': grid[i][j] = new WeaponDao(config.game.attribute.INFINTE, Element.ELECTRO, config.game.id.weapon.GRIMOIRE);
+                    case '06': grid[i][j] = new WeaponDao(config.game.attribute.INFINITE, Element.ELECTRO, config.game.id.weapon.GRIMOIRE);
                         break;
-                    case '60': grid[i][j] = new WeaponDao(config.game.attribute.INFINTE, Element.HYDRO, config.game.id.weapon.STAFF);
+                    case '60': grid[i][j] = new WeaponDao(config.game.attribute.INFINITE, Element.HYDRO, config.game.id.weapon.STAFF);
                         break;
-                    case '66': grid[i][j] = new WeaponDao(config.game.attribute.INFINTE, Element.PYRO, config.game.id.weapon.SWORD);
+                    case '66': grid[i][j] = new WeaponDao(config.game.attribute.INFINITE, Element.PYRO, config.game.id.weapon.SWORD);
                         break;
-                    default: break;
+                    default:
+                        throw new Error(`createMageGridPrototype: weapon coordinate "${key}" has no weapon mapping`);
                 }
             }
             else if (healthPotionCoordinateSet.has(key)) {
@@ -74,6 +76,11 @@ function createMageGridPrototype() {
             else if (poisonPotionCoordinateSet.has(key)) {
                 grid[i][j] = new ArtifactDao(config.game.id.artifact.POISON_POTION);
             }
+            else {
+                // Defensive default so a future config typo can't leave the
+                // grid with `undefined` cells that crash downstream code.
+                throw new Error(`createMageGridPrototype: cell "${key}" is not covered by any coordinate set`);
+            }
         }
     }
 
@@ -82,7 +89,7 @@ function createMageGridPrototype() {
 
 export function getCardFromMageGridPrototype(coordinate) {
     if (coordinate.getX() < 0 || coordinate.getX() >= ROWS || coordinate.getY() < 0 || coordinate.getY() >= COLUMNS) {
-        throw new InvalidCoordinateException("unknown", JSON.stringify(new CoordinateDao(x, y)));
+        throw new InvalidCoordinateException("unknown", JSON.stringify(coordinate));
     }
     return mageGridPrototype[coordinate.getX()][coordinate.getY()];
 }
@@ -104,12 +111,22 @@ function getNewMageLocation() {
     let mageCoordinate = new CoordinateDao(-1, -1);
     let randomElementForMage = null;
 
-    do {
-        let index = getRandom(0, mageCoordinateArray.length - 1);
-        mageCoordinate.setX(Number(mageCoordinateArray[index][0]));
-        mageCoordinate.setY(Number(mageCoordinateArray[index][1]));
+    // Build the candidate list each call so the loop can't run forever if all
+    // (or most) health-potion cells have been consumed.
+    const candidateCoordinates = mageCoordinateArray
+        .map(key => new CoordinateDao(Number(key[0]), Number(key[1])))
+        .filter(c => getCardFromGrid(c).getId() === config.game.id.artifact.HEALTH_POTION);
+
+    if (candidateCoordinates.length > 0) {
+        const chosen = candidateCoordinates[getRandom(0, candidateCoordinates.length - 1)];
+        mageCoordinate.setX(chosen.getX());
+        mageCoordinate.setY(chosen.getY());
+    } else {
+        // Fallback: keep the mage where it was so the game doesn't hang.
+        logger(loggingLevel.WARN, "no health potion cells available; mage keeps its current location.");
+        mageCoordinate.setX(eph_config.mageCoordinate.x);
+        mageCoordinate.setY(eph_config.mageCoordinate.y);
     }
-    while (getCardFromGrid(mageCoordinate).getId() != config.game.id.artifact.HEALTH_POTION);
 
     switch (getRandom(0, 3)) {
         case 0: randomElementForMage = Element.AERO;
@@ -150,13 +167,13 @@ export function updateMageLocation() {
     const [mageCoordinate, randomElementForMage] = getNewMageLocation();
     eph_config.mageCoordinate.x = mageCoordinate.getX();
     eph_config.mageCoordinate.y = mageCoordinate.getY();
-    setCardInGrid(new CoordinateDao(eph_config.mageCoordinate.x, eph_config.mageCoordinate.y), new MonsterDao(config.game.attribute.INFINTE, randomElementForMage, config.game.id.monster.MAGE + "_" + randomElementForMage));
+    setCardInGrid(new CoordinateDao(eph_config.mageCoordinate.x, eph_config.mageCoordinate.y), new MonsterDao(config.game.attribute.INFINITE, randomElementForMage, config.game.id.monster.MAGE + "_" + randomElementForMage));
 
-    logger(loggingLevel.INFO, "updated mage coordinate = {0}.", JSON.stringify(eph_config.mageCoordinate));
+    logger(loggingLevel.DEBUG, "updated mage coordinate = {0}.", JSON.stringify(eph_config.mageCoordinate));
     eph_config.newCardLocations.push({
         "coordinate": { "x": eph_config.mageCoordinate.x, "y": eph_config.mageCoordinate.y },
         "cardId": config.game.id.monster.MAGE + "_" + randomElementForMage,
-        "cardAttribute": config.game.attribute.INFINTE
+        "cardAttribute": config.game.attribute.INFINITE
     });
 }
 
@@ -167,7 +184,7 @@ export function getRandomEscapeDoorCoordinate() {
     if (randomEscapeDoorCoordinate.getX() < 0 || randomEscapeDoorCoordinate.getX() >= ROWS || randomEscapeDoorCoordinate.getY() < 0 || randomEscapeDoorCoordinate.getY() >= COLUMNS) {
         throw new InvalidCoordinateException("escape door coordinate", JSON.stringify(randomEscapeDoorCoordinate));
     }
-    logger(loggingLevel.INFO, "new random escape door coordinate = {0}.", JSON.stringify(randomEscapeDoorCoordinate));
+    logger(loggingLevel.DEBUG, "new random escape door coordinate = {0}.", JSON.stringify(randomEscapeDoorCoordinate));
     return randomEscapeDoorCoordinate;
 }
 

@@ -31,23 +31,18 @@ const router = express.Router();
 const loggingLevel = config.app.loggingLevel;
 
 router.get(config.app.url.HOME_PAGE, (req, res, next) => {
-    logger(loggingLevel.INFO, "redering home page...");
+    logger(loggingLevel.INFO, "rendering home page...");
 
-    try {
-        res.render('index', (err, html) => {
-            if (err) {
-                throw new RenderPageException("index", err.message);
-            }
-            res.send(html);
-        });
-    }
-    catch (err) {
-        next(err);
-    }
+    res.render('index', (err, html) => {
+        if (err) return next(new RenderPageException("index", err.message));
+        res.send(html);
+    });
 });
 
 router.get(config.app.url.HOME_PAGE_USERNAME_HIGHSCORE, (req, res) => {
-    res.json(getusernameAndHighScore());
+    const data = getusernameAndHighScore();
+    logger(loggingLevel.DEBUG, "username-highscore response = {0}.", JSON.stringify(data));
+    res.json(data);
 });
 
 export default router;

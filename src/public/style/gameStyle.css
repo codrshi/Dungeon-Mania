@@ -1,3 +1,9 @@
+/* gameStyle.css
+ *
+ * Game-screen layout & interactions.
+ * Builds on the design tokens / utilities in theme.css.
+ */
+
 html,
 body {
     margin: 0;
@@ -14,6 +20,10 @@ body {
     background-position: top left;
 }
 
+body {
+    animation: page-enter 0.45s ease-out both;
+}
+
 .flex-container {
     width: 100%;
     height: 100%;
@@ -21,51 +31,82 @@ body {
     align-items: center;
 }
 
+/* === Player status panel (left side) =================================== */
+
 #player-status-panel {
     flex: 3;
-    max-height: 90vh;
+    /* Fix the column at 92vh so the screen-log sub-panel can flex-grow
+     * into the bottom empty space (was previously relying on `max-height`
+     * + `align-self: baseline`, which made the column collapse to the
+     * intrinsic height of its children).                                */
+    height: 92vh;
+    align-self: center;
     display: flex;
-    justify-content: center;
-    text-align: center;
-    align-self: baseline;
     flex-direction: column;
-}
-
-#grid-panel {
-    flex: 7;
-    background-color: #977261;
-    border: 2px solid #4E3328;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 1.2vh;
+    padding: 1vh 0;
 }
 
 #username,
 #score {
-    font-family: "VT323", monospace;
+    font-family: var(--font-body);
     font-weight: bold;
-    font-style: normal;
     font-size: 3.5vh;
-    letter-spacing: 0.5px;
-    background-color: #977261;
-    color: #FCC510;
-    border: 2px solid #4E3328;
-    padding: 0.5%;
-    margin: 2% 5% 0% 5%;
+    letter-spacing: 1px;
+    background-color: var(--color-brown);
+    color: var(--color-gold);
+    border: var(--pixel-border);
+    box-shadow:
+        inset 2px 2px 0 0 rgba(255, 225, 129, 0.4),
+        inset -2px -2px 0 0 rgba(0, 0, 0, 0.4),
+        4px 4px 0 0 var(--color-shadow);
+    padding: 0.6vh 1.2vh;
+    margin: 0 5%;
+    transition: color var(--transition-quick), transform var(--transition-quick);
 }
 
+/* The score gets a brief bump-and-flash whenever a successful move
+ * lands on something that scores; the .bump class is toggled from JS. */
+#score.bump {
+    animation: value-bump 0.4s ease-out;
+}
+
+/* === Sub-panels (attribute strip, button strip, screen log) =========== */
+
 .sub-panel {
-    background-color: #977261;
-    border: 2px solid #4E3328;
-    margin: 2% 5% 0% 5%;
-    padding: 5% 5% 5% 0%;
+    background-color: var(--color-brown);
+    border: var(--pixel-border);
+    box-shadow:
+        inset 2px 2px 0 0 rgba(255, 225, 129, 0.30),
+        inset -2px -2px 0 0 rgba(0, 0, 0, 0.40),
+        4px 4px 0 0 var(--color-shadow);
+    margin: 0 5%;
+    padding: 1.5vh 1vh;
 }
 
 #player-attribute-sub-panel,
-#button-sub-panel,
-#screen-log-sub-panel {
-    flex: 1;
+#button-sub-panel {
+    flex: 0 0 auto;
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
+/* The screen-log sub-panel grows to fill the remaining vertical space
+ * below the dice/pause strip; the message stack inside it is animated
+ * and capped so old entries get retired as new ones land.              */
+#screen-log-sub-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 1vh;
+}
+
+/* === Player attribute micro-panels (weapon / poison / aura) =========== */
 
 .player-attribute-micro-panel {
     margin-left: 5%;
@@ -75,16 +116,18 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #FFE181;
-    border: 2px solid #C29500;
+    background-color: var(--color-cream);
+    border: var(--pixel-border-thin);
+    box-shadow:
+        inset 1px 1px 0 0 rgba(255, 255, 255, 0.5),
+        inset -1px -1px 0 0 rgba(78, 51, 40, 0.4);
 }
 
 .player-attribute-micro-panel> :nth-child(1) {
     display: block;
-    font-family: "VT323", monospace;
+    font-family: var(--font-body);
     font-weight: normal;
-    font-style: normal;
-    color: #7E5543;
+    color: var(--color-deep-brown);
 }
 
 .player-attribute-micro-panel> :nth-child(2) {
@@ -92,19 +135,45 @@ body {
     height: 100%;
 }
 
+/* When a poison potion is active the micro-panel is no longer faded;
+ * give it a subtle highlight pulse so the player can see at a glance
+ * that they are taking poison damage every turn.                       */
+#active-poison-micro-panel .active-poison-micro-panel-image:not(.disabled-cell-image) {
+    animation: glow-highlight 1.8s ease-in-out infinite;
+}
+
 .aura-overlay {
     position: absolute;
     left: 0;
     width: 100%;
-    background: rgba(85 85 85 / 82%);
-    transition: height 0.3s ease;
+    background: rgba(85, 85, 85, 0.82);
+    /* Slightly longer transition than before so the aura fill reads as
+     * a deliberate animation, not a snap.                             */
+    transition: height 0.45s ease;
 }
+
+/* === Roll-dice button & pause ========================================== */
 
 .roll-dice-image {
     max-width: 30%;
     cursor: pointer;
     flex: 1;
     margin-left: 5%;
+    transition: transform var(--transition-quick);
+}
+
+/* The dice gently bobs while idle (no roll in flight). gameScript.js
+ * removes the .idle class when a roll starts and restores it afterward. */
+.roll-dice-image.idle {
+    animation: dice-bob 1.6s ease-in-out infinite;
+}
+
+.roll-dice-image:hover {
+    transform: scale(1.08) rotate(-4deg);
+}
+
+.roll-dice-image:active {
+    transform: scale(0.94);
 }
 
 #pause-button {
@@ -115,21 +184,107 @@ body {
     border: 0;
     background-color: transparent;
     cursor: pointer;
-    font-family: "Bowlby One", sans-serif;
+    font-family: var(--font-button);
     font-weight: 400;
-    font-size: 4vh;
-    font-style: normal;
-    color: #7E5543;
+    font-size: 3.6vh;
+    color: var(--color-brown);
     padding: 8%;
+    transition: transform var(--transition-quick), filter var(--transition-quick);
 }
 
-#screen-log-sub-panel-text {
-    font-family: "VT323", monospace;
+#pause-button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+
+#pause-button:active {
+    transform: translateY(1px);
+    filter: brightness(0.92);
+}
+
+#pause-button:focus {
+    outline: none;
+}
+
+#pause-button:focus-visible {
+    outline: 4px solid var(--color-gold);
+    outline-offset: 4px;
+}
+
+/* === Screen log stack ================================================= */
+
+/* The stack uses `column-reverse` so that *prepending* an entry in JS
+ * makes it appear visually at the BOTTOM. Older entries stack upward,
+ * exactly like a chat / console feed. Once the cap is exceeded, the
+ * topmost (DOM-last) entry fades out and is removed by gameScript.js.  */
+#screen-log-stack {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.6vh;
+    overflow: hidden;
+    padding: 0.5vh 0.3vh;
+}
+
+.screen-log-entry {
+    font-family: var(--font-body);
     font-weight: 400;
-    font-style: normal;
-    font-size: 3vh;
-    color: #FCC510;
+    font-size: 2.5vh;
+    line-height: 1.2;
+    color: var(--color-cream);
+    background-color: rgba(0, 0, 0, 0.20);
+    border-left: 4px solid var(--color-gold);
+    padding: 0.7vh 1vh;
     text-align: left;
+    /* Smooth slide-up + fade. Initial state lives below the resting
+     * position; the .entering class (added on the next frame by JS)
+     * animates it into place. Same trick in reverse for .leaving.     */
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+        opacity   var(--transition-smooth),
+        transform var(--transition-smooth);
+    will-change: opacity, transform;
+}
+
+.screen-log-entry.entering {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.screen-log-entry.leaving {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+/* Colour-coded left accent so the eye can scan the recent feed at a
+ * glance: red for things that hurt, green for things that help, gold
+ * for neutral / informational events.                                  */
+.screen-log-entry.log-damage {
+    border-left-color: #E0625A;
+    color: var(--color-cream-soft);
+}
+
+.screen-log-entry.log-gain {
+    border-left-color: #84D26A;
+    color: var(--color-cream-soft);
+}
+
+.screen-log-entry.log-neutral {
+    border-left-color: var(--color-gold);
+}
+
+/* === Grid ============================================================== */
+
+#grid-panel {
+    flex: 7;
+    background-color: var(--color-brown);
+    border: var(--pixel-border-thick);
+    box-shadow:
+        inset 3px 3px 0 0 rgba(255, 225, 129, 0.30),
+        inset -3px -3px 0 0 rgba(0, 0, 0, 0.45),
+        6px 6px 0 0 var(--color-deep-shadow);
 }
 
 .grid-container {
@@ -137,23 +292,83 @@ body {
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: repeat(7, 1fr);
     padding: 1%;
+    gap: 2px;
 }
 
 .cell {
     position: relative;
     max-height: 13vh;
-    border: 2px solid #C29500;
+    border: 2px solid var(--color-bronze);
+    background-color: rgba(78, 51, 40, 0.20);
+    transition: transform var(--transition-quick);
 }
 
 .cell-image {
     width: 100%;
     height: 100%;
     pointer-events: visible;
+    transition: filter var(--transition-quick), transform var(--transition-quick);
 }
 
 .disabled-cell-image {
     opacity: 0.3;
     pointer-events: none;
+    filter: grayscale(35%);
+}
+
+/* When the player has rolled the dice and is choosing a tile, the body
+ * gets a .move-selection class (toggled from gameScript.js). Cells that
+ * are *not* disabled (i.e. valid moves) get a pulsing gold halo so the
+ * eye is drawn straight to the legal destinations.                     */
+body.move-selection .cell:not(:has(.disabled-cell-image)) {
+    animation: tile-pulse 1.2s ease-in-out infinite;
+    cursor: pointer;
+}
+
+body.move-selection .cell:not(:has(.disabled-cell-image)):hover {
+    transform: scale(1.07);
+}
+
+/* The knight's tile is also faded during move-selection (the dice handler
+ * disables every cell before re-enabling the valid destinations). That
+ * means the player can't immediately see where they currently are. We
+ * mark the knight's cell with `.knight-cell` from gameScript.js so we
+ * can:
+ *   - un-fade its sprite (override the .disabled-cell-image opacity),
+ *   - draw a slow blue pulse around it.
+ * The colour family (cool blue) is deliberately different from the gold
+ * pulse on valid destinations so the eye reads them as two distinct
+ * signals: "you are here" vs "click here".                              */
+body.move-selection .cell.knight-cell .cell-image,
+body.move-selection .cell.knight-cell .cell-attribute {
+    opacity: 1;
+    filter: none;
+}
+
+body.move-selection .cell.knight-cell {
+    animation: knight-here 1.6s ease-in-out infinite;
+    /* Lift the knight cell above its neighbours so the outer halo
+     * isn't clipped by adjacent cells in the grid.                  */
+    z-index: 2;
+}
+
+@keyframes knight-here {
+    0%, 100% {
+        box-shadow:
+            inset 0 0 0 3px rgba(110, 180, 255, 0.70),
+            0 0 8px rgba(110, 180, 255, 0.55);
+    }
+    50% {
+        box-shadow:
+            inset 0 0 0 3px rgb(150, 210, 255),
+            0 0 16px rgba(110, 180, 255, 0.95);
+    }
+}
+
+/* Tiles that get replaced via newCardLocations get the spawn-in
+ * animation applied by gameScript.js.                                  */
+.cell.card-spawned .cell-image {
+    animation: spawn-in 0.35s ease-out;
 }
 
 .cell-attribute,
@@ -163,16 +378,17 @@ body {
     position: absolute;
     bottom: 5%;
     right: 5%;
-    font-size: 3vh;
-    padding-left: 1%;
-    padding-right: 1%;
-    font-family: "VT323", monospace;
+    font-size: 2.6vh;
+    padding: 0 0.6vh;
+    font-family: var(--font-body);
     font-weight: normal;
-    font-style: normal;
-    color: #4E3328;
-    background-color: #FFE181;
-    border: 0.05em solid #C29500;
+    color: var(--color-deep-brown);
+    background-color: var(--color-cream);
+    border: 2px solid var(--color-bronze);
+    box-shadow: 1px 1px 0 0 rgba(0, 0, 0, 0.4);
 }
+
+/* === Modal dialog (pause / end-game) =================================== */
 
 #modal-dialog-overlay {
     display: none;
@@ -181,21 +397,38 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.78);
     z-index: 1000;
+    animation: overlay-in 0.25s ease-out;
 }
 
 #modal-dialog {
     display: none;
     position: fixed;
-    width: 50%;
-    height: 50%;
+    width: 52%;
+    height: 52%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1001;
     justify-content: center;
     align-items: center;
+}
+
+/* gameScript.js toggles this class on/off each time the modal opens so
+ * the pop-in animation replays every time, not just on first show.
+ * We can't reuse the generic `pop-in` keyframe from theme.css because
+ * that one only animates `transform: scale(...)`, which would clobber
+ * the `translate(-50%, -50%)` that centers the dialog. Hence a local
+ * keyframe that preserves the centering translate.                    */
+@keyframes modal-pop-in {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.55); }
+    65%  { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+#modal-dialog.pop-in {
+    animation: modal-pop-in 0.32s ease-out;
 }
 
 #modal-content {
@@ -209,6 +442,11 @@ body {
     background-image: url('/static/asset/image/menu_panel_background_image.png');
     background-size: 100% 100%;
     padding: 5%;
+    border: var(--pixel-border-thick);
+    box-shadow:
+        inset 3px 3px 0 0 rgba(255, 225, 129, 0.35),
+        inset -3px -3px 0 0 rgba(0, 0, 0, 0.45),
+        6px 6px 0 0 var(--color-deep-shadow);
 }
 
 #modal-heading {
@@ -217,12 +455,16 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Press Start 2P", monospace;
+    font-family: var(--font-heading);
     font-weight: bolder;
-    font-style: normal;
     text-transform: uppercase;
-    color: #C29500;
-    font-size: 8vh;
+    color: var(--color-bronze);
+    font-size: 6.5vh;
+    text-shadow:
+        3px 3px 0 var(--color-deep-brown),
+        -1px -1px 0 var(--color-cream);
+    text-align: center;
+    line-height: 1.1;
 }
 
 #modal-body {
@@ -231,11 +473,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "VT323", monospace;
-    font-weight: normal;
-    font-style: normal;
-    font-size: 6vh;
-    color: #FCC510;
+    font-family: var(--font-body);
+    font-size: 5vh;
+    color: var(--color-gold);
+    text-align: center;
+    padding: 0 4%;
 }
 
 #modal-buttons {
@@ -254,11 +496,30 @@ body {
     border: 0;
     background-color: transparent;
     cursor: pointer;
-    font-family: "Bowlby One", sans-serif;
+    font-family: var(--font-button);
     font-weight: 400;
     font-size: 4vh;
-    font-style: normal;
-    color: #7E5543;
+    color: var(--color-brown);
     padding: 5%;
-    margin: 0 5% 0 5%;
+    margin: 0 5%;
+    transition: transform var(--transition-quick), filter var(--transition-quick);
+}
+
+#modal-buttons>*:hover {
+    transform: translateY(-3px) scale(1.03);
+    filter: brightness(1.1);
+}
+
+#modal-buttons>*:active {
+    transform: translateY(1px);
+    filter: brightness(0.92);
+}
+
+#modal-buttons>*:focus {
+    outline: none;
+}
+
+#modal-buttons>*:focus-visible {
+    outline: 4px solid var(--color-gold);
+    outline-offset: 4px;
 }

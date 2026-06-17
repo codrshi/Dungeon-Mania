@@ -1,0 +1,30 @@
+{
+    "root": true,
+    "env": {
+        "node": true,
+        "es2022": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module"
+    },
+    "rules": {
+        "no-undef": "error",
+        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+        "no-var": "error",
+        "prefer-const": "warn",
+        "eqeqeq": ["warn", "always"],
+        "no-implicit-globals": "error",
+        "no-console": "off",
+        "semi": ["warn", "always"],
+        "no-empty": ["warn", { "allowEmptyCatch": true }]
+    },
+    "overrides": [
+        {
+            "files": ["src/public/**/*.js"],
+            "env": { "browser": true, "jquery": true, "node": false },
+            "parserOptions": { "sourceType": "script" },
+            "globals": { "$": "readonly", "jQuery": "readonly" }
+        }
+    ]
+}

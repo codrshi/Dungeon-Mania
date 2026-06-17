@@ -22,25 +22,27 @@ export function updateHealth(healthStatus, amount) {
     if (healthStatus === config.game.health.INCREASE) {
         eph_config.knightHealth = Math.min(config.game.health.MAX_HEALTH, eph_config.knightHealth + amount);
         if (eph_config.knightHealth - tempVar != 0)
-            eph_config.screenLogs.push("- gained " + (eph_config.knightHealth - tempVar) + " health.");
+            eph_config.screenLogs.push("Healed +" + (eph_config.knightHealth - tempVar) + " HP.");
     }
     else if (healthStatus === config.game.health.DECREASE) {
-        if (eph_config.activeEnema != null) {
-            amount -= Math.ceil(amount * eph_config.activeEnema.getBuff() / 100);
+        if (eph_config.activeEnigma != null) {
+            amount -= Math.ceil(amount * eph_config.activeEnigma.getBuff() / 100);
         }
         eph_config.knightHealth = Math.max(0, eph_config.knightHealth - amount);
 
         if (eph_config.knightHealth == 0) {
             terminateGame(config.game.gameStatus.LOST);
-            eph_config.screenLogs.push("- health exhausted.");
+            eph_config.screenLogs.push("HP depleted.");
             return;
         }
-        if (tempVar - eph_config.knightHealth != 0)
-            eph_config.screenLogs.push("- lost " + (tempVar - eph_config.knightHealth) + " health.");
+        // No generic "lost X HP" message -- each caller pushes a
+        // context-specific damage line (poison / bomb / monster) so the
+        // player can see what hit them, not just that something did.
     }
     else {
-        logger(loggingLevel.WARN, "Could not update health due to invalid value of health status.");
+        logger(loggingLevel.WARN, "Could not update health due to invalid value of health status = {0}.", healthStatus);
+        return;
     }
 
-    logger(loggingLevel.INFO, "health updated:\nprevious value: {0}, new value: {1}, difference = {2}.", tempVar, eph_config.knightHealth, eph_config.knightHealth - tempVar);
+    logger(loggingLevel.DEBUG, "health updated:\nprevious value: {0}, new value: {1}, difference = {2}.", tempVar, eph_config.knightHealth, eph_config.knightHealth - tempVar);
 }

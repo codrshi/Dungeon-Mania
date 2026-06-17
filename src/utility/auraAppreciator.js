@@ -22,15 +22,20 @@ export function appreciateAura(auraStatus, amount) {
 
     const tempVar = eph_config.aura;
 
+    if (!Number.isFinite(amount) || amount <= 0) {
+        logger(loggingLevel.WARN, "ignored aura update because amount = {0} is invalid.", amount);
+        return;
+    }
+
     if (auraStatus === config.game.aura.DECREASE) {
         eph_config.aura -= Math.ceil(eph_config.aura * amount / 100);
         eph_config.aura = Math.max(0, eph_config.aura);
 
-        logger(loggingLevel.INFO, "aura updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.aura, tempVar - eph_config.aura);
+        logger(loggingLevel.DEBUG, "aura updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.aura, tempVar - eph_config.aura);
 
         if (eph_config.aura === 0) {
             terminateGame(config.game.gameStatus.LOST);
-            eph_config.screenLogs.push("- aura exhausted.")
+            eph_config.screenLogs.push("Aura depleted.");
         }
         return;
     }
@@ -41,7 +46,7 @@ export function appreciateAura(auraStatus, amount) {
     eph_config.aura += Math.ceil(Math.pow(Math.PI, Math.log10(amount)) + Math.sqrt(amount));
     eph_config.aura = Math.min(config.game.aura.AURA_THRESHOLD_3, eph_config.aura);
 
-    logger(loggingLevel.INFO, "aura updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.aura, eph_config.aura - tempVar);
+    logger(loggingLevel.DEBUG, "aura updated:\nprevious value = {0}, new value = {1}, difference = {2}.", tempVar, eph_config.aura, eph_config.aura - tempVar);
 
     if (eph_config.aura == config.game.aura.AURA_THRESHOLD_3 && eph_config.isSurvivalMode === false && eph_config.isAuraThresholdThreeCrossed === false) {
         eph_config.newCardLocations = [];
@@ -49,7 +54,7 @@ export function appreciateAura(auraStatus, amount) {
         eph_config.newGrid = mapGrid(getGrid());
         eph_config.isAuraThresholdThreeCrossed = true;
         eph_config.audioList.push(config.game.id.monster.MAGE);
-        eph_config.screenLogs.push("- aura maxed. Entered mage realm.");
+        eph_config.screenLogs.push("Aura maxed. Mage Realm awakened.");
 
         logger(loggingLevel.INFO, "aura maximum value of 1000 reached. Entering mage realm.");
     }
